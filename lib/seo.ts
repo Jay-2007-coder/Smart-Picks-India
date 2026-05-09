@@ -6,7 +6,7 @@ export const siteConfig = {
   url: "https://smart-picks-india.vercel.app",
   ogImage: "https://smart-picks-india.vercel.app/og/default.png",
   twitterHandle: "@smartpicksindia",
-  amazonTag: process.env.NEXT_PUBLIC_AMAZON_TAG || "smartpicksin-21",
+  amazonTag: process.env.NEXT_PUBLIC_AMAZON_TAG || "smartpick07d2-21",
   keywords: [
     "best products India",
     "budget picks India",

@@ -1,4 +1,4 @@
-const AMAZON_TAG = process.env.NEXT_PUBLIC_AMAZON_TAG || "smartpicksin-21";
+const AMAZON_TAG = process.env.NEXT_PUBLIC_AMAZON_TAG || "smartpick07d2-21";
 
 export function appendAffiliateTag(url: string): string {
   try {
