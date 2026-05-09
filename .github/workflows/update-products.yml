@@ -1,0 +1,37 @@
+name: Daily Product Update
+
+on:
+  schedule:
+    - cron: '30 4 * * *' # Runs at 4:30 AM UTC (10:00 AM IST) every day
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  update-products:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run product generation script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
+        run: node scripts/generate-products.mjs
+
+      - name: Commit and Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-add new products from google sheets"
+          branch: main
+          file_pattern: "data/products.ts pinterest-captions.md"
