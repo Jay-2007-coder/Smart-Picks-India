@@ -109,10 +109,20 @@ async function run() {
     tags: ${JSON.stringify(data.tags)},
   }`;
 
-      // Insert into products.ts before the final ];
-      existingProductsContent = existingProductsContent.replace(/];[\s\n]*$/, `  ,\n  ${newProductObj}\n];`);
+      // Add a comma before the new object if it's not the first one
+      let separator = ",\n  ";
+      if (existingProductsContent.trim().endsWith("[")) {
+        separator = "";
+      } else if (existingProductsContent.trim().endsWith("},\n];") || existingProductsContent.trim().endsWith("}, ];") || existingProductsContent.trim().endsWith("},];")) {
+        // If the last item already had a trailing comma, remove it before adding the separator
+        existingProductsContent = existingProductsContent.replace(/},\s*\]\s*;\s*$/, "}\n];\n");
+      }
 
-      // Write to pinterest captions
+      // Insert before the closing bracket
+      existingProductsContent = existingProductsContent.replace(
+        /\]\s*;\s*$/,
+        `${separator}${newProductObj}\n];\n`
+      ); // Write to pinterest captions
       const pinterestEntry = `\n## ${data.title}\n**URL:** https://smart-picks-india.vercel.app/product/${data.slug}\n**Caption:**\n${data.pinterestCaption}\n`;
       fs.appendFileSync(captionsFilePath, pinterestEntry);
 

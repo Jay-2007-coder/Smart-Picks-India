@@ -399,7 +399,6 @@ export const products: Product[] = [
     dealOfTheDay: false,
     tags: ["gaming mouse", "rgb", "budget gaming", "esports"],
   },
-  ,
   {
     slug: "apple-iphone-15-128gb-black-review",
     title: "Apple iPhone 15 (128GB, Black) Review: Is It The Perfect Upgrade for You?",
