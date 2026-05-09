@@ -4,7 +4,7 @@ import { categories } from "@/data/categories";
 import { blogPosts } from "@/data/blogPosts";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://smartpicksindia.com";
+  const baseUrl = "https://smart-picks-india.vercel.app";
 
   // Static Pages
   const routes = ["", "/deals", "/blog", "/about", "/contact", "/privacy-policy", "/disclaimer", "/terms"].map(

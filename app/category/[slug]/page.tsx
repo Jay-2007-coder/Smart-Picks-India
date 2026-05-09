@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props) {
     title: `Best ${category.name} in India`,
     description: `Shop the best budget ${category.name.toLowerCase()} in India. Expert reviews and latest Amazon deals on ${category.description.toLowerCase()}.`,
     image: category.image,
-    canonical: `https://smartpicksindia.com/category/${category.slug}`,
+    canonical: `https://smart-picks-india.vercel.app/category/${category.slug}`,
   });
 }
 

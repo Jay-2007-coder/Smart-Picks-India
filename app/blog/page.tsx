@@ -6,7 +6,7 @@ import { blogPosts } from "@/data/blogPosts";
 export const metadata = generateSEOMetadata({
   title: "Blog & Buying Guides",
   description: "Read our latest expert reviews, buying guides, and tips for finding the best budget products in India.",
-  canonical: "https://smartpicksindia.com/blog",
+  canonical: "https://smart-picks-india.vercel.app/blog",
 });
 
 export default function BlogListingPage() {

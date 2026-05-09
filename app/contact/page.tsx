@@ -21,7 +21,7 @@ export default function ContactPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-muted-foreground">
               <Mail className="h-5 w-5 text-brand-600" />
-              <a href="mailto:hello@smartpicksindia.com" className="hover:text-brand-600">hello@smartpicksindia.com</a>
+              <a href="mailto:hello@smart-picks-india.vercel.app" className="hover:text-brand-600">hello@smart-picks-india.vercel.app</a>
             </div>
             <div className="flex items-center gap-3 text-muted-foreground">
               <MapPin className="h-5 w-5 text-brand-600" />

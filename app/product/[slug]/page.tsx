@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props) {
     description: product.description,
     image: product.image,
     type: "product",
-    canonical: `https://smartpicksindia.com/product/${product.slug}`,
+    canonical: `https://smart-picks-india.vercel.app/product/${product.slug}`,
   });
 }
 
@@ -44,7 +44,7 @@ export default async function ProductPage({ params }: Props) {
     price: product.price,
     rating: product.rating,
     reviewCount: product.reviewCount,
-    url: `https://smartpicksindia.com/product/${product.slug}`,
+    url: `https://smart-picks-india.vercel.app/product/${product.slug}`,
   });
 
   const faqs = [
@@ -104,7 +104,7 @@ export default async function ProductPage({ params }: Props) {
             <CTASection affiliateLink={product.affiliateLink} title={product.title} price={product.price} oldPrice={product.oldPrice} />
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <PinterestShareButton url={`https://smartpicksindia.com/product/${product.slug}`} image={product.image} description={product.description} />
+              <PinterestShareButton url={`https://smart-picks-india.vercel.app/product/${product.slug}`} image={product.image} description={product.description} />
             </div>
 
             {/* Pros & Cons */}

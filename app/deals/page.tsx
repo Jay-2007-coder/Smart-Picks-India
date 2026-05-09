@@ -8,7 +8,7 @@ import { formatPrice, calculateDiscount } from "@/lib/utils";
 export const metadata = generateSEOMetadata({
   title: "Today's Best Amazon Deals & Offers",
   description: "Get the latest flash sales, discounts, and lightning deals on Amazon India. Handpicked budget deals updated daily.",
-  canonical: "https://smartpicksindia.com/deals",
+  canonical: "https://smart-picks-india.vercel.app/deals",
 });
 
 export default function DealsPage() {

@@ -3,8 +3,8 @@ export const siteConfig = {
   tagline: "India's Smartest Budget Picks",
   description:
     "Discover the best budget products in India. Expert reviews, deals, and recommendations on tech, kitchen, home, fashion, and gadgets for smart Indian shoppers.",
-  url: "https://smartpicksindia.com",
-  ogImage: "https://smartpicksindia.com/og/default.png",
+  url: "https://smart-picks-india.vercel.app",
+  ogImage: "https://smart-picks-india.vercel.app/og/default.png",
   twitterHandle: "@smartpicksindia",
   amazonTag: process.env.NEXT_PUBLIC_AMAZON_TAG || "smartpicksin-21",
   keywords: [

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props) {
     description: post.excerpt,
     image: post.image,
     type: "article",
-    canonical: `https://smartpicksindia.com/blog/${post.slug}`,
+    canonical: `https://smart-picks-india.vercel.app/blog/${post.slug}`,
   });
 }
 
@@ -42,7 +42,7 @@ export default async function BlogPostPage({ params }: Props) {
     image: post.image,
     datePublished: post.datePublished,
     dateModified: post.dateModified,
-    url: `https://smartpicksindia.com/blog/${post.slug}`,
+    url: `https://smart-picks-india.vercel.app/blog/${post.slug}`,
   });
 
   const faqSchema = generateFAQSchema(post.faqs);
@@ -84,7 +84,7 @@ export default async function BlogPostPage({ params }: Props) {
             </p>
 
             <div className="my-8 flex justify-center">
-               <PinterestShareButton url={`https://smartpicksindia.com/blog/${post.slug}`} image={post.image} description={post.excerpt} />
+               <PinterestShareButton url={`https://smart-picks-india.vercel.app/blog/${post.slug}`} image={post.image} description={post.excerpt} />
             </div>
 
             {/* Markdown content rendered (simulated rendering for now) */}

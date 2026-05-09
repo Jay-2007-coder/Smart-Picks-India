@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/admin/"],
     },
-    sitemap: "https://smartpicksindia.com/sitemap.xml",
+    sitemap: "https://smart-picks-india.vercel.app/sitemap.xml",
   };
 }

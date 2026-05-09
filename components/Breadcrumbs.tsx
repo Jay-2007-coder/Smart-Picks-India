@@ -16,7 +16,7 @@ export default function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
       "@type": "ListItem",
       position: i + 1,
       name: item.label,
-      ...(item.href ? { item: `https://smartpicksindia.com${item.href}` } : {}),
+      ...(item.href ? { item: `https://smart-picks-india.vercel.app${item.href}` } : {}),
     })),
   };
 

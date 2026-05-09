@@ -18,11 +18,11 @@ export const metadata: Metadata = {
   keywords: ["best products India", "budget picks India", "Amazon India deals", "smart shopping India"],
   authors: [{ name: "Smart Picks India" }],
   creator: "Smart Picks India",
-  metadataBase: new URL("https://smartpicksindia.com"),
+  metadataBase: new URL("https://smart-picks-india.vercel.app"),
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://smartpicksindia.com",
+    url: "https://smart-picks-india.vercel.app",
     siteName: "Smart Picks India",
     images: [{ url: "/og/default.png", width: 1200, height: 630 }],
   },
