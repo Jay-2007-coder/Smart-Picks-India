@@ -14,32 +14,8 @@ if (!API_KEY || !CSV_URL) {
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-// We define the schema we want Gemini to return
-const productSchema = {
-  type: SchemaType.OBJECT,
-  properties: {
-    slug: { type: SchemaType.STRING, description: "URL friendly slug of the product" },
-    title: { type: SchemaType.STRING, description: "Catchy SEO optimized title" },
-    description: { type: SchemaType.STRING, description: "A detailed 2-3 sentence review description" },
-    price: { type: SchemaType.NUMBER, description: "Estimated discounted price in INR" },
-    oldPrice: { type: SchemaType.NUMBER, description: "Estimated original MRP in INR" },
-    rating: { type: SchemaType.NUMBER, description: "Estimated Amazon rating e.g. 4.4" },
-    reviewCount: { type: SchemaType.NUMBER, description: "Estimated number of reviews" },
-    features: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "5 key features" },
-    pros: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "3-4 pros" },
-    cons: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "2-3 cons" },
-    tags: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "3-4 category tags" },
-    pinterestCaption: { type: SchemaType.STRING, description: "A catchy Pinterest caption for this product with hashtags" }
-  },
-  required: ["slug", "title", "description", "price", "oldPrice", "rating", "reviewCount", "features", "pros", "cons", "tags", "pinterestCaption"]
-};
-
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash-latest",
-  generationConfig: {
-    responseMimeType: "application/json",
-    responseSchema: productSchema,
-  }
+  model: "gemini-1.5-flash"
 });
 
 async function run() {
@@ -82,7 +58,23 @@ async function run() {
       const prompt = `Write an expert SEO optimized affiliate product review for: ${productName}. 
       The product is in the '${category}' category.
       Give realistic estimates for price in INR, original MRP, rating, and review count.
-      Write compelling features, pros, cons, and a Pinterest caption.`;
+      Write compelling features, pros, cons, and a Pinterest caption.
+      
+      You must return ONLY a raw JSON object with the exact following keys and types. Do not include any markdown backticks or explanation:
+      {
+        "slug": "string-url-friendly-slug",
+        "title": "catchy title",
+        "description": "2-3 sentences",
+        "price": 1299,
+        "oldPrice": 2999,
+        "rating": 4.4,
+        "reviewCount": 1500,
+        "features": ["feature 1", "feature 2", "feature 3", "feature 4", "feature 5"],
+        "pros": ["pro 1", "pro 2", "pro 3"],
+        "cons": ["con 1", "con 2"],
+        "tags": ["tag1", "tag2", "tag3"],
+        "pinterestCaption": "caption with hashtags"
+      }`;
 
       const result = await model.generateContent(prompt);
       let rawText = result.response.text();
