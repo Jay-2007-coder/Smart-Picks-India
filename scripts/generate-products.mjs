@@ -15,7 +15,7 @@ if (!API_KEY || !CSV_URL) {
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-pro"
+  model: "gemini-1.5-flash"
 });
 
 async function run() {
