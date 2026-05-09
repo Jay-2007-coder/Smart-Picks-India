@@ -35,7 +35,7 @@ const productSchema = {
 };
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-1.5-flash-latest",
   generationConfig: {
     responseMimeType: "application/json",
     responseSchema: productSchema,
@@ -85,7 +85,16 @@ async function run() {
       Write compelling features, pros, cons, and a Pinterest caption.`;
 
       const result = await model.generateContent(prompt);
-      const data = JSON.parse(result.response.text());
+      let rawText = result.response.text();
+      
+      // Clean up markdown code blocks if the AI includes them
+      if (rawText.startsWith('\`\`\`json')) {
+        rawText = rawText.replace(/^\`\`\`json\s*/, '').replace(/\s*\`\`\`$/, '');
+      } else if (rawText.startsWith('\`\`\`')) {
+        rawText = rawText.replace(/^\`\`\`\s*/, '').replace(/\s*\`\`\`$/, '');
+      }
+
+      const data = JSON.parse(rawText);
 
       // Construct the TS object
       const newProductObj = `{
