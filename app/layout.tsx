@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Pinterest Rich Pins */}
-        <meta name="p:domain_verify" content="smartpicksindia" />
+        <meta name="p:domain_verify" content="41b175c4987172b0c7266d50e7598ec6" />
         {/* Google Analytics placeholder */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
