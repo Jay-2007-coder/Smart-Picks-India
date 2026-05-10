@@ -12,6 +12,8 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQAccordion from "@/components/FAQAccordion";
 import PinterestShareButton from "@/components/PinterestShareButton";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
+import RelatedProducts from "@/components/RelatedProducts";
+import { products } from "@/data/products";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -108,13 +110,23 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
 
             {/* Tags */}
-            <div className="mt-10 flex flex-wrap gap-2 not-prose">
+            <div className="mt-10 flex flex-wrap gap-2 not-prose mb-10">
               {post.tags.map((tag) => (
                 <span key={tag} className="inline-flex items-center gap-1.5 text-sm bg-muted text-muted-foreground rounded-full px-3 py-1">
                   <Tag className="h-3.5 w-3.5" />
                   {tag}
                 </span>
               ))}
+            </div>
+
+            <hr className="my-10 border-border" />
+            
+            {/* Related Products */}
+            <div className="not-prose">
+              <RelatedProducts 
+                products={products.filter(p => p.category.toLowerCase() === post.category.toLowerCase())} 
+                currentSlug="" 
+              />
             </div>
           </article>
 

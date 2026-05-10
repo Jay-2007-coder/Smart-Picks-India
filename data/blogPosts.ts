@@ -41,10 +41,16 @@ Here is our definitive ranking of the best TWS earbuds you can buy under ₹2000
 
 ## Top Picks at a Glance
 
-If you are in a rush, here is the quick summary:
-- **Best Overall Value:** boAt Airdopes 141 (Excellent battery & ENx tech)
-- **Best for Calls & Office Work:** JBL C115TWS (Superior dual mics)
-- **Best for Bass & Music:** realme TechLife Buds T100 (Punchy 10mm drivers)
+After extensive testing, we've narrowed down the best options for different types of users.
+
+| Feature | boAt Airdopes 141 | JBL C115TWS | realme Buds T100 |
+| :--- | :--- | :--- | :--- |
+| **Best For** | Overall Value | Office & Calls | Music & Bass |
+| **Battery Life** | 42 Hours | 21 Hours | 28 Hours |
+| **Driver Size** | 8mm | 6mm | 10mm |
+| **ENC Support** | Yes (ENx) | Yes (Dual Mic) | Yes (AI ENC) |
+| **Latancy** | 80ms | Standard | 88ms |
+| **Price** | ~₹1,299 | ~₹2,499 | ~₹1,499 |
 
 ---
 
@@ -64,6 +70,13 @@ Furthermore, the 42 hours of total playback is unmatched at this price point. Ev
 - **Charging:** ASAP Charge (5 mins charge = 75 mins playtime)
 - **Water Resistance:** IPX4 Sweat and Water Resistant
 
+### Pros & Cons
+| ✅ Pros | ❌ Cons |
+| :--- | :--- |
+| Insane 42-hour battery backup | Case is a bit bulky in the pocket |
+| Crystal clear calls with ENx tech | Micro-USB charging (Old tech) |
+| Very punchy bass for the price | Not ideal for very small ears |
+
 **Verdict:** If you want an all-rounder that doesn't compromise on battery or call quality, the Airdopes 141 is a no-brainer.
 
 ---
@@ -79,6 +92,13 @@ JBL's entry-level TWS earbuds offer exceptional call quality with their Dual Mic
 - **Call Quality:** 10/10 in the budget segment.
 - **Battery:** 21H total (6H earbuds + 15H case)
 
+### Pros & Cons
+| ✅ Pros | ❌ Cons |
+| :--- | :--- |
+| Signature JBL Pure Bass sound | Battery life is strictly average |
+| Exceptional mic quality for calls | No fast charging support |
+| Compact and premium build | Micro-USB charging port |
+
 **Verdict:** Slightly more expensive than boAt, but the audio tuning and microphone quality make it worth every penny for working professionals.
 
 ---
@@ -93,6 +113,15 @@ Additionally, they feature an 88ms super low latency mode, making them a highly 
 - **Drivers:** 10mm Titanium-plated composite dome
 - **Battery:** 28H total
 - **Special Feature:** 88ms Low Latency Gaming Mode
+
+### Pros & Cons
+| ✅ Pros | ❌ Cons |
+| :--- | :--- |
+| Large 10mm drivers for deep bass | Build is slightly plasticky |
+| Google Fast Pair support | No volume controls on earbuds |
+| USB-C Fast charging | Average microphone for outdoor calls |
+
+**Verdict:** Best for students and gamers who want a stylish pair of earbuds with heavy bass.
 
 ---
 
