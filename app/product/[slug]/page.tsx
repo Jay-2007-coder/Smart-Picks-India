@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props) {
     title: product.title,
     description: product.description,
     image: product.image,
-    type: "product",
+    type: "website",
     canonical: `https://smart-picks-india.vercel.app/product/${product.slug}`,
   });
 }

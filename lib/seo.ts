@@ -22,7 +22,7 @@ export type MetadataInput = {
   description?: string;
   keywords?: string[];
   image?: string;
-  type?: "website" | "article" | "product";
+  type?: "website" | "article";
   canonical?: string;
 };
 
