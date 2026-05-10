@@ -169,7 +169,7 @@ export default async function ProductPage({ params }: Props) {
 
         {/* Related Products */}
         <div className="mt-16">
-          <RelatedProducts products={products} currentSlug={product.slug} />
+          <RelatedProducts products={products} currentSlug={product.slug} category={product.category} />
         </div>
       </div>
     </>

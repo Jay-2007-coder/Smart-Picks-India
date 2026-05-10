@@ -124,8 +124,9 @@ export default async function BlogPostPage({ params }: Props) {
             {/* Related Products */}
             <div className="not-prose">
               <RelatedProducts 
-                products={products.filter(p => p.category.toLowerCase() === post.category.toLowerCase())} 
+                products={products} 
                 currentSlug="" 
+                category={post.category}
               />
             </div>
           </article>
