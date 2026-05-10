@@ -23,12 +23,12 @@ const homeFAQs = [
 ];
 
 export default function HomePage() {
-  const featuredProducts = products.filter((p) => p.featured).slice(0, 8);
-  const trendingProducts = products.filter((p) => p.trending).slice(0, 4);
-  const featuredBlogs = blogPosts.filter((p) => p.featured).slice(0, 3);
+  const featuredProducts = [...products].reverse().filter((p) => p.featured).slice(0, 8);
+  const trendingProducts = [...products].reverse().filter((p) => p.trending).slice(0, 4);
+  const featuredBlogs = [...blogPosts].reverse().filter((p) => p.featured).slice(0, 3);
   
   // Dynamically calculate deals from products
-  const todayDeals = products
+  const todayDeals = [...products].reverse()
     .filter((p) => p.oldPrice > p.price)
     .slice(0, 6)
     .map((p) => ({
@@ -45,13 +45,13 @@ export default function HomePage() {
   // Dynamically calculate category counts
   const categoriesWithCounts = categories.map((cat) => ({
     ...cat,
-    count: products.filter((p) => p.category.toLowerCase() === cat.slug.toLowerCase()).length,
+    count: products.filter((p) => p.category && p.category.toLowerCase() === cat.slug.toLowerCase()).length,
   }));
 
   return (
     <div>
       {/* Hero */}
-      <HeroSection heroProducts={products.slice(0, 4)} />
+      <HeroSection heroProducts={[...products].reverse().slice(0, 4)} />
 
       {/* Today's Flash Deals */}
       {todayDeals.length > 0 && (

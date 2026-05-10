@@ -12,7 +12,7 @@ export const metadata = generateSEOMetadata({
 });
 
 export default function DealsPage() {
-  const dynamicDeals = products
+  const dynamicDeals = [...products].reverse()
     .filter((p) => p.oldPrice > p.price)
     .map((p) => ({
       slug: p.slug,
