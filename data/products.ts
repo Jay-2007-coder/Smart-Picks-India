@@ -38,4 +38,24 @@ export const products: Product[] = [
     dealOfTheDay: false,
     tags: ["Apple iPhone 15","Smartphone Review","Tech Gadget"],
   }
+,
+  {
+    slug: "boat-airdopes-plus-311-wireless-earbuds-review",
+    title: "Boat Airdopes Plus 311 Review: 50-Hr Battery, Fast Charge & Glass Design TWS Earbuds",
+    image: "https://m.media-amazon.com/images/I/61c3+AAop3L._SL1500_.jpg",
+    category: "tech",
+    description: "Dive into an unparalleled audio experience with the Boat Airdopes Plus 311. These TWS earbuds combine a premium glass design, powerful 50-hour battery life, and ENx Tech for crystal-clear calls, all while delivering your favorite tunes seamlessly. Enjoy fast charging and ad-free music streaming for an uninterrupted auditory journey.",
+    price: 1299,
+    oldPrice: 2999,
+    rating: 4.4,
+    reviewCount: 1567,
+    affiliateLink: "https://amzn.to/42qa772",
+    features: ["Premium Glass Design","ENx™ Technology for Clear Voice Calls","Up to 50 Hours Total Playback Time","ASAP™ Fast Charge Technology","Stream Ad-Free Music via App Support","Bluetooth v5.3 Connectivity","TWS (True Wireless Stereo) Functionality","Built-in Microphone for Calls","Stylish Charcoal Black Finish"],
+    pros: ["Exceptional 50-hour battery life eliminates frequent charging worries","Stunning glass design offers a premium, unique aesthetic appeal","ENx™ Technology ensures crystal-clear call quality even in noisy environments","ASAP™ Fast Charge provides quick power boosts when you're in a hurry","App support for ad-free music enhances the listening experience"],
+    cons: ["Glass design, while premium, might be prone to fingerprints and smudges","Bass output may not satisfy extreme audiophiles seeking very deep thumping bass","Ad-free music streaming feature might be dependent on specific app integration"],
+    featured: false,
+    trending: true,
+    dealOfTheDay: false,
+    tags: ["Boat Airdopes","TWS Earbuds","Wireless Earphones","Bluetooth Earbuds","Fast Charge","50-Hour Battery","Glass Design","ENx Tech","Audio Tech","Earbuds with Mic","Charcoal Black Earbuds"],
+  }
 ];
