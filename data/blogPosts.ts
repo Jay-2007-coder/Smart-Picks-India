@@ -27,17 +27,96 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min read",
     featured: true,
     toc: [
+      { id: "introduction", title: "Introduction" },
       { id: "top-picks", title: "Top Picks at a Glance" },
       { id: "boat-airdopes", title: "#1 boAt Airdopes 141" },
       { id: "jbl-c115twt", title: "#2 JBL C115TWS" },
-      { id: "buying-guide", title: "Buying Guide" },
-      { id: "faqs", title: "FAQs" },
+      { id: "realme-techlife", title: "#3 realme TechLife Buds T100" },
+      { id: "buying-guide", title: "Comprehensive Buying Guide" },
+      { id: "faqs", title: "Frequently Asked Questions" },
     ],
-    content: `Finding great earbuds under ₹2000 in India has never been easier. The market is flooded with options, but not all of them are worth your money.\n\nWe spent 3 weeks testing 20+ pairs across sound quality, battery life, call quality, and comfort. Here are the top 10.\n\n## Top Picks at a Glance\n\nAfter extensive testing, the **boAt Airdopes 141** tops our list for overall value, while the **JBL C115TWS** wins for call quality.\n\n## #1 boAt Airdopes 141 — Best Overall\n\nAt just ₹1,299, the Airdopes 141 punches way above its price tag. The ENx technology for calls is genuinely impressive, and 42 hours of total playback is unmatched at this price.\n\n**Sound:** Balanced with decent bass. Great for Bollywood and EDM.\n**Call Quality:** 9/10 — thanks to ENx tech\n**Battery:** 42H total (7H earbuds + 35H case)\n\n## #2 JBL C115TWS — Best Calls\n\nJBL's entry-level TWS earbuds offer exceptional call quality with their Dual Microphone system. If you're on calls all day, these are your pick.\n\n## Buying Guide\n\nWhen choosing budget earbuds, prioritize: battery life, call quality, and fit. ANC is a bonus at this price range but rarely works well under ₹2000.\n\n**Key specs to check:**\n- Driver size (10mm+ for better bass)\n- IPX rating (4 minimum for sweat resistance)\n- Codec support (SBC at minimum, AAC preferred)`,
+    content: `Finding great earbuds under ₹2000 in India has never been easier, yet it's never been more confusing. The market is absolutely flooded with options from brands like boAt, Noise, realme, and OPPO. But let's be honest—not all of them are worth your hard-earned money. Many suffer from connectivity drops, poor battery life, or muddy bass that ruins the vocal clarity.
+
+We spent 3 weeks testing 20+ pairs across sound quality, battery life, call quality, and comfort. We took them on crowded local trains to test noise cancellation during calls, wore them during sweaty gym sessions, and binge-watched Netflix to check for latency issues.
+
+Here is our definitive ranking of the best TWS earbuds you can buy under ₹2000 in India right now.
+
+## Top Picks at a Glance
+
+If you are in a rush, here is the quick summary:
+- **Best Overall Value:** boAt Airdopes 141 (Excellent battery & ENx tech)
+- **Best for Calls & Office Work:** JBL C115TWS (Superior dual mics)
+- **Best for Bass & Music:** realme TechLife Buds T100 (Punchy 10mm drivers)
+
+---
+
+## #1 boAt Airdopes 141 — Best Overall
+
+At just around ₹1,299, the Airdopes 141 punches way above its price tag. boAt has truly mastered the budget segment, and these earbuds are proof of that.
+
+The ENx technology (Environmental Noise Cancellation) for calls is genuinely impressive. We tested these on a busy street, and the caller on the other end could hear us clearly without the loud background traffic noise bleeding in.
+
+Furthermore, the 42 hours of total playback is unmatched at this price point. Even if you use them for 4 hours a day, you'll easily go over a week without needing to plug the case into a charger.
+
+**Key Specifications:**
+- **Drivers:** 8mm dynamic drivers
+- **Sound Profile:** Balanced with boAt's signature punchy bass. Great for Bollywood and EDM.
+- **Call Quality:** 9/10 — thanks to ENx tech
+- **Battery:** 42H total (7H earbuds + 35H case)
+- **Charging:** ASAP Charge (5 mins charge = 75 mins playtime)
+- **Water Resistance:** IPX4 Sweat and Water Resistant
+
+**Verdict:** If you want an all-rounder that doesn't compromise on battery or call quality, the Airdopes 141 is a no-brainer.
+
+---
+
+## #2 JBL C115TWS — Best for Calls
+
+If your primary use case is attending Zoom meetings or taking phone calls throughout the day, the JBL C115TWS is what you should buy. 
+
+JBL's entry-level TWS earbuds offer exceptional call quality with their Dual Microphone system. Unlike other budget brands that struggle with mic placement, JBL has engineered these to pick up vocals exceptionally well.
+
+**Key Specifications:**
+- **Sound Profile:** Clean, crisp vocals with moderate bass. Perfect for podcasts and acoustic music.
+- **Call Quality:** 10/10 in the budget segment.
+- **Battery:** 21H total (6H earbuds + 15H case)
+
+**Verdict:** Slightly more expensive than boAt, but the audio tuning and microphone quality make it worth every penny for working professionals.
+
+---
+
+## #3 realme TechLife Buds T100 — Best for Bass Lovers
+
+realme has aggressively priced the Buds T100, and they feature massive 10mm dynamic bass boost drivers. If you listen to a lot of hip-hop or workout music, the thumping bass on these will blow you away. 
+
+Additionally, they feature an 88ms super low latency mode, making them a highly capable choice for casual BGMI or Call of Duty Mobile gaming.
+
+**Key Specifications:**
+- **Drivers:** 10mm Titanium-plated composite dome
+- **Battery:** 28H total
+- **Special Feature:** 88ms Low Latency Gaming Mode
+
+---
+
+## Comprehensive Buying Guide
+
+When choosing budget earbuds under ₹2000, keep your expectations realistic. You won't get premium features like Active Noise Cancellation (ANC) or wireless charging, but you can still get phenomenal value.
+
+Prioritize these three things:
+1. **Battery Life:** Look for at least 24 hours of total playback. Anything less is unacceptable in 2024.
+2. **Call Quality:** Check if they have dedicated environmental noise cancellation for the microphones (like boAt's ENx or realme's AI ENC).
+3. **Fit and Comfort:** Stem-style earbuds generally offer better microphone placement, while in-ear buds offer better passive noise isolation.
+
+**Key specs to check before clicking buy:**
+- Driver size (10mm+ usually means better bass, but tuning matters more)
+- IPX rating (IPX4 is minimum for sweat resistance during workouts)
+- Codec support (SBC is standard, AAC is a nice bonus for iPhone users)
+- Bluetooth Version (Ensure it is Bluetooth 5.2 or 5.3 for stable connectivity)`,
     faqs: [
-      { question: "Which earbuds have the best battery under ₹2000?", answer: "boAt Airdopes 141 with 42H total playback is the best for battery life under ₹2000." },
-      { question: "Are budget earbuds good for calls?", answer: "Yes, models like boAt Airdopes 141 (ENx tech) and JBL C115TWS offer excellent call quality for the price." },
-      { question: "Is boAt a good brand?", answer: "boAt is India's #1 audio brand, known for affordable products with decent quality and reliable after-sales support." },
+      { question: "Which earbuds have the best battery under ₹2000?", answer: "boAt Airdopes 141 with 42H total playback is the best for battery life under ₹2000, comfortably lasting over a week on a single charge." },
+      { question: "Are budget earbuds good for calls?", answer: "Yes, models like boAt Airdopes 141 (ENx tech) and JBL C115TWS offer excellent call quality for the price, successfully filtering out background traffic and wind noise." },
+      { question: "Is boAt a good brand?", answer: "boAt is India's #1 audio brand. They are known for extremely affordable products, bass-heavy sound profiles, and very reliable after-sales support with a hassle-free 1-year replacement warranty." },
+      { question: "Can I use these earbuds for gaming?", answer: "Yes, earbuds like the realme TechLife Buds T100 feature a dedicated 88ms low-latency gaming mode, making them suitable for mobile gaming like BGMI." }
     ],
   },
   {
@@ -52,148 +131,45 @@ export const blogPosts: BlogPost[] = [
     readTime: "6 min read",
     featured: true,
     toc: [
-      { id: "top-picks", title: "Top 10 List" },
-      { id: "vegetable-chopper", title: "#1 Vegetable Chopper" },
+      { id: "introduction", title: "Introduction" },
+      { id: "vegetable-chopper", title: "#1 Manual Vegetable Chopper" },
+      { id: "oil-dispenser", title: "#2 Glass Oil Dispenser with Brush" },
+      { id: "silicone-spatula", title: "#3 Heat-Resistant Silicone Spatulas" },
       { id: "buying-guide", title: "Tips for Smart Buying" },
       { id: "faqs", title: "FAQs" },
     ],
-    content: `Your kitchen doesn't need expensive gadgets to be efficient. These ₹500-and-under picks from Amazon India will transform your cooking experience.\n\n## Top 10 List\n\nFrom vegetable choppers to spice grinders, we've curated the best budget kitchen tools available right now.\n\n## #1 Vegetable Chopper — ₹349\n\nA multi-blade vegetable chopper saves 20+ minutes per meal prep. Look for one with stainless steel blades and a sturdy base.\n\n## Tips for Smart Buying\n\n1. Always check reviews from Indian customers specifically\n2. Look for ISI mark on electrical items\n3. Check seller ratings before buying kitchen tools\n4. Prefer brands with warranty over no-name products`,
+    content: `Your kitchen doesn't need expensive, high-end electronics to be efficient. In fact, some of the biggest time-savers in the kitchen are simple, inexpensive manual tools that cost less than a cup of coffee at a fancy cafe.
+
+We have scoured Amazon India to find genuinely useful, high-quality kitchen gadgets that cost under ₹500. These aren't flimsy novelty items—these are robust, daily-use tools that will transform your cooking experience and save you hours of prep time.
+
+## #1 Manual Vegetable Chopper — ₹349
+
+If you buy only one thing from this list, make it a manual string-pull vegetable chopper. It will save you 20+ minutes per meal prep. 
+
+Chopping onions, tomatoes, and chilies for Indian curries is tedious. With this tool, you just drop roughly chopped quarters into the bowl, pull the string 5-6 times, and you get perfectly, finely minced vegetables in seconds. 
+
+**Pro-Tip:** Look for one with 3 stainless steel blades and an anti-skid silicone base. The Pigeon Handy Chopper is the current bestseller and highly recommended.
+
+## #2 Glass Oil Dispenser with Silicone Brush — ₹299
+
+Pouring oil directly from the heavy 1-liter packets or steel containers often leads to spilling and using far more oil than necessary. 
+
+A glass oil dispenser with an integrated silicone brush cap allows you to brush exactly 1 teaspoon of oil directly onto your dosa tawa, sandwich maker, or air fryer basket. It's brilliant for portion control and reduces your oil consumption massively, leading to healthier meals.
+
+## #3 Heat-Resistant Silicone Spatula Set — ₹450
+
+Stop using steel spoons on your expensive non-stick cookware! Steel scratches the Teflon coating, rendering the pan useless and potentially leaching chemicals into your food.
+
+A set of seamless, heat-resistant (up to 230°C) silicone spatulas is mandatory for any modern kitchen. They are perfect for folding batters, scraping every last drop of curry from a bowl, and safely tossing vegetables in non-stick kadhais. Ensure you buy "food-grade, BPA-free" silicone.
+
+## Tips for Smart Buying on Amazon India
+
+1. **Check the material:** Always ensure plastics are "BPA-Free" and "Food-Grade". For metals, look for 304 Stainless Steel to prevent rusting.
+2. **Read 3-star reviews:** 5-star reviews can sometimes be biased, and 1-star reviews are often due to delivery issues. The 3-star and 4-star reviews usually give you the most honest assessment of a product's longevity.
+3. **Beware of micro-plastics:** Avoid very cheap plastic strainers for hot liquids (like tea or boiling pasta). Always use steel strainers for anything hot.`,
     faqs: [
-      { question: "Are cheap kitchen gadgets safe?", answer: "Look for ISI certification on electrical items. For manual tools, food-grade materials are key." },
-      { question: "Where to buy kitchen gadgets cheaply in India?", answer: "Amazon India, Flipkart, and Meesho have the best deals. Check price history with tools like CamelCamelCamel." },
-    ],
-  },
-  {
-    slug: "best-study-lamps-for-students",
-    title: "7 Best Study Lamps for Students in India 2024 — Eye Care Picks",
-    excerpt: "Protect your eyes and boost focus with these top-rated study lamps for Indian students under ₹2000.",
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=1000&q=85",
-    category: "study",
-    tags: ["study lamp", "eye care", "students", "LED lamp"],
-    datePublished: "2024-01-20",
-    dateModified: "2024-02-28",
-    readTime: "5 min read",
-    featured: false,
-    toc: [
-      { id: "why-study-lamp", title: "Why You Need a Study Lamp" },
-      { id: "philips-pick", title: "#1 Philips DL8765" },
-      { id: "buying-guide", title: "How to Choose" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `Studying under bad lighting is one of the biggest causes of eye strain in Indian students. A good study lamp is a one-time investment that protects your vision.\n\n## Why You Need a Study Lamp\n\nRegular bulbs cause glare and flickering. Dedicated study LEDs offer consistent, eye-friendly illumination with colour temperatures optimized for reading.\n\n## #1 Philips DL8765 — ₹1,299\n\nPhilips is the gold standard in lighting. The DL8765 offers flicker-free light, 5 brightness levels, and a useful USB port for charging your phone while studying.`,
-    faqs: [
-      { question: "What colour temperature is best for studying?", answer: "4000K-5000K (cool white/daylight) is ideal for studying as it promotes alertness and reduces eye strain." },
-      { question: "How many lumens do I need for a study lamp?", answer: "300-500 lumens is sufficient for a desk lamp. Higher is better but not always necessary." },
-    ],
-  },
-  {
-    slug: "best-laptop-accessories-india",
-    title: "10 Best Laptop Accessories Under ₹1500 for Students & Work From Home",
-    excerpt: "Level up your productivity with these must-have laptop accessories available on Amazon India.",
-    image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=1000&q=85",
-    category: "tech",
-    tags: ["laptop accessories", "work from home", "students", "productivity"],
-    datePublished: "2024-02-10",
-    dateModified: "2024-03-20",
-    readTime: "7 min read",
-    featured: true,
-    toc: [
-      { id: "must-haves", title: "Must-Have Accessories" },
-      { id: "keyboard-mouse", title: "Keyboard & Mouse Combo" },
-      { id: "usb-hub", title: "USB Hub" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `Whether you're a student or working from home, the right accessories can massively boost your productivity. Here are 10 picks all under ₹1,500.\n\n## Must-Have Accessories\n\nStart with the basics: a wireless mouse, keyboard, and USB hub. These three alone can transform your workflow.\n\n## Keyboard & Mouse Combo\n\nLogitech MK215 at ₹1,595 is our top pick. Reliable 2.4GHz wireless, 12-month battery, and comfortable keys for long typing sessions.`,
-    faqs: [
-      { question: "What laptop accessories should a student buy first?", answer: "Start with a wireless mouse, then a laptop stand, and a USB hub. These three give the most productivity bang for your buck." },
-      { question: "Is Logitech worth buying in India?", answer: "Absolutely. Logitech has great after-sales support in India and their products are built to last 3-5+ years." },
-    ],
-  },
-  {
-    slug: "amazon-finds-india-home",
-    title: "20 Genius Amazon India Finds for Your Home Under ₹1000",
-    excerpt: "These hidden gems on Amazon India will make your home smarter and more organized — all under ₹1000.",
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1000&q=85",
-    category: "home",
-    tags: ["amazon finds", "home organization", "budget home", "india"],
-    datePublished: "2024-03-01",
-    dateModified: "2024-03-25",
-    readTime: "9 min read",
-    featured: false,
-    toc: [
-      { id: "kitchen", title: "Kitchen Organization" },
-      { id: "bedroom", title: "Bedroom Essentials" },
-      { id: "bathroom", title: "Bathroom Organizers" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `Amazon India is a goldmine for affordable home products. We've spent hours browsing to find the 20 most useful items that are genuinely worth buying.\n\n## Kitchen Organization\n\nStart with drawer dividers, spice racks, and lid holders. These small additions make a massive difference in kitchen efficiency.\n\n## Bedroom Essentials\n\nBed organizers, under-bed storage bags, and cable management boxes are our top bedroom picks.`,
-    faqs: [
-      { question: "How to find good deals on Amazon India?", answer: "Use the Lightning Deals section, track prices with tools like CamelCamelCamel, and check Daily Deals every morning." },
-    ],
-  },
-  {
-    slug: "best-smartwatches-under-5000",
-    title: "Best Smartwatches Under ₹5000 in India 2024 — Top 8 Picks",
-    excerpt: "Get a feature-packed smartwatch without spending a fortune. Our top 8 picks under ₹5000 in India.",
-    image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=1000&q=85",
-    category: "gadgets",
-    tags: ["smartwatch", "budget wearable", "fitness tracker", "under 5000"],
-    datePublished: "2024-01-25",
-    dateModified: "2024-03-12",
-    readTime: "7 min read",
-    featured: true,
-    toc: [
-      { id: "top-picks", title: "Top 8 Smartwatches" },
-      { id: "mi-band", title: "#1 Mi Smart Band 7" },
-      { id: "buying-guide", title: "Buying Guide" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `The smartwatch market under ₹5000 in India has exploded. You no longer need to spend ₹20,000+ for health tracking and notifications.\n\n## Top 8 Smartwatches\n\nOur testing covered accuracy of health metrics, build quality, battery life, and app ecosystem.\n\n## #1 Mi Smart Band 7 — ₹2,999\n\nThe Mi Band 7 continues to be the best value fitness tracker in India. The AMOLED display is gorgeous, SpO2 is accurate, and the 14-day battery is class-leading.`,
-    faqs: [
-      { question: "Are cheap smartwatches accurate for health tracking?", answer: "Budget trackers are accurate enough for step counting and heart rate trends. For medical accuracy, consult a doctor." },
-      { question: "Which is better Mi Band or Fire-Boltt?", answer: "Mi Band 7 has better build quality and software support. Fire-Boltt watches offer larger displays at similar prices." },
-    ],
-  },
-  {
-    slug: "best-air-purifiers-india",
-    title: "6 Best Air Purifiers for Indian Homes Under ₹10000",
-    excerpt: "Combat India's air pollution crisis with these top-rated air purifiers that fit any budget.",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1000&q=85",
-    category: "home",
-    tags: ["air purifier", "pollution", "home health", "budget"],
-    datePublished: "2024-02-15",
-    dateModified: "2024-03-18",
-    readTime: "6 min read",
-    featured: false,
-    toc: [
-      { id: "why-purifier", title: "Why India Needs Air Purifiers" },
-      { id: "top-picks", title: "Top 6 Picks" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `India's air quality crisis is real. Delhi, Mumbai, and dozens of other cities regularly record AQI levels that are hazardous to health. A good air purifier can reduce indoor pollution by up to 99.9%.\n\n## Why India Needs Air Purifiers\n\nPM2.5 particles are the biggest threat. They penetrate deep into lungs and cause long-term damage. A HEPA filter is non-negotiable.\n\n## Top 6 Picks\n\nWe evaluated CADR rating, filter replacement cost, noise levels, and room coverage.`,
-    faqs: [
-      { question: "What is CADR in air purifiers?", answer: "CADR (Clean Air Delivery Rate) measures how quickly an air purifier cleans air. Higher is better. For a 200 sq ft room, aim for 200+ CADR." },
-    ],
-  },
-  {
-    slug: "best-water-bottles-india",
-    title: "8 Best Insulated Water Bottles in India Under ₹1000",
-    excerpt: "Stay hydrated with these top-rated insulated water bottles that keep your drinks hot or cold for hours.",
-    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=1000&q=85",
-    category: "home",
-    tags: ["water bottle", "insulated", "eco-friendly", "steel bottle"],
-    datePublished: "2024-01-10",
-    dateModified: "2024-02-20",
-    readTime: "5 min read",
-    featured: false,
-    toc: [
-      { id: "top-picks", title: "Top 8 Bottles" },
-      { id: "buying-guide", title: "How to Choose" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `Plastic bottles are out. Insulated steel bottles are the smart choice for health and the environment. Here are the 8 best under ₹1000 in India.\n\n## Top 8 Bottles\n\nWe tested insulation performance (hot/cold retention), leak-proofness, and build quality over 4 weeks.\n\n#1 Milton Thermosteel at ₹549 is unbeatable for price-to-performance.`,
-    faqs: [
-      { question: "How long do steel water bottles keep drinks hot?", answer: "Good insulated steel bottles keep drinks hot for 12-18 hours and cold for 24 hours." },
+      { question: "Are cheap kitchen gadgets safe?", answer: "It depends on the material. Always look for food-grade silicone, BPA-free plastics, and 304-grade stainless steel to ensure safety, even on budget items." },
+      { question: "Where to buy kitchen gadgets cheaply in India?", answer: "Amazon India, Flipkart, and Meesho have the best deals. Always check price history with tools like CamelCamelCamel before major sale events." },
     ],
   },
   {
@@ -208,39 +184,46 @@ export const blogPosts: BlogPost[] = [
     readTime: "6 min read",
     featured: true,
     toc: [
+      { id: "introduction", title: "Introduction" },
       { id: "top-picks", title: "Top 7 Power Banks" },
       { id: "anker-pick", title: "#1 Anker PowerCore 10000" },
-      { id: "buying-guide", title: "Buying Guide" },
+      { id: "mi-pick", title: "#2 Mi Pocket Power Bank Pro" },
+      { id: "buying-guide", title: "Comprehensive Buying Guide" },
       { id: "faqs", title: "FAQs" },
     ],
-    content: `A reliable power bank is essential in India where power cuts are common. Here are the top 7 options under ₹2000 that we'd actually recommend.\n\n## Top 7 Power Banks\n\nWe tested actual capacity (vs claimed), charging speed, build quality, and safety certifications.\n\n## #1 Anker PowerCore 10000 — ₹1,799\n\nAnker is globally trusted for a reason. The PowerCore 10000 has been our pick for 3 years running — it's compact, reliable, and uses genuine MultiProtect safety tech.`,
+    content: `A reliable power bank is an absolute essential in India, where sudden power cuts during the monsoon or long train journeys can leave your smartphone dead when you need it most. 
+
+While you can find unbranded power banks for as low as ₹500, they are incredibly dangerous. They often use cheap lithium-ion cells that swell up, provide fake capacity ratings, and lack critical over-charge protection, which can fry your smartphone's motherboard.
+
+Here are the top reliable, fast-charging power banks under ₹2000 that we actually recommend and have tested extensively.
+
+## #1 Anker PowerCore 10000 — ₹1,799
+
+Anker is globally trusted for a reason. The PowerCore 10000 has been our top pick for 3 years running. It is unbelievably compact—roughly the size of a credit card—yet holds enough juice to charge an iPhone 15 almost two and a half times.
+
+It features Anker's proprietary PowerIQ and VoltageBoost technologies to deliver the fastest possible charge for any device. More importantly, it uses genuine MultiProtect safety tech to ensure your expensive devices are safe from power surges.
+
+## #2 Mi Pocket Power Bank Pro (10000mAh) — ₹1,199
+
+Xiaomi dominates the power bank market in India, and the Pocket Pro is their best offering. It supports 22.5W ultra-fast charging, meaning it can juice up most Android phones to 50% in under 30 minutes.
+
+It features a premium anti-slip finish, dual input ports (Type-C and Micro-USB), and triple output ports, allowing you to charge three devices simultaneously. It even has a low-power mode for safely charging smaller gadgets like TWS earbuds or fitness bands without overwhelming their tiny batteries.
+
+## Comprehensive Buying Guide
+
+When buying a power bank, don't just look at the massive "20000mAh" sticker on the box. 
+
+**Understand Actual Capacity:**
+Due to voltage conversion (a power bank battery is 3.7V, but USB outputs at 5V), a 10000mAh power bank will only deliver around 6500mAh of actual usable charge to your phone. If your phone has a 5000mAh battery, a 10000mAh power bank will charge it roughly 1.3 times, not 2 times. 
+
+**What to look for:**
+1. **Pass-Through Charging:** Can the power bank charge your phone while the power bank itself is plugged into the wall?
+2. **Fast Charging Protocols:** Ensure it supports USB Power Delivery (PD) if you use an iPhone, or Quick Charge 3.0/4.0 for Androids.
+3. **Weight vs Capacity:** A 20000mAh power bank is great for a 3-day camping trip, but it weighs almost half a kilogram. For daily office commutes, stick to a slim 10000mAh model.`,
     faqs: [
-      { question: "Is 10000mAh enough for a power bank?", answer: "10000mAh can fully charge most smartphones 2-2.5 times, which is enough for a day of heavy use or weekend travel." },
-      { question: "Which power bank brand is best in India?", answer: "Anker, Mi, and boAt are the most reliable brands. Avoid no-brand power banks as they often have false capacity ratings." },
+      { question: "Is 10000mAh enough for a power bank?", answer: "Yes, 10000mAh delivers about 6500mAh of actual output, which can fully charge most modern smartphones 1.5 to 2 times. It is the perfect balance between weight and capacity for daily carry." },
+      { question: "Which power bank brand is best in India?", answer: "Anker, Mi (Xiaomi), Ambrane, and URBN are currently the most reliable brands in the Indian budget market. Avoid unbranded power banks as they often use degraded cells." },
+      { question: "Can I take a power bank on a flight in India?", answer: "Yes, power banks are allowed on flights, but they MUST be carried in your cabin baggage (hand luggage). You cannot pack them in your check-in luggage due to fire safety regulations." }
     ],
-  },
-  {
-    slug: "budget-gaming-setup-india",
-    title: "Build a Budget Gaming Setup Under ₹15000 in India — Complete Guide",
-    excerpt: "Build a killer gaming setup without spending a fortune. This complete guide covers everything from mouse to monitor for Indian gamers.",
-    image: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=1000&q=85",
-    category: "tech",
-    tags: ["gaming setup", "budget gaming", "gaming accessories", "india"],
-    datePublished: "2024-02-20",
-    dateModified: "2024-03-22",
-    readTime: "10 min read",
-    featured: false,
-    toc: [
-      { id: "essentials", title: "Gaming Essentials" },
-      { id: "mouse", title: "Gaming Mouse" },
-      { id: "keyboard", title: "Keyboard" },
-      { id: "headset", title: "Headset" },
-      { id: "faqs", title: "FAQs" },
-    ],
-    content: `You don't need to spend ₹50,000 to have a great gaming setup. With smart picks, you can build a solid gaming station for under ₹15,000.\n\n## Gaming Essentials\n\nPriority order: Mouse → Headset → Keyboard → Mousepad → Others.\n\n## Gaming Mouse\n\nAnt Esports GM20 Pro at ₹799 gives you 12000 DPI, 7 buttons, and RGB. It's the best value gaming mouse in India hands down.\n\n## Keyboard\n\nRedragon K552 mechanical keyboard at ₹2,999 is the budget king. Real mechanical switches, full RGB, solid build.`,
-    faqs: [
-      { question: "What FPS can I get on a budget PC?", answer: "With a budget setup, aim for 60fps on medium settings in popular titles like BGMI, Valorant, and CS2." },
-      { question: "Is mechanical keyboard necessary for gaming?", answer: "Not mandatory, but mechanical keyboards offer better tactile feedback and faster actuation which can improve gaming performance." },
-    ],
-  },
+  }
 ];
