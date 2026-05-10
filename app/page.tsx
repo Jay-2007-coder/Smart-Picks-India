@@ -26,7 +26,27 @@ export default function HomePage() {
   const featuredProducts = products.filter((p) => p.featured).slice(0, 8);
   const trendingProducts = products.filter((p) => p.trending).slice(0, 4);
   const featuredBlogs = blogPosts.filter((p) => p.featured).slice(0, 3);
-  const todayDeals = deals.slice(0, 6);
+  
+  // Dynamically calculate deals from products
+  const todayDeals = products
+    .filter((p) => p.oldPrice > p.price)
+    .slice(0, 6)
+    .map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      image: p.image,
+      price: p.price,
+      oldPrice: p.oldPrice,
+      affiliateLink: p.affiliateLink,
+      label: "🔥 Hot Deal",
+      expiresIn: "Ending soon",
+    }));
+
+  // Dynamically calculate category counts
+  const categoriesWithCounts = categories.map((cat) => ({
+    ...cat,
+    count: products.filter((p) => p.category.toLowerCase() === cat.slug.toLowerCase()).length,
+  }));
 
   return (
     <div>
@@ -101,7 +121,7 @@ export default function HomePage() {
             <h2 className="section-title">Shop by Category</h2>
             <p className="section-subtitle">Find the best products in every category</p>
           </div>
-          <CategoryGrid categories={categories} />
+          <CategoryGrid categories={categoriesWithCounts} />
         </div>
       </section>
 

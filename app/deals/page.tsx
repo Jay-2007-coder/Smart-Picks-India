@@ -2,7 +2,7 @@ import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Image from "next/image";
 import { Clock, Zap } from "lucide-react";
-import { deals } from "@/data/deals";
+import { products } from "@/data/products";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 
 export const metadata = generateSEOMetadata({
@@ -12,6 +12,20 @@ export const metadata = generateSEOMetadata({
 });
 
 export default function DealsPage() {
+  const dynamicDeals = products
+    .filter((p) => p.oldPrice > p.price)
+    .map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      image: p.image,
+      price: p.price,
+      oldPrice: p.oldPrice,
+      category: p.category,
+      affiliateLink: p.affiliateLink,
+      label: "🔥 Hot Deal",
+      expiresIn: "Ending soon",
+    }));
+
   return (
     <div className="container-custom py-8">
       <Breadcrumbs items={[{ label: "Deals" }]} />
@@ -29,7 +43,12 @@ export default function DealsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {deals.map((deal) => {
+        {dynamicDeals.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            No flash deals available right now. Check back later!
+          </div>
+        ) : (
+          dynamicDeals.map((deal) => {
           const discount = calculateDiscount(deal.price, deal.oldPrice);
           return (
             <div key={deal.slug} className="card overflow-hidden flex flex-col group">
@@ -82,7 +101,7 @@ export default function DealsPage() {
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
     </div>
   );
