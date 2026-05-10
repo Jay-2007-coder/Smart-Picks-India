@@ -16,7 +16,7 @@ export const categories: Category[] = [
     icon: "💻",
     image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&q=80",
     color: "from-blue-500 to-indigo-600",
-    count: 45,
+    count: 0,
   },
   {
     slug: "kitchen",
@@ -25,7 +25,7 @@ export const categories: Category[] = [
     icon: "🍳",
     image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",
     color: "from-orange-400 to-red-500",
-    count: 38,
+    count: 0,
   },
   {
     slug: "home",
@@ -34,7 +34,7 @@ export const categories: Category[] = [
     icon: "🏠",
     image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
     color: "from-green-400 to-emerald-600",
-    count: 52,
+    count: 0,
   },
   {
     slug: "gadgets",
@@ -43,7 +43,7 @@ export const categories: Category[] = [
     icon: "🔧",
     image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80",
     color: "from-purple-500 to-pink-500",
-    count: 61,
+    count: 0,
   },
   {
     slug: "fashion",
@@ -52,7 +52,7 @@ export const categories: Category[] = [
     icon: "👗",
     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80",
     color: "from-pink-400 to-rose-600",
-    count: 29,
+    count: 0,
   },
   {
     slug: "study",
@@ -61,6 +61,6 @@ export const categories: Category[] = [
     icon: "📚",
     image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80",
     color: "from-yellow-400 to-amber-600",
-    count: 33,
+    count: 0,
   },
 ];

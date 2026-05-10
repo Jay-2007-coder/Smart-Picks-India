@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Star, Zap } from "lucide-react";
 
-export default function HeroSection() {
+import { Product } from "@/data/products";
+
+export default function HeroSection({ heroProducts }: { heroProducts: Product[] }) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 text-white">
       {/* Background decoration */}
@@ -78,36 +80,7 @@ export default function HeroSection() {
             className="relative hidden lg:block"
           >
             <div className="grid grid-cols-2 gap-4">
-              {[
-                {
-                  image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=300&q=80",
-                  title: "boAt Airdopes 141",
-                  price: "₹1,299",
-                  rating: 4.3,
-                  badge: "57% OFF",
-                },
-                {
-                  image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=300&q=80",
-                  title: "Mi Smart Band 7",
-                  price: "₹2,999",
-                  rating: 4.5,
-                  badge: "33% OFF",
-                },
-                {
-                  image: "https://images.unsplash.com/photo-1648821736827-b71c5eb57ef0?w=300&q=80",
-                  title: "Pigeon Air Fryer",
-                  price: "₹3,499",
-                  rating: 4.3,
-                  badge: "42% OFF",
-                },
-                {
-                  image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=300&q=80",
-                  title: "Anker PowerCore",
-                  price: "₹1,799",
-                  rating: 4.5,
-                  badge: "28% OFF",
-                },
-              ].map((item, i) => (
+              {heroProducts.map((item, i) => (
                 <motion.div
                   key={item.title}
                   initial={{ opacity: 0, y: 20 }}
@@ -115,13 +88,14 @@ export default function HeroSection() {
                   transition={{ delay: 0.4 + i * 0.1 }}
                   className={`rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/10 p-3 ${i === 1 ? "mt-6" : ""}`}
                 >
-                  <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
-                    <Image src={item.image} alt={item.title} fill sizes="150px" className="object-cover" />
-                    <span className="absolute top-2 left-2 badge bg-brand-600 text-white text-xs">{item.badge}</span>
+                  <div className="relative aspect-square rounded-xl overflow-hidden mb-3 bg-white/5">
+                    {item.image && (
+                      <Image src={item.image} alt={item.title} fill sizes="150px" className="object-cover" />
+                    )}
                   </div>
                   <p className="text-xs font-semibold text-white line-clamp-1">{item.title}</p>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-sm font-bold text-accent-400">{item.price}</span>
+                    <span className="text-sm font-bold text-accent-400">₹{item.price.toLocaleString("en-IN")}</span>
                     <div className="flex items-center gap-0.5">
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                       <span className="text-xs text-slate-300">{item.rating}</span>
