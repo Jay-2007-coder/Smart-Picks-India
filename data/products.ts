@@ -98,4 +98,24 @@ export const products: Product[] = [
     dealOfTheDay: false,
     tags: ["Sonata Watch","Women's Watch","Analog Watch","Polyurethane Strap","Silver Dial","Fashion Watch","Casual Watch","Durable Watch","Water Resistant Watch","Tech Accessory","Sonata 87049PP11W"],
   }
+,
+  {
+    slug: "noise-two-wireless-on-ear-headphones-review-serene-blue",
+    title: "Noise Two Wireless On-Ear Headphones Review: 50Hrs Playtime & Low Latency for Gamers & Music Lovers",
+    image: "https://m.media-amazon.com/images/I/517lSvEVVsL._SL1500_.jpg",
+    category: "tech",
+    description: "Discover the Noise Two Wireless On-Ear Headphones in Serene Blue, offering an incredible 50 hours of playtime and ultra-low latency perfect for gaming and immersive audio. With Dual Pairing and 4 Play Modes, these headphones redefine convenience and sound quality for their price point. Dive into our expert review to see why they're a must-have tech gadget.",
+    price: 1299,
+    oldPrice: 2999,
+    rating: 4.4,
+    reviewCount: 1500,
+    affiliateLink: "https://amzn.to/4denrAp",
+    features: ["Upto 50 Hours of Massive Playtime on a Single Charge","Ultra-Low Latency (up to 45ms) for Lag-Free Gaming & Video","Advanced Bluetooth v5.3 for Stable & Seamless Connectivity","Dual Pairing Feature for Connecting Two Devices Simultaneously","4 Distinct Play Modes (e.g., Standard, Bass Boost, Gaming Mode) for Versatile Audio","Comfortable On-Ear Design with Plush Earcups","Integrated Controls for Music, Calls, and Voice Assistant"],
+    pros: ["Exceptional Battery Life eliminates frequent charging worries, ideal for long commutes or travel.","Remarkably Low Latency makes it perfect for mobile gaming and watching videos without audio-visual sync issues.","Dual Pairing allows effortless switching between your phone and laptop, enhancing productivity and convenience.","Multiple Play Modes cater to different listening preferences, from punchy bass to clear vocals."],
+    cons: ["On-ear design may not offer the same level of passive noise isolation as over-ear headphones.","Lack of active noise cancellation (ANC) might be a drawback for very noisy environments, though expected at this price."],
+    featured: false,
+    trending: true,
+    dealOfTheDay: false,
+    tags: ["Noise Two","Wireless Headphones","On-Ear Headphones","Bluetooth Headphones","Low Latency Headphones","Gaming Headphones","Long Battery Life","Noise Two Review","Tech Gadgets","Affiliate Review"],
+  }
 ];
