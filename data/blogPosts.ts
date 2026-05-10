@@ -27,13 +27,11 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min read",
     featured: true,
     toc: [
-      { id: "introduction", title: "Introduction" },
-      { id: "top-picks", title: "Top Picks at a Glance" },
-      { id: "boat-airdopes", title: "#1 boAt Airdopes 141" },
-      { id: "jbl-c115twt", title: "#2 JBL C115TWS" },
-      { id: "realme-techlife", title: "#3 realme TechLife Buds T100" },
-      { id: "buying-guide", title: "Comprehensive Buying Guide" },
-      { id: "faqs", title: "Frequently Asked Questions" },
+      { id: "top-picks-at-a-glance", title: "Top Picks at a Glance" },
+      { id: "1-boat-airdopes-141--best-overall", title: "#1 boAt Airdopes 141" },
+      { id: "2-jbl-c115tws--best-for-calls", title: "#2 JBL C115TWS" },
+      { id: "3-realme-techlife-buds-t100--best-for-bass-lovers", title: "#3 realme TechLife Buds T100" },
+      { id: "comprehensive-buying-guide", title: "Comprehensive Buying Guide" },
     ],
     content: `Finding great earbuds under ₹2000 in India has never been easier, yet it's never been more confusing. The market is absolutely flooded with options from brands like boAt, Noise, realme, and OPPO. But let's be honest—not all of them are worth your hard-earned money. Many suffer from connectivity drops, poor battery life, or muddy bass that ruins the vocal clarity.
 
@@ -131,12 +129,10 @@ Prioritize these three things:
     readTime: "6 min read",
     featured: true,
     toc: [
-      { id: "introduction", title: "Introduction" },
-      { id: "vegetable-chopper", title: "#1 Manual Vegetable Chopper" },
-      { id: "oil-dispenser", title: "#2 Glass Oil Dispenser with Brush" },
-      { id: "silicone-spatula", title: "#3 Heat-Resistant Silicone Spatulas" },
-      { id: "buying-guide", title: "Tips for Smart Buying" },
-      { id: "faqs", title: "FAQs" },
+      { id: "1-manual-vegetable-chopper--349", title: "#1 Manual Vegetable Chopper" },
+      { id: "2-glass-oil-dispenser-with-silicone-brush--299", title: "#2 Glass Oil Dispenser" },
+      { id: "3-heat-resistant-silicone-spatula-set--450", title: "#3 Silicone Spatulas" },
+      { id: "tips-for-smart-buying-on-amazon-india", title: "Tips for Smart Buying" },
     ],
     content: `Your kitchen doesn't need expensive, high-end electronics to be efficient. In fact, some of the biggest time-savers in the kitchen are simple, inexpensive manual tools that cost less than a cup of coffee at a fancy cafe.
 
@@ -184,12 +180,10 @@ A set of seamless, heat-resistant (up to 230°C) silicone spatulas is mandatory 
     readTime: "6 min read",
     featured: true,
     toc: [
-      { id: "introduction", title: "Introduction" },
-      { id: "top-picks", title: "Top 7 Power Banks" },
-      { id: "anker-pick", title: "#1 Anker PowerCore 10000" },
-      { id: "mi-pick", title: "#2 Mi Pocket Power Bank Pro" },
-      { id: "buying-guide", title: "Comprehensive Buying Guide" },
-      { id: "faqs", title: "FAQs" },
+      { id: "top-7-power-banks", title: "Top 7 Power Banks" },
+      { id: "1-anker-powercore-10000--1799", title: "#1 Anker PowerCore 10000" },
+      { id: "2-mi-pocket-power-bank-pro-10000mah--1199", title: "#2 Mi Pocket Power Bank Pro" },
+      { id: "comprehensive-buying-guide", title: "Comprehensive Buying Guide" },
     ],
     content: `A reliable power bank is an absolute essential in India, where sudden power cuts during the monsoon or long train journeys can leave your smartphone dead when you need it most. 
 

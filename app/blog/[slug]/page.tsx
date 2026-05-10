@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Tag, ChevronRight } from "lucide-react";
@@ -52,7 +55,7 @@ export default async function BlogPostPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      <div className="container-custom py-8 max-w-4xl">
+      <div className="container-custom py-8 max-w-6xl">
         <Breadcrumbs items={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
 
         {/* Header */}
@@ -87,8 +90,14 @@ export default async function BlogPostPage({ params }: Props) {
                <PinterestShareButton url={`https://smart-picks-india.vercel.app/blog/${post.slug}`} image={post.image} description={post.excerpt} />
             </div>
 
-            {/* Markdown content rendered (simulated rendering for now) */}
-            <div className="space-y-6 text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: post.content.replace(/\n\n/g, '</p><p>').replace(/^/, '<p>').replace(/$/, '</p>').replace(/## (.*?)</g, '<h2>$1<') }} />
+            <div className="space-y-6 text-foreground leading-relaxed">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSlug]}
+              >
+                {post.content}
+              </ReactMarkdown>
+            </div>
             
             <hr className="my-10 border-border" />
             
