@@ -1,0 +1,50 @@
+name: Auto Pinterest Poster
+
+on:
+  schedule:
+    - cron: '30 3 * * *'  # 9:00 AM IST  (UTC+5:30 → 3:30 UTC)
+    - cron: '30 14 * * *' # 8:00 PM IST  (UTC+5:30 → 14:30 UTC)
+  workflow_dispatch:       # Manual trigger from GitHub UI for testing
+
+jobs:
+  post-pins:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to commit the pinterest-posted.json tracker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install @napi-rs/canvas (pre-built binary, no system deps needed)
+        run: npm install @napi-rs/canvas
+
+      - name: Run Pinterest auto-poster
+        env:
+          GEMINI_API_KEY:           ${{ secrets.GEMINI_API_KEY }}
+          SHEET_CSV_URL:            ${{ secrets.SHEET_CSV_URL }}
+          PINTEREST_TOKEN:          ${{ secrets.PINTEREST_TOKEN }}
+          IMGBB_API_KEY:            ${{ secrets.IMGBB_API_KEY }}
+          PINTEREST_BOARD_ID:       ${{ secrets.PINTEREST_BOARD_ID }}
+          PINTEREST_BOARD_TECH:     ${{ secrets.PINTEREST_BOARD_TECH }}
+          PINTEREST_BOARD_KITCHEN:  ${{ secrets.PINTEREST_BOARD_KITCHEN }}
+          PINTEREST_BOARD_HOME:     ${{ secrets.PINTEREST_BOARD_HOME }}
+          PINTEREST_BOARD_GADGETS:  ${{ secrets.PINTEREST_BOARD_GADGETS }}
+          PINTEREST_BOARD_FASHION:  ${{ secrets.PINTEREST_BOARD_FASHION }}
+          PINTEREST_BOARD_STUDY:    ${{ secrets.PINTEREST_BOARD_STUDY }}
+        run: node scripts/post-to-pinterest.mjs
+
+      - name: Commit updated posted tracker
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update pinterest-posted.json tracker [skip ci]"
+          branch: main
+          file_pattern: "data/pinterest-posted.json"
