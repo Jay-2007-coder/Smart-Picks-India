@@ -6,7 +6,8 @@ on:
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
-  update-products:
+  # ── Job 1: Auto-discover top 5 trending Amazon India products ─────────────────
+  auto-discover:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -23,15 +24,83 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Auto-discover trending Amazon India products
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AMAZON_TAG: smartpick07d2-21
+          PRODUCTS_PER_RUN: 5
+        run: node scripts/auto-discover-products.mjs
+
+      - name: Commit auto-discovered products
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-discover top trending products [skip ci]"
+          branch: main
+          file_pattern: "data/products.ts"
+
+  # ── Job 2: Add new products from Google Sheet (manual additions) ──────────────
+  update-products:
+    runs-on: ubuntu-latest
+    needs: auto-discover
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run product generation script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
         run: node scripts/generate-products.mjs
 
-      - name: Commit and Push changes
+      - name: Commit new sheet products
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: auto-add new products from google sheets"
+          commit_message: "chore: auto-add new products from google sheets [skip ci]"
           branch: main
           file_pattern: "data/products.ts pinterest-captions.md"
+
+  # ── Job 3: Sync prices from Google Sheet for existing products ─────────────────
+  sync-prices:
+    runs-on: ubuntu-latest
+    needs: update-products
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync prices from Google Sheet
+        env:
+          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
+        run: node scripts/update-prices.mjs
+
+      - name: Commit updated prices
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: sync product prices from google sheet [skip ci]"
+          branch: main
+          file_pattern: "data/products.ts"
