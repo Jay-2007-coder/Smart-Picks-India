@@ -40,7 +40,7 @@ async function discoverTopProducts() {
   // Use Google Search grounding to get real, live data
   const searchModel = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    tools: [{ googleSearchRetrieval: {} }],
+    tools: [{ googleSearch: {} }],
   });
 
   const today = new Date().toLocaleDateString("en-IN", {
