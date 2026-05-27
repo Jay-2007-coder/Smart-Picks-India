@@ -465,7 +465,7 @@ router.get("/google", (req, res) => {
     return res.redirect(`${CLIENT_URL}/login?mock_provider=google`);
   }
 
-  const redirectUri = `${BACKEND_URL}/api/v1/auth/google/callback`;
+  const redirectUri = `${CLIENT_URL}/api/v1/auth/google/callback`;
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + 
     `client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -489,7 +489,7 @@ router.get("/google/callback", async (req, res, next) => {
       return res.redirect(`${CLIENT_URL}/login?error=no_code_provided`);
     }
 
-    const redirectUri = `${BACKEND_URL}/api/v1/auth/google/callback`;
+    const redirectUri = `${CLIENT_URL}/api/v1/auth/google/callback`;
 
     // Exchange authorization code for tokens
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -565,7 +565,7 @@ router.get("/github", (req, res) => {
     return res.redirect(`${CLIENT_URL}/login?mock_provider=github`);
   }
 
-  const redirectUri = `${BACKEND_URL}/api/v1/auth/github/callback`;
+  const redirectUri = `${CLIENT_URL}/api/v1/auth/github/callback`;
   const githubAuthUrl = `https://github.com/login/oauth/authorize?` +
     `client_id=${encodeURIComponent(GITHUB_CLIENT_ID)}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
