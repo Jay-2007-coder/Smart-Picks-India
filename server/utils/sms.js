@@ -15,18 +15,23 @@ if (ACCOUNT_SID && AUTH_TOKEN) {
 }
 
 export async function sendSms(to, message) {
+  const useWhatsApp = process.env.USE_WHATSAPP === "true";
+
   if (!client || !PHONE_NUMBER) {
-    console.log("\n==================== MOCK SMS SENT ====================");
+    console.log(`\n==================== MOCK ${useWhatsApp ? "WHATSAPP" : "SMS"} SENT ====================`);
     console.log(`To:      ${to}`);
     console.log(`Message: ${message}`);
     console.log("========================================================\n");
     return { mock: true, sid: "mock-sms-sid-" + Math.random() };
   }
 
+  const fromNumber = useWhatsApp ? `whatsapp:${PHONE_NUMBER}` : PHONE_NUMBER;
+  const toNumber = useWhatsApp ? `whatsapp:${to}` : to;
+
   return await client.messages.create({
     body: message,
-    from: PHONE_NUMBER,
-    to,
+    from: fromNumber,
+    to: toNumber,
   });
 }
 
