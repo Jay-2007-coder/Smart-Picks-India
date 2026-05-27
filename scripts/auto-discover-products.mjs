@@ -162,7 +162,18 @@ function isAlreadyAdded(existingContent, asin, productName) {
 function buildProductEntry(discovered, review) {
   const affiliateLink = `https://www.amazon.in/dp/${discovered.asin}?tag=${AMAZON_TAG}`;
   const safe = (s) => String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  const fallbackImg = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80";
+
+  const FALLBACK_IMAGES = {
+    tech: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80", // Smartphone
+    gadgets: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80", // Headphones
+    home: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&q=80", // Cozy Home
+    kitchen: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=600&q=80", // Kitchen / Cooking
+    fashion: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80", // Fashion
+    study: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&q=80" // Books / Study
+  };
+
+  const category = (discovered.category || "gadgets").toLowerCase();
+  const fallbackImg = FALLBACK_IMAGES[category] || FALLBACK_IMAGES.gadgets;
 
   return `{
     slug: "${safe(review.slug)}",

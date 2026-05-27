@@ -182,7 +182,7 @@ export const products: Product[] = [
   {
     slug: "echo-show-8-2026-india-review-price-features",
     title: "Echo Show 8 (2026 Release) Review India: Price, Features & Worth for Your Home?",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80",
     category: "tech",
     description: "Dive into our expert review of the All-New Echo Show 8 (2026 Release) for India. Featuring a vibrant display, enhanced audio, and smarter Alexa, it's perfect for entertainment, communication, and smart home control. Discover its value at ₹21,999.",
     price: 21999,
@@ -202,7 +202,7 @@ export const products: Product[] = [
   {
     slug: "amazon-fire-tv-stick-hd-review-price-india",
     title: "Amazon Fire TV Stick HD Review India 2024: Best Smart TV Upgrade for ₹2999?",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=600&q=80",
     category: "tech",
     description: "Transform your old TV into a smart entertainment hub with the Amazon Fire TV Stick HD. Access all your favorite Indian and international OTT apps like Prime Video, Netflix, and Disney+ Hotstar at an unbeatable price of ₹2999 in India. This in-depth review explores if it's the perfect upgrade for your home.",
     price: 2999,
@@ -222,7 +222,7 @@ export const products: Product[] = [
   {
     slug: "philips-air-fryer-review-best-deal-price-india",
     title: "Philips Air Fryer Review India: Best Price & Healthy Cooking - Is It Worth ₹5229?",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?w=600&q=80",
     category: "kitchen",
     description: "Looking for a healthier way to enjoy your favourite Indian snacks? Our Philips Air Fryer review delves into how this kitchen essential can transform your cooking with up to 90% less oil. Discover if this popular air fryer, now at ₹5229, is the perfect fit for your Indian kitchen and lifestyle.",
     price: 5229,
@@ -242,7 +242,7 @@ export const products: Product[] = [
   {
     slug: "lg-20l-solo-microwave-oven-ms2043db-review-india",
     title: "LG 20 L Solo Microwave Oven MS2043DB Review: Perfect for Indian Kitchens?",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=600&q=80",
     category: "kitchen",
     description: "Searching for a reliable and affordable microwave? Our LG 20 L Solo Microwave Oven MS2043DB review explores its essential features, ideal for quick reheating, defrosting, and basic cooking. Discover if this popular LG model is the smart choice for your Indian kitchen's everyday needs.",
     price: 7790,
@@ -262,7 +262,7 @@ export const products: Product[] = [
   {
     slug: "oneplus-nord-ce6-5g-review-india-price",
     title: "OnePlus Nord CE 6 5G Review India: Best Mid-Range 5G Phone at ₹35,000?",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80",
     category: "tech",
     description: "Searching for a powerful 5G smartphone deal in India? Our OnePlus Nord CE 6 5G review deep dives into its performance, camera, and battery life. Discover why this phone, now at a compelling ₹35,000 (33% off MRP), offers exceptional value for Indian buyers looking for a premium experience without breaking the bank.",
     price: 35000,
