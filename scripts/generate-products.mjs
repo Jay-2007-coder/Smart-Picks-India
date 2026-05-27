@@ -44,6 +44,11 @@ async function run() {
     const category = record["Category"];
     const imageUrl = record["Image URL"];
 
+    // ── Read prices directly from the sheet (avoids AI hallucination) ──────
+    const sheetPrice    = parseFloat(record["Price"] || "");
+    const sheetOldPrice = parseFloat(record["Old Price"] || "");
+    const hasPriceFromSheet = !isNaN(sheetPrice) && sheetPrice > 0;
+
     if (!productName || !affiliateLink) continue;
 
     // Check if affiliateLink is already in products.ts
@@ -55,9 +60,14 @@ async function run() {
     console.log(`Generating content for: ${productName}...`);
 
     try {
+      // Build price instruction for Gemini — only ask it to estimate if not in sheet
+      const priceInstruction = hasPriceFromSheet
+        ? `The current selling price is ₹${sheetPrice}${!isNaN(sheetOldPrice) && sheetOldPrice > sheetPrice ? ` (original MRP was ₹${sheetOldPrice})` : ". No original MRP available — set oldPrice equal to price."}`
+        : `Give a realistic estimate for price in INR and original MRP.`;
+
       const prompt = `Write an expert SEO optimized affiliate product review for: ${productName}. 
       The product is in the '${category}' category.
-      Give realistic estimates for price in INR, original MRP, rating, and review count.
+      ${priceInstruction}
       Write compelling features, pros, cons, and a Pinterest caption.
       
       You must return ONLY a raw JSON object with the exact following keys and types. Do not include any markdown backticks or explanation:
@@ -88,6 +98,18 @@ async function run() {
 
       const data = JSON.parse(rawText);
 
+      // Use sheet prices if available, otherwise fall back to Gemini's estimate
+      const finalPrice    = hasPriceFromSheet ? sheetPrice    : data.price;
+      const finalOldPrice = hasPriceFromSheet
+        ? (!isNaN(sheetOldPrice) && sheetOldPrice > sheetPrice ? sheetOldPrice : sheetPrice)
+        : data.oldPrice;
+
+      if (hasPriceFromSheet) {
+        console.log(`   💰 Using sheet price: ₹${finalPrice} (was ₹${finalOldPrice})`);
+      } else {
+        console.log(`   ⚠️  No price in sheet — using Gemini estimate: ₹${finalPrice}. Add a 'Price' column to your Google Sheet for accurate prices.`);
+      }
+
       // Construct the TS object
       const newProductObj = `{
     slug: "${data.slug}",
@@ -95,8 +117,8 @@ async function run() {
     image: "${imageUrl || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80'}",
     category: "${category.toLowerCase()}",
     description: "${data.description}",
-    price: ${data.price},
-    oldPrice: ${data.oldPrice},
+    price: ${finalPrice},
+    oldPrice: ${finalOldPrice},
     rating: ${data.rating},
     reviewCount: ${data.reviewCount},
     affiliateLink: "${affiliateLink}",
