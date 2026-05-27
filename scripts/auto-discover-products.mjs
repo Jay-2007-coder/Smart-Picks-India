@@ -37,67 +37,62 @@ const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 async function discoverTopProducts() {
   console.log("🔍 Searching for top Amazon India deals today using Gemini + Google Search...\n");
 
-  // Use Google Search grounding to get real, live data
-  const searchModel = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    tools: [{ googleSearch: {} }],
-  });
-
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
     timeZone: "Asia/Kolkata",
   });
 
-  const searchPrompt = `Today is ${today}.
+  // Phase A: Gemini + Google Search → natural language text about products
+  const searchModel = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    tools: [{ googleSearch: {} }],
+  });
 
-Search the web and find the top ${PRODUCTS_PER_RUN} best-selling or trending products on Amazon India (amazon.in) right now.
+  const searchResult = await searchModel.generateContent(
+    `Today is ${today}. Search Amazon India (amazon.in) and find ${PRODUCTS_PER_RUN} real trending or best-selling products available right now. For each product find: exact product name, direct Amazon.in URL with ASIN, current price in INR, original MRP in INR, product image URL from m.media-amazon.com, and best category (tech/gadgets/home/kitchen/fashion/study). Focus on products with good discounts.`
+  );
+  const searchText = searchResult.response.text();
+  console.log("   ✅ Search complete. Extracting structured data...");
 
-Requirements:
-- Must be real products available on amazon.in
-- Prefer products with a good discount (20% or more off MRP)
-- Cover different categories: tech, gadgets, home, kitchen, fashion, study
-- Must have a direct amazon.in product URL (containing /dp/ and a 10-character ASIN)
+  // Phase B: Plain Gemini call → extract clean JSON from the search text
+  const extractModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-For each product, extract:
-1. Full product name (exact as listed on Amazon)
-2. Amazon.in direct product URL (e.g. https://www.amazon.in/product-name/dp/B0XXXXXXXXX/)
-3. The 10-character ASIN code (the part after /dp/)
-4. Category: pick ONE from [tech, gadgets, home, kitchen, fashion, study]
-5. Current selling price in INR (number only)
-6. Original MRP in INR (number only, higher than selling price)
-7. Product image URL from m.media-amazon.com (format: https://m.media-amazon.com/images/I/XXXXX._SX679_.jpg)
+  const extractResult = await extractModel.generateContent(
+    `Extract product details from the text below and return ONLY a raw JSON array (no markdown, no backticks, no explanation).
 
-Return ONLY a raw JSON array (no markdown, no backticks):
-[
-  {
-    "name": "Full Product Name",
-    "amazonUrl": "https://www.amazon.in/product-name/dp/B0XXXXXXXXX/",
-    "asin": "B0XXXXXXXXX",
-    "category": "tech",
-    "price": 1299,
-    "oldPrice": 2999,
-    "imageUrl": "https://m.media-amazon.com/images/I/XXXXX._SX679_.jpg"
-  }
-]`;
+Rules:
+- "asin" must be a 10-character Amazon ASIN code
+- "price" and "oldPrice" are plain numbers (no rupee symbol)
+- "oldPrice" must be greater than "price" — if unknown, estimate oldPrice = price * 1.5
+- "category" must be exactly one of: tech, gadgets, home, kitchen, fashion, study
+- "imageUrl" from m.media-amazon.com if available, else empty string ""
+- Return up to ${PRODUCTS_PER_RUN} items
 
-  const result  = await searchModel.generateContent(searchPrompt);
-  let raw = result.response.text().trim();
+Text to extract from:
+---
+${searchText}
+---
 
-  // Strip markdown code fences if present
+Return this exact format:
+[{"name":"Product name","asin":"B0XXXXXXXXX","category":"tech","price":1299,"oldPrice":2999,"imageUrl":"https://m.media-amazon.com/images/I/XXXXX._SX679_.jpg"}]`
+  );
+
+  let raw = extractResult.response.text().trim();
   raw = raw.replace(/^```json\s*/m, "").replace(/^```\s*/m, "").replace(/\s*```$/m, "");
 
-  // Extract JSON array
   const arrayMatch = raw.match(/\[[\s\S]*\]/);
   if (!arrayMatch) {
-    throw new Error("Gemini did not return a valid JSON array of products.");
+    console.error("Raw extraction response (first 500 chars):", raw.substring(0, 500));
+    throw new Error("Could not extract a JSON array from Gemini response.");
   }
 
   const products = JSON.parse(arrayMatch[0]);
-  console.log(`✅ Gemini found ${products.length} trending product(s).\n`);
-  return products;
-}
+  const valid = products.filter(p => p.name && p.asin && p.price > 0);
+  console.log(`   ✅ Extracted ${valid.length} valid product(s).\n`);
+  return valid;
 
 // ─── STEP 2: Generate full SEO review content ────────────────────────────────
+
 async function generateReviewContent(product) {
   const reviewModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
