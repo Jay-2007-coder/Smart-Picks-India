@@ -27,7 +27,6 @@ const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-
 // ──────────────────────────────────────────────────────────────────────────────
 app.use(helmet());
 
-// CORS configuration (allow requests from frontend dev and prod URLs)
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
@@ -38,7 +37,15 @@ app.use(
   cors({
     origin: function (origin, callback) {
       // Allow server-to-server or curl requests (origin is undefined)
-      if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== "production") {
+      const isAllowed =
+        !origin ||
+        allowedOrigins.indexOf(origin) !== -1 ||
+        process.env.NODE_ENV !== "production" ||
+        origin.endsWith(".vercel.app") ||
+        /^https?:\/\/localhost:\d+$/.test(origin) ||
+        /^https?:\/\/127\.0\.0\.1:\d+$/.test(origin);
+
+      if (isAllowed) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by CORS policy"));
