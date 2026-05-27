@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, Suspense } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Phone, ShieldCheck, Loader2, ArrowLeft } from "lucide-react";
 
-export default function VerifyOtpPage() {
+function VerifyOtpContent() {
   const { sendOtp, login, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -241,5 +241,17 @@ export default function VerifyOtpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-radial from-slate-50 to-slate-150 dark:from-neutral-900 dark:to-neutral-950">
+        <Loader2 className="h-12 w-12 animate-spin text-brand-600" />
+      </div>
+    }>
+      <VerifyOtpContent />
+    </Suspense>
   );
 }
