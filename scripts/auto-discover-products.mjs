@@ -26,6 +26,25 @@ if (!GEMINI_KEY) {
 
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
+// ─── Retry helper with exponential backoff ────────────────────────────────────
+async function withRetry(fn, retries = 3, delayMs = 5000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isRetryable = err.message?.includes("503") || err.message?.includes("overloaded") ||
+                          err.message?.includes("Service Unavailable") || err.message?.includes("429");
+      if (isRetryable && attempt < retries) {
+        console.log(`   ⏳ Gemini API busy (attempt ${attempt}/${retries}). Retrying in ${delayMs / 1000}s...`);
+        await new Promise(r => setTimeout(r, delayMs));
+        delayMs *= 2; // exponential backoff
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 // ─── STEP 1: Discover top products (two-phase: search then extract) ───────────
 async function discoverTopProducts() {
   console.log("🔍 Searching for top Amazon India deals today using Gemini + Google Search...\n");
@@ -41,16 +60,16 @@ async function discoverTopProducts() {
     tools: [{ googleSearch: {} }],
   });
 
-  const searchResult = await searchModel.generateContent(
+  const searchResult = await withRetry(() => searchModel.generateContent(
     `Today is ${today}. Search Amazon India (amazon.in) and find ${PRODUCTS_PER_RUN} real trending or best-selling products right now. For each product find: exact product name, direct Amazon.in URL with ASIN code, current price in INR, original MRP in INR, product image URL from m.media-amazon.com, and best category (tech/gadgets/home/kitchen/fashion/study). Focus on products with good discounts.`
-  );
+  ));
   const searchText = searchResult.response.text();
   console.log("   ✅ Search complete. Extracting structured data...");
 
   // Phase B: Plain Gemini → parse the search text into clean JSON
   const extractModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const extractResult = await extractModel.generateContent(
+  const extractResult = await withRetry(() => extractModel.generateContent(
     `Extract product details from the text below and return ONLY a raw JSON array. No markdown, no backticks, no explanation — just the JSON array starting with [ and ending with ].
 
 Rules:
@@ -68,7 +87,7 @@ ${searchText}
 
 Return ONLY this JSON format (nothing else before or after):
 [{"name":"Product name","asin":"B0XXXXXXXXX","category":"tech","price":1299,"oldPrice":2999,"imageUrl":""}]`
-  );
+  ));
 
   let raw = extractResult.response.text().trim();
   // Strip any markdown fences
@@ -114,7 +133,7 @@ Return ONLY a raw JSON object (no backticks, no markdown):
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
 }`;
 
-  const result = await reviewModel.generateContent(prompt);
+  const result = await withRetry(() => reviewModel.generateContent(prompt));
   let raw = result.response.text().trim();
   raw = raw.replace(/^```json\s*/m, "").replace(/^```\s*/m, "").replace(/\s*```$/m, "");
 
