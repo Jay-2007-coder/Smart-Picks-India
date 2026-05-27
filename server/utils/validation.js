@@ -19,7 +19,7 @@ export const registerSchema = z
       .string({ required_error: "Email is required" })
       .email("Please provide a valid email address")
       .trim()
-      .lowercase(),
+      .toLowerCase(),
     phone: z
       .string()
       .regex(/^\+[1-9]\d{1,14}$/, "Phone number must be in E.164 format (e.g. +919876543210)")
@@ -43,7 +43,7 @@ export const loginSchema = z.union([
       .string({ required_error: "Email is required" })
       .email("Please provide a valid email address")
       .trim()
-      .lowercase(),
+      .toLowerCase(),
     password: z.string({ required_error: "Password is required" }),
     rememberMe: z.boolean().optional(),
   }),
@@ -85,7 +85,7 @@ export const forgotPasswordSchema = z.object({
     .string({ required_error: "Email is required" })
     .email("Please provide a valid email address")
     .trim()
-    .lowercase(),
+    .toLowerCase(),
 });
 
 export const resetPasswordSchema = z
