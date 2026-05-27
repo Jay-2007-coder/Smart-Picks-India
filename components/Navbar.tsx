@@ -5,6 +5,7 @@ import { Menu, X, ShoppingBag, Sun, Moon, Search } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSearch } from "@/hooks/useSearch";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   const { query, setQuery, results, loading, open, setOpen, clear } = useSearch();
+  const { user } = useAuth();
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -132,6 +134,30 @@ export default function Navbar() {
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
 
+            {/* Auth Link (Sign In / Dashboard) */}
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl border border-border bg-card hover:bg-muted transition-colors shrink-0"
+              >
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt={user.name} className="h-6 w-6 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-600 dark:bg-brand-950/40">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="hidden lg:inline">{user.name.split(" ")[0]}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 hover:shadow-md transition-all active:scale-95 shrink-0"
+              >
+                Sign In
+              </Link>
+            )}
+
             {/* Mobile menu toggle */}
             <button
               className="md:hidden p-2 rounded-xl hover:bg-muted transition-colors"
@@ -158,6 +184,35 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            {/* Mobile Auth Button */}
+            {user ? (
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-xl hover:bg-muted transition-colors mt-2 border-t border-border/40 pt-3"
+              >
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt={user.name} className="h-7 w-7 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand-600 dark:bg-brand-950/40">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className="font-bold text-foreground leading-none">{user.name}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Go to Dashboard</p>
+                </div>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="mx-3 mt-3 inline-flex items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition-all text-center"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
           {/* Mobile search */}
           <div className="mt-3 flex items-center rounded-xl border border-border bg-muted/50 px-3 py-2 gap-2">
