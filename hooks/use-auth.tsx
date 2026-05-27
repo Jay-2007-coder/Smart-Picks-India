@@ -16,18 +16,18 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (data: any) => Promise<{ success: boolean; message: string }>;
-  socialLogin: (data: any) => Promise<{ success: boolean; message: string }>;
-  register: (data: any) => Promise<{ success: boolean; message: string }>;
+  login: (data: any) => Promise<{ success: boolean; message: string; errors?: any }>;
+  socialLogin: (data: any) => Promise<{ success: boolean; message: string; errors?: any }>;
+  register: (data: any) => Promise<{ success: boolean; message: string; errors?: any }>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
-  updateProfile: (data: any) => Promise<{ success: boolean; message: string }>;
-  changePassword: (data: any) => Promise<{ success: boolean; message: string }>;
-  uploadProfileImage: (image: string) => Promise<{ success: boolean; message: string }>;
-  sendOtp: (phone: string, purpose: string) => Promise<{ success: boolean; message: string }>;
-  verifyEmail: (token: string) => Promise<{ success: boolean; message: string }>;
-  forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
-  resetPassword: (data: any) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (data: any) => Promise<{ success: boolean; message: string; errors?: any }>;
+  changePassword: (data: any) => Promise<{ success: boolean; message: string; errors?: any }>;
+  uploadProfileImage: (image: string) => Promise<{ success: boolean; message: string; errors?: any }>;
+  sendOtp: (phone: string, purpose: string) => Promise<{ success: boolean; message: string; errors?: any }>;
+  verifyEmail: (token: string) => Promise<{ success: boolean; message: string; errors?: any }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; message: string; errors?: any }>;
+  resetPassword: (data: any) => Promise<{ success: boolean; message: string; errors?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         return { success: true, message: "Logged in successfully" };
       }
-      return { success: false, message: data.message || "Login failed" };
+      return { success: false, message: data.message || "Login failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred. Please try again." };
     }
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         return { success: true, message: "Signed in successfully" };
       }
-      return { success: false, message: data.message || "Social sign-in failed" };
+      return { success: false, message: data.message || "Social sign-in failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred. Please try again." };
     }
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok && data.success) {
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Registration failed" };
+      return { success: false, message: data.message || "Registration failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred during registration." };
     }
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Profile update failed" };
+      return { success: false, message: data.message || "Profile update failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred while updating profile." };
     }
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok && data.success) {
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Password update failed" };
+      return { success: false, message: data.message || "Password update failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred while updating password." };
     }
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Image upload failed" };
+      return { success: false, message: data.message || "Image upload failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred during image upload." };
     }
@@ -187,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok && data.success) {
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Failed to send OTP" };
+      return { success: false, message: data.message || "Failed to send OTP", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred while sending OTP." };
     }
@@ -204,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok && data.success) {
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Verification failed" };
+      return { success: false, message: data.message || "Verification failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred during email verification." };
     }
@@ -221,7 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok && data.success) {
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Failed to submit request" };
+      return { success: false, message: data.message || "Failed to submit request", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred. Please try again." };
     }
@@ -238,7 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok && data.success) {
         return { success: true, message: data.message };
       }
-      return { success: false, message: data.message || "Reset failed" };
+      return { success: false, message: data.message || "Reset failed", errors: data.errors };
     } catch (err) {
       return { success: false, message: "An error occurred during password reset." };
     }
