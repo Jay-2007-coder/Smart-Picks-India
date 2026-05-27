@@ -66,6 +66,34 @@ function LoginForm() {
     return () => clearInterval(interval);
   }, [otpCooldown]);
 
+  // Handle OAuth redirects and mock fallbacks
+  const mockProvider = searchParams.get("mock_provider") as "google" | "github" | "microsoft" | null;
+  const authError = searchParams.get("error");
+
+  useEffect(() => {
+    if (authError) {
+      if (authError === "google_token_failed" || authError === "google_user_failed") {
+        setError("Failed to authenticate with Google. Please check backend environment configurations.");
+      } else if (authError === "github_token_failed" || authError === "github_user_failed") {
+        setError("Failed to authenticate with GitHub. Please check backend environment configurations.");
+      } else if (authError === "microsoft_token_failed" || authError === "microsoft_user_failed") {
+        setError("Failed to authenticate with Microsoft. Please check backend environment configurations.");
+      } else {
+        setError("Social authentication failed.");
+      }
+    }
+  }, [authError]);
+
+  useEffect(() => {
+    if (mockProvider && !user && !isPending) {
+      // Clean query params from the URL address bar immediately
+      const newUrl = window.location.pathname + (redirectPath !== "/dashboard" ? `?from=${encodeURIComponent(redirectPath)}` : "");
+      window.history.replaceState({}, document.title, newUrl);
+      
+      triggerMockSocialSignIn(mockProvider);
+    }
+  }, [mockProvider, user, isPending, redirectPath]);
+
   // ─── 1. Credentials Submit ─────────────────────────────────────────────────
   const handleCredentialsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,11 +177,15 @@ function LoginForm() {
     });
   };
 
-  // ─── 4. Mock Social Authentication ─────────────────────────────────────────
+  // ─── 4. Social Authentication ─────────────────────────────────────────
   const handleSocialSignIn = (provider: "google" | "github" | "microsoft") => {
     setError(null);
     setSuccess(null);
+    // Redirect to backend OAuth route
+    window.location.href = `/api/v1/auth/${provider}`;
+  };
 
+  const triggerMockSocialSignIn = (provider: "google" | "github" | "microsoft") => {
     startTransition(async () => {
       // Simulating realistic user profiles
       const mockProfiles = {

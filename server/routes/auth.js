@@ -368,6 +368,50 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
 // ──────────────────────────────────────────────────────────────────────────────
 // 6. MOCK SOCIAL LOGIN (SIMULATED OAUTH REDIRECTS FOR LOCAL DEV)
 // ──────────────────────────────────────────────────────────────────────────────
+// Helper to find or create social login user
+async function processSocialLoginUser({ provider, accountId, email, name, avatarUrl, req }) {
+  const userAgent = req.headers["user-agent"] || "Unknown";
+  const ipAddress = req.ip || req.connection.remoteAddress || "Unknown";
+
+  // 1. Check if user already has this specific social account linked
+  let user = await User.findOne({
+    "socialAccounts.provider": provider,
+    "socialAccounts.accountId": accountId,
+  });
+
+  if (!user) {
+    // 2. Check if a user exists with the same email
+    user = await User.findOne({ email });
+
+    if (user) {
+      // Link social account to existing profile (Account Linking)
+      user.socialAccounts.push({ provider, accountId, email, avatarUrl });
+      if (avatarUrl && !user.profileImage) {
+        user.profileImage = avatarUrl;
+      }
+      await user.save();
+    } else {
+      // 3. Create a brand new user
+      user = new User({
+        name,
+        email,
+        profileImage: avatarUrl || null,
+        isEmailVerified: true, // Social accounts are trusted & pre-verified
+        socialAccounts: [{ provider, accountId, email, avatarUrl }],
+      });
+      await user.save();
+    }
+  }
+
+  // Record login
+  user.loginHistory.push({ ipAddress, device: userAgent, status: "success" });
+  await user.save();
+  return user;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 6. MOCK SOCIAL LOGIN (SIMULATED OAUTH REDIRECTS FOR LOCAL DEV)
+// ──────────────────────────────────────────────────────────────────────────────
 router.post("/social-login", async (req, res, next) => {
   try {
     const { provider, accountId, email, name, avatarUrl } = req.body;
@@ -375,42 +419,7 @@ router.post("/social-login", async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Missing oauth parameters" });
     }
 
-    const userAgent = req.headers["user-agent"] || "Unknown";
-    const ipAddress = req.ip || req.connection.remoteAddress || "Unknown";
-
-    // 1. Check if user already has this specific social account linked
-    let user = await User.findOne({
-      "socialAccounts.provider": provider,
-      "socialAccounts.accountId": accountId,
-    });
-
-    if (!user) {
-      // 2. Check if a user exists with the same email
-      user = await User.findOne({ email });
-
-      if (user) {
-        // Link social account to existing profile (Account Linking)
-        user.socialAccounts.push({ provider, accountId, email, avatarUrl });
-        if (avatarUrl && !user.profileImage) {
-          user.profileImage = avatarUrl;
-        }
-        await user.save();
-      } else {
-        // 3. Create a brand new user
-        user = new User({
-          name,
-          email,
-          profileImage: avatarUrl || null,
-          isEmailVerified: true, // Social accounts are trusted & pre-verified
-          socialAccounts: [{ provider, accountId, email, avatarUrl }],
-        });
-        await user.save();
-      }
-    }
-
-    // Record login
-    user.loginHistory.push({ ipAddress, device: userAgent, status: "success" });
-    await user.save();
+    const user = await processSocialLoginUser({ provider, accountId, email, name, avatarUrl, req });
 
     // Create session tokens
     const accessToken = generateAccessToken(user._id.toString());
@@ -419,8 +428,8 @@ router.post("/social-login", async (req, res, next) => {
     const sessionRecord = new Session({
       userId: user._id,
       refreshToken,
-      userAgent,
-      ipAddress,
+      userAgent: req.headers["user-agent"] || "Unknown",
+      ipAddress: req.ip || req.connection.remoteAddress || "Unknown",
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
     await sessionRecord.save();
@@ -443,6 +452,232 @@ router.post("/social-login", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// ─── GOOGLE OAUTH ───
+router.get("/google", (req, res) => {
+  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+  const BACKEND_URL = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+  const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+  if (!GOOGLE_CLIENT_ID) {
+    console.warn("⚠️ GOOGLE_CLIENT_ID is not configured. Falling back to mock registration.");
+    return res.redirect(`${CLIENT_URL}/login?mock_provider=google`);
+  }
+
+  const redirectUri = `${BACKEND_URL}/api/v1/auth/google/callback`;
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + 
+    `client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&response_type=code` +
+    `&scope=${encodeURIComponent("profile email")}` +
+    `&access_type=offline` +
+    `&prompt=consent`;
+
+  res.redirect(googleAuthUrl);
+});
+
+router.get("/google/callback", async (req, res, next) => {
+  try {
+    const { code } = req.query;
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+    const BACKEND_URL = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+    const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+    if (!code) {
+      return res.redirect(`${CLIENT_URL}/login?error=no_code_provided`);
+    }
+
+    const redirectUri = `${BACKEND_URL}/api/v1/auth/google/callback`;
+
+    // Exchange authorization code for tokens
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error("Google token exchange failed:", tokenData);
+      return res.redirect(`${CLIENT_URL}/login?error=google_token_failed`);
+    }
+
+    // Fetch user info from Google
+    const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+
+    const userData = await userResponse.json();
+    if (!userResponse.ok || !userData.email) {
+      console.error("Google user info fetch failed:", userData);
+      return res.redirect(`${CLIENT_URL}/login?error=google_user_failed`);
+    }
+
+    const user = await processSocialLoginUser({
+      provider: "google",
+      accountId: userData.id,
+      email: userData.email,
+      name: userData.name || userData.email.split("@")[0],
+      avatarUrl: userData.picture,
+      req,
+    });
+
+    // Create session tokens
+    const accessToken = generateAccessToken(user._id.toString());
+    const refreshToken = generateRefreshToken(user._id.toString());
+
+    // Record session
+    const userAgent = req.headers["user-agent"] || "Unknown";
+    const ipAddress = req.ip || req.connection.remoteAddress || "Unknown";
+    const sessionRecord = new Session({
+      userId: user._id,
+      refreshToken,
+      userAgent,
+      ipAddress,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    await sessionRecord.save();
+
+    setAuthCookies(res, accessToken, refreshToken, true);
+
+    res.redirect(`${CLIENT_URL}/dashboard`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── GITHUB OAUTH ───
+router.get("/github", (req, res) => {
+  const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+  const BACKEND_URL = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+  const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+  if (!GITHUB_CLIENT_ID) {
+    console.warn("⚠️ GITHUB_CLIENT_ID is not configured. Falling back to mock registration.");
+    return res.redirect(`${CLIENT_URL}/login?mock_provider=github`);
+  }
+
+  const redirectUri = `${BACKEND_URL}/api/v1/auth/github/callback`;
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?` +
+    `client_id=${encodeURIComponent(GITHUB_CLIENT_ID)}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&scope=${encodeURIComponent("user:email")}`;
+
+  res.redirect(githubAuthUrl);
+});
+
+router.get("/github/callback", async (req, res, next) => {
+  try {
+    const { code } = req.query;
+    const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+    const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+    const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+    if (!code) {
+      return res.redirect(`${CLIENT_URL}/login?error=no_code_provided`);
+    }
+
+    // Exchange authorization code for token
+    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        client_id: GITHUB_CLIENT_ID,
+        client_secret: GITHUB_CLIENT_SECRET,
+        code,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error("GitHub token exchange failed:", tokenData);
+      return res.redirect(`${CLIENT_URL}/login?error=github_token_failed`);
+    }
+
+    // Fetch user profile from GitHub
+    const userResponse = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `token ${tokenData.access_token}`,
+        "User-Agent": "SmartPicks-India-Auth",
+      },
+    });
+
+    const userData = await userResponse.json();
+    if (!userResponse.ok || !userData.id) {
+      console.error("GitHub user info fetch failed:", userData);
+      return res.redirect(`${CLIENT_URL}/login?error=github_user_failed`);
+    }
+
+    // Fetch user emails (since public email might be null)
+    let email = userData.email;
+    if (!email) {
+      const emailsResponse = await fetch("https://api.github.com/user/emails", {
+        headers: {
+          Authorization: `token ${tokenData.access_token}`,
+          "User-Agent": "SmartPicks-India-Auth",
+        },
+      });
+      const emailsData = await emailsResponse.json();
+      if (emailsResponse.ok && Array.isArray(emailsData)) {
+        const primaryEmail = emailsData.find(e => e.primary && e.verified) || emailsData[0];
+        if (primaryEmail) {
+          email = primaryEmail.email;
+        }
+      }
+    }
+
+    if (!email) {
+      email = `${userData.login}@users.noreply.github.com`;
+    }
+
+    const user = await processSocialLoginUser({
+      provider: "github",
+      accountId: String(userData.id),
+      email,
+      name: userData.name || userData.login,
+      avatarUrl: userData.avatar_url,
+      req,
+    });
+
+    // Create session tokens
+    const accessToken = generateAccessToken(user._id.toString());
+    const refreshToken = generateRefreshToken(user._id.toString());
+
+    // Record session
+    const userAgent = req.headers["user-agent"] || "Unknown";
+    const ipAddress = req.ip || req.connection.remoteAddress || "Unknown";
+    const sessionRecord = new Session({
+      userId: user._id,
+      refreshToken,
+      userAgent,
+      ipAddress,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    await sessionRecord.save();
+
+    setAuthCookies(res, accessToken, refreshToken, true);
+
+    res.redirect(`${CLIENT_URL}/dashboard`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── MICROSOFT OAUTH ───
+router.get("/microsoft", (req, res) => {
+  const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+  return res.redirect(`${CLIENT_URL}/login?mock_provider=microsoft`);
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
