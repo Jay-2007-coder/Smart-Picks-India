@@ -15,7 +15,7 @@ router.use(protect);
 // ──────────────────────────────────────────────────────────────────────────────
 router.put("/profile", validate(updateProfileSchema), async (req, res, next) => {
   try {
-    const { name, phone } = req.body;
+    const { name, phone, telegramChatId } = req.body;
     const user = req.user; // populated by protect middleware
 
     if (name) user.name = name;
@@ -39,6 +39,10 @@ router.put("/profile", validate(updateProfileSchema), async (req, res, next) => 
       }
     }
 
+    if (telegramChatId !== undefined) {
+      user.telegramChatId = telegramChatId === "" ? null : telegramChatId;
+    }
+
     await user.save();
 
     res.status(200).json({
@@ -52,6 +56,8 @@ router.put("/profile", validate(updateProfileSchema), async (req, res, next) => 
         profileImage: user.profileImage,
         isEmailVerified: user.isEmailVerified,
         isPhoneVerified: user.isPhoneVerified,
+        role: user.role,
+        telegramChatId: user.telegramChatId,
       },
     });
   } catch (err) {

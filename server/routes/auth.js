@@ -817,6 +817,8 @@ router.get("/me", protect, async (req, res) => {
       profileImage: req.user.profileImage,
       isEmailVerified: req.user.isEmailVerified,
       isPhoneVerified: req.user.isPhoneVerified,
+      role: req.user.role,
+      telegramChatId: req.user.telegramChatId,
     },
   });
 });

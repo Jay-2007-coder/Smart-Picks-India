@@ -10,6 +10,8 @@ import CTASection from "@/components/CTASection";
 import RelatedProducts from "@/components/RelatedProducts";
 import PinterestShareButton from "@/components/PinterestShareButton";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
+import PriceHistoryChart from "@/components/PriceHistoryChart";
+import PriceAlertTracker from "@/components/PriceAlertTracker";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -105,6 +107,12 @@ export default async function ProductPage({ params }: Props) {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <PinterestShareButton url={`https://smart-picks-india.vercel.app/product/${product.slug}`} image={product.image} description={product.description} />
+            </div>
+
+            {/* Price Trend & Watchlist */}
+            <div className="mt-8 grid sm:grid-cols-2 gap-6">
+              <PriceHistoryChart slug={product.slug} currentPrice={product.price} />
+              <PriceAlertTracker slug={product.slug} currentPrice={product.price} />
             </div>
 
             {/* Pros & Cons */}

@@ -11,6 +11,8 @@ interface User {
   profileImage?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
+  role?: string;
+  telegramChatId?: string;
 }
 
 interface AuthContextType {

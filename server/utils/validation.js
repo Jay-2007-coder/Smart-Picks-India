@@ -116,6 +116,7 @@ export const updateProfileSchema = z.object({
     .regex(/^\+[1-9]\d{1,14}$/, "Phone number must be in E.164 format (e.g. +919876543210)")
     .optional()
     .or(z.literal("")),
+  telegramChatId: z.string().optional().or(z.literal("")),
 });
 
 // Express validation middleware factory

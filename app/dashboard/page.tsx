@@ -51,6 +51,7 @@ export default function DashboardPage() {
   // Form states
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [telegramChatId, setTelegramChatId] = useState("");
   
   // Password change states
   const [oldPassword, setOldPassword] = useState("");
@@ -73,6 +74,7 @@ export default function DashboardPage() {
     if (user) {
       setName(user.name);
       setPhone(user.phone || "");
+      setTelegramChatId((user as any).telegramChatId || "");
       fetchSessionsAndLogs();
     }
   }, [user]);
@@ -107,7 +109,7 @@ export default function DashboardPage() {
     setProfileMessage(null);
 
     startTransition(async () => {
-      const res = await updateProfile({ name, phone: phone || "" });
+      const res = await updateProfile({ name, phone: phone || "", telegramChatId: telegramChatId || "" });
       if (res.success) {
         setProfileMessage({ type: "success", text: res.message });
       } else {
@@ -349,6 +351,20 @@ export default function DashboardPage() {
                       </button>
                     </div>
                   )}
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Telegram Chat ID (Optional)</label>
+                  <input
+                    type="text"
+                    value={telegramChatId}
+                    onChange={(e) => setTelegramChatId(e.target.value)}
+                    placeholder="e.g. 123456789"
+                    className="w-full rounded-xl border border-border bg-background py-2 px-3 text-sm focus:border-brand-600 focus:outline-none"
+                    disabled={isPending}
+                  />
+                  <span className="block text-[10px] text-muted-foreground mt-1">
+                    To get your Chat ID, search for <strong>@SmartPicksDealsBot</strong> on Telegram and send <strong>/start</strong>.
+                  </span>
                 </div>
                 <button type="submit" disabled={isPending} className="btn-primary w-full text-xs py-2.5">
                   {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}

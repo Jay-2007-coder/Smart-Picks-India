@@ -93,3 +93,10 @@ async function handleTokenRefresh(req, res, next, refreshToken) {
     return res.status(401).json({ success: false, message: "Session expired, please login again" });
   }
 }
+
+export function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ success: false, message: "Access denied. Admin role required." });
+  }
+  next();
+}

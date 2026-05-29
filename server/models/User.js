@@ -47,6 +47,15 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    telegramChatId: {
+      type: String,
+      default: null,
+    },
     socialAccounts: [
       {
         provider: {

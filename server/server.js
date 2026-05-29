@@ -10,7 +10,12 @@ import { fileURLToPath } from "url";
 // Routers
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
+import alertsRouter from "./routes/alerts.js";
+import assistantRouter from "./routes/assistant.js";
+import dealsRouter from "./routes/deals.js";
+import adminRouter from "./routes/admin.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
+import { syncProductPrices } from "./utils/priceSync.js";
 
 // Initialize environment variables from root first, then locally
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,6 +74,10 @@ app.use("/api", apiLimiter);
 // ──────────────────────────────────────────────────────────────────────────────
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/alerts", alertsRouter);
+app.use("/api/v1/assistant", assistantRouter);
+app.use("/api/v1/deals", dealsRouter);
+app.use("/api/v1/admin", adminRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -105,6 +114,11 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB Connected successfully.");
+    // Run price synchronization on startup
+    syncProductPrices().catch((err) => {
+      console.error("❌ Initial price sync failed:", err.message);
+    });
+
     app.listen(PORT, () => {
       console.log(`🚀 Express server is running on http://localhost:${PORT}`);
     });
