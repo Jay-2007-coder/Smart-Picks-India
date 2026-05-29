@@ -61,7 +61,14 @@ async function discoverTopProducts() {
   });
 
   const searchResult = await withRetry(() => searchModel.generateContent(
-    `Today is ${today}. Search Amazon India (amazon.in) and find ${PRODUCTS_PER_RUN} real trending or best-selling products right now. For each product find: exact product name, direct Amazon.in URL with ASIN code, current price in INR, original MRP in INR, product image URL from m.media-amazon.com, and best category (tech/gadgets/home/kitchen/fashion/study). Focus on products with good discounts.`
+    `Today is ${today}. Search Amazon India (amazon.in) and find ${PRODUCTS_PER_RUN} real, current trending or best-selling products right now that have active discounts. For each product, you MUST find:
+    1. Exact product name.
+    2. The direct Amazon.in product detail page URL (must be a real, specific URL found in your search results, not a guess).
+    3. Current selling price in INR.
+    4. Original MRP in INR.
+    5. A product image URL from m.media-amazon.com if found.
+    6. Best category (tech/gadgets/home/kitchen/fashion/study).
+    Make sure the product URLs are real and direct (not placeholders).`
   ));
   const searchText = searchResult.response.text();
   console.log("   ✅ Search complete. Extracting structured data...");
@@ -73,7 +80,8 @@ async function discoverTopProducts() {
     `Extract product details from the text below and return ONLY a raw JSON array. No markdown, no backticks, no explanation — just the JSON array starting with [ and ending with ].
 
 Rules:
-- "asin" must be a 10-character Amazon ASIN code (starts with B0 typically)
+- "url" must be the direct, real Amazon.in product URL found in the text (e.g. https://www.amazon.in/dp/B0XXXXXXXX or similar). It must be the real URL, not a placeholder. If no real product URL is found, set it to an empty string "".
+- "asin" must be a 10-character Amazon ASIN code (starts with B0 typically) extracted from that URL. If the URL doesn't have it or is not found, leave it as an empty string "".
 - "price" and "oldPrice" are plain numbers (no rupee symbol, no commas)
 - "oldPrice" must be greater than "price" — if unknown, use Math.round(price * 1.5)
 - "category" must be exactly one of: tech, gadgets, home, kitchen, fashion, study
@@ -86,7 +94,7 @@ ${searchText}
 ---
 
 Return ONLY this JSON format (nothing else before or after):
-[{"name":"Product name","asin":"B0XXXXXXXXX","category":"tech","price":1299,"oldPrice":2999,"imageUrl":""}]`
+[{"name":"Product name","asin":"B0XXXXXXXXX","url":"https://www.amazon.in/dp/B0XXXXXXXXX","category":"tech","price":1299,"oldPrice":2999,"imageUrl":""}]`
   ));
 
   let raw = extractResult.response.text().trim();
@@ -100,7 +108,7 @@ Return ONLY this JSON format (nothing else before or after):
   }
 
   const products = JSON.parse(arrayMatch[0]);
-  const valid = products.filter(p => p.name && p.asin && p.price > 0);
+  const valid = products.filter(p => p.name && p.price > 0);
   console.log(`   ✅ Extracted ${valid.length} valid product(s).\n`);
   return valid;
 }
@@ -158,9 +166,36 @@ function isAlreadyAdded(existingContent, asin, productName) {
   return existingContent.includes(nameSlug);
 }
 
+// Helper to construct a valid affiliate link, falling back to search to avoid 404s
+function generateAffiliateLink(discovered, tag) {
+  const safe = (s) => String(s || "").trim();
+  const urlStr = safe(discovered.url);
+  const asin = safe(discovered.asin);
+  const name = safe(discovered.name);
+
+  // 1. If a valid URL is found, append/replace the tag parameter
+  if (urlStr && urlStr.startsWith("http")) {
+    try {
+      const url = new URL(urlStr);
+      url.searchParams.set("tag", tag);
+      return url.toString();
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // 2. If we have an ASIN that looks real (10 characters starting with B0), build direct link
+  if (asin && asin.length === 10 && /^B0[A-Z0-9]{8}$/.test(asin)) {
+    return `https://www.amazon.in/dp/${asin}?tag=${tag}`;
+  }
+
+  // 3. Fallback: Search link so that it lands on a search page rather than a 404 broken page
+  return `https://www.amazon.in/s?k=${encodeURIComponent(name)}&tag=${tag}`;
+}
+
 // ─── STEP 4: Build TypeScript product entry ───────────────────────────────────
 function buildProductEntry(discovered, review) {
-  const affiliateLink = `https://www.amazon.in/dp/${discovered.asin}?tag=${AMAZON_TAG}`;
+  const affiliateLink = generateAffiliateLink(discovered, AMAZON_TAG);
   const safe = (s) => String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
   const FALLBACK_IMAGES = {
