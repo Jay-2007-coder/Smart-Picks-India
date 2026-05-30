@@ -22,7 +22,7 @@ export const products: Product[] = [
   {
     slug: "apple-iphone-15-128gb-black-review",
     title: "Apple iPhone 15 (128GB, Black) Review: Is It The Perfect Upgrade for You?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CHX1W1XY&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0CHX1W1XY",
     category: "tech",
     description: "Dive into our comprehensive review of the Apple iPhone 15 (128GB) in Black. Discover its cutting-edge features, stunning camera, and why it might be your next smartphone. We explore performance, battery life, and overall value for money in the Indian market.",
     price: 59900,
@@ -42,7 +42,7 @@ export const products: Product[] = [
   {
     slug: "boat-airdopes-plus-311-wireless-earbuds-review",
     title: "Boat Airdopes Plus 311 Review: 50-Hr Battery, Fast Charge & Glass Design TWS Earbuds",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0DZXTVL6V&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0DZXTVL6V",
     category: "tech",
     description: "Dive into an unparalleled audio experience with the Boat Airdopes Plus 311. These TWS earbuds combine a premium glass design, powerful 50-hour battery life, and ENx Tech for crystal-clear calls, all while delivering your favorite tunes seamlessly. Enjoy fast charging and ad-free music streaming for an uninterrupted auditory journey.",
     price: 899,
@@ -62,7 +62,7 @@ export const products: Product[] = [
   {
     slug: "titan-casual-watches-women-2656wl01-review",
     title: "Titan 2656WL01 Review: The Perfect Blend of Style & Tech for Modern Women",
-    image: "https://m.media-amazon.com/images/I/61EAcTdXZ7L._SX679_.jpg",
+    image: "/api/product-image?url=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F61EAcTdXZ7L._SX679_.jpg",
     category: "tech",
     description: "Looking for a timepiece that beautifully combines elegance with everyday functionality? Our in-depth review of the Titan Casual Watch 2656WL01 reveals why this women's watch is more than just an accessory, but a reliable piece of wearable tech. Discover its timeless design, precise engineering, and how it seamlessly integrates into your dynamic lifestyle.",
     price: 1879,
@@ -82,7 +82,7 @@ export const products: Product[] = [
   {
     slug: "sonata-polyurethane-silver-dial-womens-analog-watch-review-87049PP11W",
     title: "Sonata Polyurethane Silver Dial Watch Review: Style Meets Durability (87049PP11W)",
-    image: "https://m.media-amazon.com/images/I/71UMb+8-n5L._SX679_.jpg",
+    image: "/api/product-image?url=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F71UMb%2B8-n5L._SX679_.jpg",
     category: "tech",
     description: "Discover the Sonata 87049PP11W, a sophisticated analog watch for women that perfectly blends contemporary style with robust design. Featuring a sleek silver dial and a comfortable polyurethane strap, this timepiece offers reliable performance and an elegant aesthetic, making it an ideal 'tech' accessory for any modern wardrobe.",
     price: 899,
@@ -102,7 +102,7 @@ export const products: Product[] = [
   {
     slug: "noise-two-wireless-on-ear-headphones-review-serene-blue",
     title: "Noise Two Wireless On-Ear Headphones Review: 50Hrs Playtime & Low Latency for Gamers & Music Lovers",
-    image: "https://m.media-amazon.com/images/I/517lSvEVVsL._SL1500_.jpg",
+    image: "/api/product-image?url=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F517lSvEVVsL._SL1500_.jpg",
     category: "tech",
     description: "Discover the Noise Two Wireless On-Ear Headphones in Serene Blue, offering an incredible 50 hours of playtime and ultra-low latency perfect for gaming and immersive audio. With Dual Pairing and 4 Play Modes, these headphones redefine convenience and sound quality for their price point. Dive into our expert review to see why they're a must-have tech gadget.",
     price: 1699,
@@ -122,7 +122,7 @@ export const products: Product[] = [
   {
     slug: "boat-rockerz-480-rgb-wireless-headphones-review",
     title: "boAt Rockerz 480 Review: RGB Vibes, Beast Mode Audio & Epic Battery Life? (White Sabre)",
-    image: "https://m.media-amazon.com/images/I/61cIHzCDl6L._SL1500_.jpg",
+    image: "/api/product-image?url=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F61cIHzCDl6L._SL1500_.jpg",
     category: "tech",
     description: "Dive into an immersive audio experience with the boAt Rockerz 480 wireless headphones, boasting vibrant RGB LEDs, powerful 40mm drivers, and an incredible 60-hour battery. Perfect for gamers, music lovers, and anyone seeking style and substance, these over-ear headphones deliver exceptional sound and a striking visual appeal in their sleek White Sabre finish.",
     price: 1799,
@@ -142,7 +142,7 @@ export const products: Product[] = [
   {
     slug: "boat-rockerz-411-wireless-headphones-review",
     title: "Boat Rockerz 411 Review: Ultimate Wireless Headphones for Gamers & Music Enthusiasts",
-    image: "https://m.media-amazon.com/images/I/71QdB7hDCAL._SL1500_.jpg",
+    image: "/api/product-image?url=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F71QdB7hDCAL._SL1500_.jpg",
     category: "tech",
     description: "Dive into an immersive audio experience with the Boat Rockerz 411 wireless headphones. Featuring ultra-low 40ms latency, 40 hours of playback, and powerful 40mm drivers, these over-ear headphones deliver exceptional sound for gaming, music, and calls. Enjoy crystal-clear communication with ENx™ Tech and seamless ad-free music streaming via app support.",
     price: 1499,
@@ -162,7 +162,7 @@ export const products: Product[] = [
   {
     slug: "boat-rockerz-plus-550-wireless-headphones-review",
     title: "Boat Rockerz Plus 550 Review: 100H Battery, 50mm Drivers & Customizable Earcups – Your Ultimate Wireless Audio Companion!",
-    image: "https://m.media-amazon.com/images/I/81lYNV0dX3L._SL1500_.jpg",
+    image: "/api/product-image?url=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F81lYNV0dX3L._SL1500_.jpg",
     category: "",
     description: "Experience unparalleled audio with the Boat Rockerz Plus 550 wireless headphones, boasting an incredible 100H battery life and powerful 50mm drivers. Personalize your style with customizable earcups and enjoy seamless connectivity with dual pairing and ad-free music streaming via its dedicated app. Dive into an immersive sound journey with these feature-packed Bluetooth headphones in Blue Psyche.",
     price: 1999,
@@ -182,7 +182,7 @@ export const products: Product[] = [
   {
     slug: "echo-show-8-2026-india-review-price-features",
     title: "Echo Show 8 (2026 Release) Review India: Price, Features & Worth for Your Home?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B09B1NKKP6&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B09B1NKKP6",
     category: "tech",
     description: "Dive into our expert review of the All-New Echo Show 8 (2026 Release) for India. Featuring a vibrant display, enhanced audio, and smarter Alexa, it's perfect for entertainment, communication, and smart home control. Discover its value at ₹21,999.",
     price: 21999,
@@ -202,7 +202,7 @@ export const products: Product[] = [
   {
     slug: "amazon-fire-tv-stick-hd-review-price-india",
     title: "Amazon Fire TV Stick HD Review India 2024: Best Smart TV Upgrade for ₹2999?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0D5CSNLT2&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0D5CSNLT2",
     category: "tech",
     description: "Transform your old TV into a smart entertainment hub with the Amazon Fire TV Stick HD. Access all your favorite Indian and international OTT apps like Prime Video, Netflix, and Disney+ Hotstar at an unbeatable price of ₹2999 in India. This in-depth review explores if it's the perfect upgrade for your home.",
     price: 2999,
@@ -222,7 +222,7 @@ export const products: Product[] = [
   {
     slug: "philips-air-fryer-review-best-deal-price-india",
     title: "Philips Air Fryer Review India: Best Price & Healthy Cooking - Is It Worth ₹5229?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B08V8R3RMB&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B08V8R3RMB",
     category: "kitchen",
     description: "Looking for a healthier way to enjoy your favourite Indian snacks? Our Philips Air Fryer review delves into how this kitchen essential can transform your cooking with up to 90% less oil. Discover if this popular air fryer, now at ₹5229, is the perfect fit for your Indian kitchen and lifestyle.",
     price: 5229,
@@ -242,7 +242,7 @@ export const products: Product[] = [
   {
     slug: "lg-20l-solo-microwave-oven-ms2043db-review-india",
     title: "LG 20 L Solo Microwave Oven MS2043DB Review: Perfect for Indian Kitchens?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B00K3G8K1S&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B00K3G8K1S",
     category: "kitchen",
     description: "Searching for a reliable and affordable microwave? Our LG 20 L Solo Microwave Oven MS2043DB review explores its essential features, ideal for quick reheating, defrosting, and basic cooking. Discover if this popular LG model is the smart choice for your Indian kitchen's everyday needs.",
     price: 7790,
@@ -262,7 +262,7 @@ export const products: Product[] = [
   {
     slug: "oneplus-nord-ce6-5g-review-india-price",
     title: "OnePlus Nord CE 6 5G Review India: Best Mid-Range 5G Phone at ₹35,000?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B097RD2JZ7&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B097RD2JZ7",
     category: "tech",
     description: "Searching for a powerful 5G smartphone deal in India? Our OnePlus Nord CE 6 5G review deep dives into its performance, camera, and battery life. Discover why this phone, now at a compelling ₹35,000 (33% off MRP), offers exceptional value for Indian buyers looking for a premium experience without breaking the bank.",
     price: 35000,
@@ -282,7 +282,7 @@ export const products: Product[] = [
   {
     slug: "realme-buds-t310-review-best-tws-earbuds-under-2000-india",
     title: "Realme Buds T310 Review: Best TWS Earbuds Under ₹2000 in India? (2024)",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0D9BGD7H7&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0D9BGD7H7",
     category: "gadgets",
     description: "Searching for true wireless earbuds that offer value and performance in India? Our Realme Buds T310 review explores its powerful sound, impressive battery life, and comfortable design, making it a strong contender under ₹2000. Discover if these budget-friendly earbuds are your next audio upgrade for daily commutes and entertainment.",
     price: 2000,
@@ -302,7 +302,7 @@ export const products: Product[] = [
   {
     slug: "amazfit-active-max-smartwatch-review-india",
     title: "Amazfit Active Max Smartwatch Review India: Best Fitness Watch Under ₹9000?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CM353R5D&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0CM353R5D",
     category: "tech",
     description: "Searching for a robust smartwatch in India? The Amazfit Active Max (Smartchoice) delivers premium health tracking, a brilliant AMOLED display, and impressive battery life at an irresistible price. It's perfectly designed for active Indian users seeking value and performance.",
     price: 8999,
@@ -322,7 +322,7 @@ export const products: Product[] = [
   {
     slug: "pilgrim-red-vine-hyaluronic-body-lotion-review-india",
     title: "Pilgrim French Red Vine + HA Body Lotion Review: Best for Dry Skin in India?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B09R1NDHL2&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B09R1NDHL2",
     category: "fashion",
     description: "Searching for the best body lotion for dry skin in India? Our Pilgrim French Red Vine + Hyaluronic Acid Body Lotion review uncovers its 48-hour moisturization and soothing benefits. Discover why this nourishing formula, enriched with Cocoa Butter, is a must-have for all Indian skin types, especially with its amazing discount!",
     price: 400,
@@ -342,7 +342,7 @@ export const products: Product[] = [
   {
     slug: "ninja-air-fryer-pro-6-in-1-review-india",
     title: "Ninja Air Fryer Pro 6-in-1 Review: Is it Best for Your Indian Kitchen?",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0CQXGG8YY&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0CQXGG8YY",
     category: "kitchen",
     description: "Discover if the Ninja Air Fryer Pro 6-in-1 is the ultimate kitchen upgrade for your Indian home. This versatile appliance offers 6 cooking functions, letting you enjoy your favorite foods with up to 75% less oil, from crispy samosas to succulent tandoori. Find out if this discounted fryer is the right choice for healthier, faster meals.",
     price: 7400,
@@ -362,7 +362,7 @@ export const products: Product[] = [
   {
     slug: "ceramic-vases-set-of-2-review-india-home-decor",
     title: "Ceramic Vases (Set of Two) Review: Elevate Your Indian Home Decor",
-    image: "https://ws-in.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=B0BLV169G7&Format=_SL500_&ID=AsinImage&MarketPlace=IN&ServiceVersion=20070822&WS=1&tag=smartpick07d2-21",
+    image: "/api/product-image?asin=B0BLV169G7",
     category: "home",
     description: "Looking to add a touch of elegance to your Indian living space? Our in-depth review of the Ceramic Vases (Set of Two) explores their design, durability, and how they perfectly complement diverse home aesthetics. Discover why these premium vases are a fantastic deal at ₹599 for a limited time.",
     price: 599,

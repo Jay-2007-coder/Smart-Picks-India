@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ShoppingCart, TrendingUp, Zap } from "lucide-react";
@@ -11,6 +14,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const discount = calculateDiscount(product.price, product.oldPrice);
+  const [imgSrc, setImgSrc] = useState(product.image);
+
+  // Images served via our proxy or relative paths don't need Next.js domain config
+  const isProxied = imgSrc.startsWith("/api/product-image");
 
   return (
     <article className="card group flex flex-col overflow-hidden">
@@ -18,12 +25,18 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
       <Link href={`/product/${product.slug}`} className="relative block overflow-hidden">
         <div className="relative aspect-square bg-muted">
           <Image
-            src={product.image}
+            src={imgSrc}
             alt={product.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             priority={priority}
+            unoptimized={isProxied}
+            onError={() =>
+              setImgSrc(
+                "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500&q=80"
+              )
+            }
           />
         </div>
         {/* Badges */}
