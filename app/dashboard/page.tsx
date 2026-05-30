@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useTransition } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   User,
   Mail,
