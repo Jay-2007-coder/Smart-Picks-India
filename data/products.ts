@@ -22,7 +22,7 @@ export const products: Product[] = [
   {
     slug: "apple-iphone-15-128gb-black-review",
     title: "Apple iPhone 15 (128GB, Black) Review: Is It The Perfect Upgrade for You?",
-    image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/61bK6PMOC3L._SX679_.jpg",
     category: "tech",
     description: "Dive into our comprehensive review of the Apple iPhone 15 (128GB) in Black. Discover its cutting-edge features, stunning camera, and why it might be your next smartphone. We explore performance, battery life, and overall value for money in the Indian market.",
     price: 59900,
@@ -49,7 +49,7 @@ export const products: Product[] = [
     oldPrice: 3990,
     rating: 4.4,
     reviewCount: 1567,
-    affiliateLink: "https://amzn.to/42qa772",
+    affiliateLink: "https://www.amazon.in/dp/B0DZXTVL6V?tag=smartpick07d2-21",
     features: ["Premium Glass Design","ENx™ Technology for Clear Voice Calls","Up to 50 Hours Total Playback Time","ASAP™ Fast Charge Technology","Stream Ad-Free Music via App Support","Bluetooth v5.3 Connectivity","TWS (True Wireless Stereo) Functionality","Built-in Microphone for Calls","Stylish Charcoal Black Finish"],
     pros: ["Exceptional 50-hour battery life eliminates frequent charging worries","Stunning glass design offers a premium, unique aesthetic appeal","ENx™ Technology ensures crystal-clear call quality even in noisy environments","ASAP™ Fast Charge provides quick power boosts when you're in a hurry","App support for ad-free music enhances the listening experience"],
     cons: ["Glass design, while premium, might be prone to fingerprints and smudges","Bass output may not satisfy extreme audiophiles seeking very deep thumping bass","Ad-free music streaming feature might be dependent on specific app integration"],
@@ -182,7 +182,7 @@ export const products: Product[] = [
   {
     slug: "echo-show-8-2026-india-review-price-features",
     title: "Echo Show 8 (2026 Release) Review India: Price, Features & Worth for Your Home?",
-    image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/71fRHT5v7FL._SX679_.jpg",
     category: "tech",
     description: "Dive into our expert review of the All-New Echo Show 8 (2026 Release) for India. Featuring a vibrant display, enhanced audio, and smarter Alexa, it's perfect for entertainment, communication, and smart home control. Discover its value at ₹21,999.",
     price: 21999,
@@ -202,7 +202,7 @@ export const products: Product[] = [
   {
     slug: "amazon-fire-tv-stick-hd-review-price-india",
     title: "Amazon Fire TV Stick HD Review India 2024: Best Smart TV Upgrade for ₹2999?",
-    image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/41+w1kM10xL._SX679_.jpg",
     category: "tech",
     description: "Transform your old TV into a smart entertainment hub with the Amazon Fire TV Stick HD. Access all your favorite Indian and international OTT apps like Prime Video, Netflix, and Disney+ Hotstar at an unbeatable price of ₹2999 in India. This in-depth review explores if it's the perfect upgrade for your home.",
     price: 2999,
@@ -222,7 +222,7 @@ export const products: Product[] = [
   {
     slug: "philips-air-fryer-review-best-deal-price-india",
     title: "Philips Air Fryer Review India: Best Price & Healthy Cooking - Is It Worth ₹5229?",
-    image: "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/51TjJOTfslL._SX679_.jpg",
     category: "kitchen",
     description: "Looking for a healthier way to enjoy your favourite Indian snacks? Our Philips Air Fryer review delves into how this kitchen essential can transform your cooking with up to 90% less oil. Discover if this popular air fryer, now at ₹5229, is the perfect fit for your Indian kitchen and lifestyle.",
     price: 5229,
@@ -242,7 +242,7 @@ export const products: Product[] = [
   {
     slug: "lg-20l-solo-microwave-oven-ms2043db-review-india",
     title: "LG 20 L Solo Microwave Oven MS2043DB Review: Perfect for Indian Kitchens?",
-    image: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/41FUvMUmrUL._SX679_.jpg",
     category: "kitchen",
     description: "Searching for a reliable and affordable microwave? Our LG 20 L Solo Microwave Oven MS2043DB review explores its essential features, ideal for quick reheating, defrosting, and basic cooking. Discover if this popular LG model is the smart choice for your Indian kitchen's everyday needs.",
     price: 7790,
@@ -262,7 +262,7 @@ export const products: Product[] = [
   {
     slug: "oneplus-nord-ce6-5g-review-india-price",
     title: "OnePlus Nord CE 6 5G Review India: Best Mid-Range 5G Phone at ₹35,000?",
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/61xjQLSNw3L._SX679_.jpg",
     category: "tech",
     description: "Searching for a powerful 5G smartphone deal in India? Our OnePlus Nord CE 6 5G review deep dives into its performance, camera, and battery life. Discover why this phone, now at a compelling ₹35,000 (33% off MRP), offers exceptional value for Indian buyers looking for a premium experience without breaking the bank.",
     price: 35000,
@@ -282,7 +282,7 @@ export const products: Product[] = [
   {
     slug: "realme-buds-t310-review-best-tws-earbuds-under-2000-india",
     title: "Realme Buds T310 Review: Best TWS Earbuds Under ₹2000 in India? (2024)",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/61nFB4NFVKL._SX679_.jpg",
     category: "gadgets",
     description: "Searching for true wireless earbuds that offer value and performance in India? Our Realme Buds T310 review explores its powerful sound, impressive battery life, and comfortable design, making it a strong contender under ₹2000. Discover if these budget-friendly earbuds are your next audio upgrade for daily commutes and entertainment.",
     price: 2000,
@@ -302,7 +302,7 @@ export const products: Product[] = [
   {
     slug: "amazfit-active-max-smartwatch-review-india",
     title: "Amazfit Active Max Smartwatch Review India: Best Fitness Watch Under ₹9000?",
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/71mLCnbhMrL._SX679_.jpg",
     category: "tech",
     description: "Searching for a robust smartwatch in India? The Amazfit Active Max (Smartchoice) delivers premium health tracking, a brilliant AMOLED display, and impressive battery life at an irresistible price. It's perfectly designed for active Indian users seeking value and performance.",
     price: 8999,
@@ -322,7 +322,7 @@ export const products: Product[] = [
   {
     slug: "pilgrim-red-vine-hyaluronic-body-lotion-review-india",
     title: "Pilgrim French Red Vine + HA Body Lotion Review: Best for Dry Skin in India?",
-    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/71Tz+AGLXDL._SY741_.jpg",
     category: "fashion",
     description: "Searching for the best body lotion for dry skin in India? Our Pilgrim French Red Vine + Hyaluronic Acid Body Lotion review uncovers its 48-hour moisturization and soothing benefits. Discover why this nourishing formula, enriched with Cocoa Butter, is a must-have for all Indian skin types, especially with its amazing discount!",
     price: 400,
@@ -342,7 +342,7 @@ export const products: Product[] = [
   {
     slug: "ninja-air-fryer-pro-6-in-1-review-india",
     title: "Ninja Air Fryer Pro 6-in-1 Review: Is it Best for Your Indian Kitchen?",
-    image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/71wl5F6BCAL._SX679_.jpg",
     category: "kitchen",
     description: "Discover if the Ninja Air Fryer Pro 6-in-1 is the ultimate kitchen upgrade for your Indian home. This versatile appliance offers 6 cooking functions, letting you enjoy your favorite foods with up to 75% less oil, from crispy samosas to succulent tandoori. Find out if this discounted fryer is the right choice for healthier, faster meals.",
     price: 7400,
@@ -362,7 +362,7 @@ export const products: Product[] = [
   {
     slug: "ceramic-vases-set-of-2-review-india-home-decor",
     title: "Ceramic Vases (Set of Two) Review: Elevate Your Indian Home Decor",
-    image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/81gCxABPHYL._SX679_.jpg",
     category: "home",
     description: "Looking to add a touch of elegance to your Indian living space? Our in-depth review of the Ceramic Vases (Set of Two) explores their design, durability, and how they perfectly complement diverse home aesthetics. Discover why these premium vases are a fantastic deal at ₹599 for a limited time.",
     price: 599,
