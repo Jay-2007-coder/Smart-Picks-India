@@ -358,6 +358,8 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
         profileImage: user.profileImage,
         isEmailVerified: user.isEmailVerified,
         isPhoneVerified: user.isPhoneVerified,
+        role: user.role,
+        telegramChatId: user.telegramChatId,
       },
     });
   } catch (err) {
@@ -447,6 +449,8 @@ router.post("/social-login", async (req, res, next) => {
         profileImage: user.profileImage,
         isEmailVerified: user.isEmailVerified,
         isPhoneVerified: user.isPhoneVerified,
+        role: user.role,
+        telegramChatId: user.telegramChatId,
       },
     });
   } catch (err) {
