@@ -54,6 +54,41 @@ const ProductSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      default: "",
+    },
+    features: {
+      type: [String],
+      default: [],
+    },
+    pros: {
+      type: [String],
+      default: [],
+    },
+    cons: {
+      type: [String],
+      default: [],
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+    dealOfTheDay: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

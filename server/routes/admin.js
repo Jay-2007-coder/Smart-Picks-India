@@ -240,6 +240,16 @@ router.post("/scrape-product", async (req, res, next) => {
     scraped.category = cleanCategory;
     scraped.affiliateLink = `https://www.amazon.in/dp/${cleanAsin}?tag=smartpick07d2-21`;
 
+    const pros = [
+      "Great discount on premium performance.",
+      "Verified Amazon customer rating.",
+      "Fast shipping options in India."
+    ];
+    const cons = [
+      "Price fluctuations are common; grab it while discounted."
+    ];
+    const tags = [cleanCategory, "Amazon Deals", "SmartPicks Choice"];
+
     // 5. Save to MongoDB Product Collection
     const newProduct = new Product({
       title: scraped.title,
@@ -253,6 +263,14 @@ router.post("/scrape-product", async (req, res, next) => {
       reviewCount: scraped.reviewCount,
       affiliateLink: scraped.affiliateLink,
       trending: true,
+      slug: slug,
+      description: scraped.description || "",
+      features: scraped.features || [],
+      pros,
+      cons,
+      tags,
+      featured: false,
+      dealOfTheDay: false,
     });
     await newProduct.save();
 

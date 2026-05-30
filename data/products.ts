@@ -369,7 +369,7 @@ export const products: Product[] = [
     oldPrice: 899,
     rating: 4.4,
     reviewCount: 1500,
-    affiliateLink: "https://www.amazon.in/dp/B0C5R4N8C3?tag=smartpick07d2-21",
+    affiliateLink: "https://www.amazon.in/dp/B0BLV169G7?tag=smartpick07d2-21",
     features: ["High-Quality Ceramic Material","Modern Minimalist Design","Perfectly Sized (Set of Two)","Versatile Home Decor Accent","Smooth Glazed Finish"],
     pros: ["Instantly Elevates Home Aesthetics","Excellent Value for Money (₹599 deal)","Durable & Easy to Maintain Ceramic"],
     cons: ["Fragile; Requires Careful Handling","Smaller Size May Limit Large Arrangements"],

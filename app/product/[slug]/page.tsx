@@ -19,7 +19,25 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
+  let product = products.find((p) => p.slug === slug);
+
+  if (!product) {
+    try {
+      const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/v1/deals/product/${slug}`, {
+        next: { revalidate: 3600 }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.product) {
+          product = data.product;
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching dynamic metadata from backend:", err);
+    }
+  }
+
   if (!product) return {};
 
   return generateSEOMetadata({
@@ -33,7 +51,24 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
+  let product = products.find((p) => p.slug === slug);
+
+  if (!product) {
+    try {
+      const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/v1/deals/product/${slug}`, {
+        next: { revalidate: 60 }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.product) {
+          product = data.product;
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching dynamic product page from backend:", err);
+    }
+  }
 
   if (!product) {
     notFound();

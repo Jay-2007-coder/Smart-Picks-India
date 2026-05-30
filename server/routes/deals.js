@@ -1,5 +1,6 @@
 import express from "express";
 import Deal from "../models/Deal.js";
+import Product from "../models/Product.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -51,6 +52,85 @@ router.get("/", async (req, res, next) => {
         score: d.score,
         createdAt: d.createdAt,
       })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PUBLIC: GET PRODUCT BY SLUG (fetch from MongoDB)
+// ──────────────────────────────────────────────────────────────────────────────
+router.get("/product/:slug", async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    let product = await Product.findOne({ slug });
+
+    // Fallback: match by computed slug (migration check for legacy database entries)
+    if (!product) {
+      const allProducts = await Product.find({});
+      const slugify = (text) => text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w\-]+/g, "")
+        .replace(/\-\-+/g, "-")
+        .replace(/^-+/, "")
+        .replace(/-+$/, "");
+
+      product = allProducts.find(p => {
+        let baseSlug = slugify(p.title);
+        if (!baseSlug.endsWith("-review")) {
+          baseSlug += "-review";
+        }
+        return baseSlug === slug;
+      });
+
+      if (product) {
+        // Save computed slug to database for future quick lookups
+        product.slug = slug;
+        await product.save();
+      }
+    }
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // Default arrays and objects in case legacy database records are missing catalog fields
+    const defaultFeatures = ["High quality build and materials", "Excellent value for money"];
+    const defaultPros = [
+      "Great discount on premium performance.",
+      "Verified Amazon customer rating.",
+      "Fast shipping options in India."
+    ];
+    const defaultCons = [
+      "Price fluctuations are common; grab it while discounted."
+    ];
+    const defaultTags = [product.category, "Amazon Deals", "SmartPicks Choice"];
+
+    res.status(200).json({
+      success: true,
+      product: {
+        slug: product.slug || slug,
+        title: product.title,
+        image: product.image,
+        category: product.category,
+        description: product.description || "Premium Amazon India Product.",
+        price: product.price,
+        oldPrice: product.originalPrice || product.price,
+        rating: product.rating || 4.5,
+        reviewCount: product.reviewCount || 100,
+        affiliateLink: product.affiliateLink,
+        features: product.features && product.features.length > 0 ? product.features : defaultFeatures,
+        pros: product.pros && product.pros.length > 0 ? product.pros : defaultPros,
+        cons: product.cons && product.cons.length > 0 ? product.cons : defaultCons,
+        featured: product.featured || false,
+        trending: product.trending !== undefined ? product.trending : true,
+        dealOfTheDay: product.dealOfTheDay || false,
+        tags: product.tags && product.tags.length > 0 ? product.tags : defaultTags,
+      }
     });
   } catch (err) {
     next(err);
