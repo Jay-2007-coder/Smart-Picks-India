@@ -57,19 +57,7 @@ export default function HeroSection({ heroProducts }: { heroProducts: Product[] 
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="mt-10 flex gap-8">
-              {[
-                { value: "200+", label: "Products Reviewed" },
-                { value: "50K+", label: "Happy Readers" },
-                { value: "₹10Cr+", label: "Savings Helped" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-xs text-slate-400">{stat.label}</p>
-                </div>
-              ))}
-            </div>
+
           </motion.div>
 
           {/* Product showcase cards */}
