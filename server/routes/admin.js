@@ -7,7 +7,7 @@ import Product from "../models/Product.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
 import { syncProductPrices, parseFullProducts, broadcastTopDeals } from "../utils/priceSync.js";
 import { scrapeAmazonProduct } from "../utils/scraper.js";
-import { sendTelegramMessage } from "../utils/telegram.js";
+import { sendTelegramMessage, escapeHtml } from "../utils/telegram.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -298,19 +298,27 @@ router.post("/scrape-product", async (req, res, next) => {
     // 8. Auto-post to Telegram Channel
     console.log(`📢 Auto-posting scraped product to Telegram channel...`);
     const siteUrl = process.env.CLIENT_URL || "https://smart-picks-india.vercel.app";
-    const tgText = `🔥 *HOT NEW DEAL AUTO-PUBLISHED!* 🔥\n\n` +
-      `*${scraped.title}*\n\n` +
-      `💰 *Deal Price:* *₹${scraped.price.toLocaleString("en-IN")}*  (~₹${scraped.originalPrice.toLocaleString("en-IN")}~)\n` +
-      `🏷️ *Discount:* *${scraped.discount}% OFF*\n` +
-      `⭐ *Rating:* ${scraped.rating} / 5 (${scraped.reviewCount.toLocaleString("en-IN")} ratings)\n\n` +
-      `📝 *Review:* "${scraped.description.slice(0, 100)}..."\n\n` +
-      `🛒 [Buy Direct on Amazon](${scraped.affiliateLink})\n` +
-      `📝 [Read Site Review](${siteUrl}/product/${slug})`;
+    const safeTitle = escapeHtml(scraped.title);
+    const safeDesc = escapeHtml((scraped.description || "").slice(0, 120));
+    // Always use a direct /dp/ Amazon affiliate link for maximum compatibility
+    const amazonLink = `https://www.amazon.in/dp/${cleanAsin}?tag=smartpick07d2-21`;
+    const reviewLink = `${siteUrl}/product/${slug}`;
+
+    const tgHtml =
+      `🔥 <b>HOT NEW DEAL AUTO-PUBLISHED!</b> 🔥\n\n` +
+      `<b>${safeTitle}</b>\n\n` +
+      `💰 Deal Price: <b>₹${scraped.price.toLocaleString("en-IN")}</b>  <s>₹${scraped.originalPrice.toLocaleString("en-IN")}</s>\n` +
+      `🏷️ Discount: <b>${scraped.discount}% OFF</b>\n` +
+      `⭐ Rating: ${scraped.rating} / 5 (${scraped.reviewCount.toLocaleString("en-IN")} ratings)\n\n` +
+      `📝 <i>"${safeDesc}..."</i>\n\n` +
+      `🛒 <a href="${amazonLink}">👉 BUY ON AMAZON NOW</a>\n` +
+      `📄 <a href="${reviewLink}">Read Full Review on SmartPicks India</a>\n\n` +
+      `👉 Join @smartpicks_deals_deal for more instant budget deals!`;
 
     let telegramSent = false;
     let telegramError = null;
     try {
-      await sendTelegramMessage(null, tgText);
+      await sendTelegramMessage(null, tgHtml);
       telegramSent = true;
     } catch (tgErr) {
       telegramError = tgErr.message;

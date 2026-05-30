@@ -5,7 +5,7 @@ import PriceHistory from "../models/PriceHistory.js";
 import PriceAlert from "../models/PriceAlert.js";
 import User from "../models/User.js";
 import { sendEmail } from "./email.js"; // Standard email utility
-import { sendTelegramMessage } from "./telegram.js"; // We will build this next
+import { sendTelegramMessage, escapeHtml } from "./telegram.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCTS_FILE_PATH = path.join(__dirname, "..", "..", "data", "products.ts");
@@ -184,8 +184,10 @@ async function checkAndTriggerAlerts(product, oldPrice) {
       } else if (alert.deliveryMethod === "telegram" && user.telegramChatId) {
         // Send Telegram alert
         try {
-          const tgText = `🔔 *Price Drop Alert!*\n\nThe price of *${product.title}* has dropped from ~₹${oldPrice}~ to *₹${product.price}*!\n\n🛒 [Buy Direct on Amazon](${product.affiliateLink})\n📝 [View on Website](https://smart-picks-india.vercel.app/product/${product.slug})`;
-          await sendTelegramMessage(user.telegramChatId, tgText);
+          const safeTitle = escapeHtml(product.title);
+          const affiliateLink = product.affiliateLink || `https://www.amazon.in/dp/${product.slug}?tag=smartpick07d2-21`;
+          const tgHtml = `🔔 <b>Price Drop Alert!</b>\n\n<b>${safeTitle}</b>\n\n💸 Price dropped from <s>₹${oldPrice.toLocaleString("en-IN")}</s> to <b>₹${product.price.toLocaleString("en-IN")}</b>!\n\n🛒 <a href="${affiliateLink}">👉 Buy Direct on Amazon</a>\n📝 <a href="https://smart-picks-india.vercel.app/product/${product.slug}">Read Full Review</a>`;
+          await sendTelegramMessage(user.telegramChatId, tgHtml);
           console.log(`      📱 Sent Telegram alert message to chat ${user.telegramChatId}`);
         } catch (tgErr) {
           console.error(`      ❌ Failed to send Telegram alert:`, tgErr.message);
@@ -205,9 +207,22 @@ async function checkAndTriggerAlerts(product, oldPrice) {
 async function postDealToChannel(product, oldPrice) {
   try {
     const discount = Math.round(((oldPrice - product.price) / oldPrice) * 100);
-    const tgText = `🔥 *LIVE DEAL DROP!* 🔥\n\n*${product.title}*\n\n📈 *Price dropped* from ~₹${oldPrice}~ to *₹${product.price}* (${discount}% OFF!)\n\n🛒 [Buy Direct on Amazon](${product.affiliateLink || "https://www.amazon.in"})\n📝 [Read Site Review](https://smart-picks-india.vercel.app/product/${product.slug})\n\n👉 Join @smartpicks_deals_deal for more instant budget deal drops!`;
-    
-    await sendTelegramMessage(null, tgText);
+    const safeTitle = escapeHtml(product.title);
+    // Always build a direct /dp/ Amazon link with affiliate tag
+    const affiliateLink = product.affiliateLink && product.affiliateLink.includes("/dp/")
+      ? product.affiliateLink
+      : `https://www.amazon.in/dp/${product.slug}?tag=smartpick07d2-21`;
+    const siteReviewLink = `https://smart-picks-india.vercel.app/product/${product.slug}`;
+
+    const tgHtml =
+      `🔥 <b>LIVE DEAL DROP!</b> 🔥\n\n` +
+      `<b>${safeTitle}</b>\n\n` +
+      `📉 Price dropped from <s>₹${oldPrice.toLocaleString("en-IN")}</s> to <b>₹${product.price.toLocaleString("en-IN")}</b> — <b>${discount}% OFF!</b>\n\n` +
+      `🛒 <a href="${affiliateLink}">👉 BUY ON AMAZON NOW</a>\n` +
+      `📝 <a href="${siteReviewLink}">Read Full Review</a>\n\n` +
+      `👉 Join @smartpicks_deals_deal for more instant budget deals!`;
+
+    await sendTelegramMessage(null, tgHtml);
     console.log(`      📢 Posted deal drop for "${product.title}" to public Telegram channel`);
   } catch (err) {
     console.error(`      ❌ Failed to post deal drop to channel:`, err.message);
@@ -227,12 +242,26 @@ export async function broadcastTopDeals() {
     return { success: false, message: "No discounted products found in catalog." };
   }
 
-  let text = `🔥 *TODAY'S HOTTEST BUDGET PICKS!* 🔥\n\nHere are the top discounts currently active on SmartPicks India:\n\n`;
-  deals.forEach((d, idx) => {
-    text += `${idx + 1}️⃣ *${d.title}*\n💥 *Deal Price:* *₹${d.price}* (~₹${d.oldPrice}~)\n🏷️ *Discount:* *${d.discount}% OFF*\n🛒 [Buy Direct on Amazon](${d.affiliateLink})\n📝 [Read Site Review](https://smart-picks-india.vercel.app/product/${d.slug})\n\n`;
-  });
-  text += `👉 Join @smartpicks_deals_deal for more daily smart recommendations!`;
+  const medals = ["1️⃣", "2️⃣", "3️⃣"];
+  let html = `🔥 <b>TODAY'S HOTTEST BUDGET PICKS!</b> 🔥\n\nTop discounts live on SmartPicks India:\n\n`;
 
-  await sendTelegramMessage(null, text);
+  deals.forEach((d, idx) => {
+    // Use direct /dp/ link when available, else build one from slug guess
+    const amazonLink = d.affiliateLink && d.affiliateLink.includes("/dp/")
+      ? d.affiliateLink
+      : d.affiliateLink || `https://www.amazon.in/s?k=${encodeURIComponent(d.title)}&tag=smartpick07d2-21`;
+    const reviewLink = `https://smart-picks-india.vercel.app/product/${d.slug}`;
+    const safeTitle = escapeHtml(d.title);
+
+    html +=
+      `${medals[idx]} <b>${safeTitle}</b>\n` +
+      `💥 Deal Price: <b>₹${d.price.toLocaleString("en-IN")}</b>  <s>₹${d.oldPrice.toLocaleString("en-IN")}</s>\n` +
+      `🏷️ Discount: <b>${d.discount}% OFF</b>\n` +
+      `🛒 <a href="${amazonLink}">👉 BUY ON AMAZON</a>  |  📝 <a href="${reviewLink}">Review</a>\n\n`;
+  });
+
+  html += `👉 Join @smartpicks_deals_deal for more daily smart picks!`;
+
+  await sendTelegramMessage(null, html);
   return { success: true, count: deals.length };
 }
