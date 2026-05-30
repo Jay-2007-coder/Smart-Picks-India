@@ -184,7 +184,7 @@ async function checkAndTriggerAlerts(product, oldPrice) {
       } else if (alert.deliveryMethod === "telegram" && user.telegramChatId) {
         // Send Telegram alert
         try {
-          const tgText = `🔔 *Price Drop Alert!*\n\nThe price of *${product.title}* has dropped from ~₹${oldPrice}~ to *₹${product.price}*!\n\n🔗 [Claim Deal Now](https://smart-picks-india.vercel.app/product/${product.slug})`;
+          const tgText = `🔔 *Price Drop Alert!*\n\nThe price of *${product.title}* has dropped from ~₹${oldPrice}~ to *₹${product.price}*!\n\n🛒 [Buy Direct on Amazon](${product.affiliateLink})\n📝 [View on Website](https://smart-picks-india.vercel.app/product/${product.slug})`;
           await sendTelegramMessage(user.telegramChatId, tgText);
           console.log(`      📱 Sent Telegram alert message to chat ${user.telegramChatId}`);
         } catch (tgErr) {
@@ -205,7 +205,7 @@ async function checkAndTriggerAlerts(product, oldPrice) {
 async function postDealToChannel(product, oldPrice) {
   try {
     const discount = Math.round(((oldPrice - product.price) / oldPrice) * 100);
-    const tgText = `🔥 *LIVE DEAL DROP!* 🔥\n\n*${product.title}*\n\n📈 *Price dropped* from ~₹${oldPrice}~ to *₹${product.price}* (${discount}% OFF!)\n\n🔗 [Buy Now on Amazon](${product.affiliateLink || "https://www.amazon.in"})\n\n👉 Join @smartpicks_deals_deal for more instant budget deal drops!`;
+    const tgText = `🔥 *LIVE DEAL DROP!* 🔥\n\n*${product.title}*\n\n📈 *Price dropped* from ~₹${oldPrice}~ to *₹${product.price}* (${discount}% OFF!)\n\n🛒 [Buy Direct on Amazon](${product.affiliateLink || "https://www.amazon.in"})\n📝 [Read Site Review](https://smart-picks-india.vercel.app/product/${product.slug})\n\n👉 Join @smartpicks_deals_deal for more instant budget deal drops!`;
     
     await sendTelegramMessage(null, tgText);
     console.log(`      📢 Posted deal drop for "${product.title}" to public Telegram channel`);
@@ -229,7 +229,7 @@ export async function broadcastTopDeals() {
 
   let text = `🔥 *TODAY'S HOTTEST BUDGET PICKS!* 🔥\n\nHere are the top discounts currently active on SmartPicks India:\n\n`;
   deals.forEach((d, idx) => {
-    text += `${idx + 1}️⃣ *${d.title}*\n💥 *Deal Price:* *₹${d.price}* (~₹${d.oldPrice}~)\n🏷️ *Discount:* *${d.discount}% OFF*\n🔗 [Claim Deal Now](https://smart-picks-india.vercel.app/product/${d.slug})\n\n`;
+    text += `${idx + 1}️⃣ *${d.title}*\n💥 *Deal Price:* *₹${d.price}* (~₹${d.oldPrice}~)\n🏷️ *Discount:* *${d.discount}% OFF*\n🛒 [Buy Direct on Amazon](${d.affiliateLink})\n📝 [Read Site Review](https://smart-picks-india.vercel.app/product/${d.slug})\n\n`;
   });
   text += `👉 Join @smartpicks_deals_deal for more daily smart recommendations!`;
 

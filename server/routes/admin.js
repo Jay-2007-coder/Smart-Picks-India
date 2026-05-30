@@ -286,8 +286,8 @@ router.post("/scrape-product", async (req, res, next) => {
       `🏷️ *Discount:* *${scraped.discount}% OFF*\n` +
       `⭐ *Rating:* ${scraped.rating} / 5 (${scraped.reviewCount.toLocaleString("en-IN")} ratings)\n\n` +
       `📝 *Review:* "${scraped.description.slice(0, 100)}..."\n\n` +
-      `🔗 [Read Review & Claim Deal](${siteUrl}/product/${slug})\n` +
-      `🛒 [View direct on Amazon](${scraped.affiliateLink})`;
+      `🛒 [Buy Direct on Amazon](${scraped.affiliateLink})\n` +
+      `📝 [Read Site Review](${siteUrl}/product/${slug})`;
 
     let telegramSent = false;
     let telegramError = null;
