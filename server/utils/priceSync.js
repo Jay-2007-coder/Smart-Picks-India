@@ -118,6 +118,7 @@ export async function syncProductPrices() {
         // If price dropped, check for alert triggers
         if (latestHistory && product.price < latestHistory.price) {
           await checkAndTriggerAlerts(product, latestHistory.price);
+          await postDealToChannel(product, latestHistory.price);
         }
       }
     } catch (err) {
@@ -198,4 +199,40 @@ async function checkAndTriggerAlerts(product, oldPrice) {
   } catch (err) {
     console.error("❌ Error triggering alerts:", err.message);
   }
+}
+
+// Post a premium deal drop to the public channel
+async function postDealToChannel(product, oldPrice) {
+  try {
+    const discount = Math.round(((oldPrice - product.price) / oldPrice) * 100);
+    const tgText = `🔥 *LIVE DEAL DROP!* 🔥\n\n*${product.title}*\n\n📈 *Price dropped* from ~₹${oldPrice}~ to *₹${product.price}* (${discount}% OFF!)\n\n🔗 [Buy Now on Amazon](${product.affiliateLink || "https://www.amazon.in"})\n\n👉 Join @smartpicks_deals_deal for more instant budget deal drops!`;
+    
+    await sendTelegramMessage(null, tgText);
+    console.log(`      📢 Posted deal drop for "${product.title}" to public Telegram channel`);
+  } catch (err) {
+    console.error(`      ❌ Failed to post deal drop to channel:`, err.message);
+  }
+}
+
+// Broadcasts the top 3 biggest discount deals from catalog to the public Telegram channel
+export async function broadcastTopDeals() {
+  const products = parseFullProducts();
+  const deals = products
+    .filter(p => p.oldPrice > p.price)
+    .map(p => ({ ...p, discount: Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) }))
+    .sort((a, b) => b.discount - a.discount)
+    .slice(0, 3);
+
+  if (deals.length === 0) {
+    return { success: false, message: "No discounted products found in catalog." };
+  }
+
+  let text = `🔥 *TODAY'S HOTTEST BUDGET PICKS!* 🔥\n\nHere are the top discounts currently active on SmartPicks India:\n\n`;
+  deals.forEach((d, idx) => {
+    text += `${idx + 1}️⃣ *${d.title}*\n💥 *Deal Price:* *₹${d.price}* (~₹${d.oldPrice}~)\n🏷️ *Discount:* *${d.discount}% OFF*\n🔗 [Claim Deal Now](https://smart-picks-india.vercel.app/product/${d.slug})\n\n`;
+  });
+  text += `👉 Join @smartpicks_deals_deal for more daily smart recommendations!`;
+
+  await sendTelegramMessage(null, text);
+  return { success: true, count: deals.length };
 }

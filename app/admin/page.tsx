@@ -17,6 +17,7 @@ import {
   Shield,
   Activity,
   Layers,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -50,6 +51,7 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [usersList, setUsersList] = useState<UserInfo[]>([]);
   const [syncing, setSyncing] = useState<boolean>(false);
+  const [broadcasting, setBroadcasting] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState<boolean>(true);
 
@@ -107,6 +109,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleBroadcastDeals = async () => {
+    setBroadcasting(true);
+    setSyncResult(null);
+    try {
+      const response = await fetch("/api/v1/admin/broadcast-deals", {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSyncResult(data.message || "Broadcast sent to Telegram channel!");
+      } else {
+        setSyncResult(data.message || "Failed to broadcast deals.");
+      }
+    } catch (err) {
+      setSyncResult("Error triggering channel broadcast.");
+    } finally {
+      setBroadcasting(false);
+    }
+  };
+
   if (loading || (user && user.role === "admin" && loadingData)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -150,16 +172,33 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-black tracking-tight text-foreground">Admin Console</h1>
             <p className="text-xs text-muted-foreground">Monitor system analytics, watchlist performance, and trigger product price audits.</p>
           </div>
-          <button
-            onClick={handleSyncPrices}
-            disabled={syncing}
-            className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10 ${
-              syncing ? "animate-pulse" : ""
-            }`}
-          >
-            <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-            {syncing ? "Syncing Products..." : "Run Price Audit"}
-          </button>
+          <div className="flex flex-wrap gap-2.5 items-center">
+            <button
+              onClick={handleSyncPrices}
+              disabled={syncing || broadcasting}
+              className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10 ${
+                syncing ? "animate-pulse" : ""
+              }`}
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Syncing..." : "Run Price Audit"}
+            </button>
+            
+            <button
+              onClick={handleBroadcastDeals}
+              disabled={syncing || broadcasting}
+              className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10 ${
+                broadcasting ? "animate-pulse" : ""
+              }`}
+            >
+              {broadcasting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {broadcasting ? "Broadcasting..." : "Broadcast Deals to Channel"}
+            </button>
+          </div>
         </div>
 
         {syncResult && (

@@ -4,7 +4,7 @@ import Deal from "../models/Deal.js";
 import PriceAlert from "../models/PriceAlert.js";
 import PriceHistory from "../models/PriceHistory.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
-import { syncProductPrices, parseFullProducts } from "../utils/priceSync.js";
+import { syncProductPrices, parseFullProducts, broadcastTopDeals } from "../utils/priceSync.js";
 
 const router = express.Router();
 
@@ -82,6 +82,27 @@ router.post("/sync", async (req, res, next) => {
       message: `Price synchronization triggered successfully. ${result.updatedCount} new price points logged.`,
       updatedCount: result.updatedCount,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/broadcast-deals", async (req, res, next) => {
+  try {
+    console.log("📢 Manual Telegram Channel Broadcast triggered by admin:", req.user.email);
+    const result = await broadcastTopDeals();
+    
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        message: "Successfully broadcasted the top 3 budget deals to your Telegram channel!",
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.message,
+      });
+    }
   } catch (err) {
     next(err);
   }
