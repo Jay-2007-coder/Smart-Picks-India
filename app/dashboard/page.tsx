@@ -232,12 +232,22 @@ export default function DashboardPage() {
               Manage your personal information, active login sessions, and safety credentials.
             </p>
           </div>
-          <button
-            onClick={logout}
-            className="btn-secondary flex items-center justify-center gap-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-950 dark:hover:bg-red-950/20"
-          >
-            <LogOut className="h-4 w-4" /> Sign Out
-          </button>
+          <div className="flex flex-wrap gap-2.5 items-center">
+            {user.role === "admin" && (
+              <Link
+                href="/admin"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 px-5 text-xs font-bold text-white shadow-md hover:scale-102 transition-all duration-150"
+              >
+                <Shield className="h-4 w-4" /> Admin Console
+              </Link>
+            )}
+            <button
+              onClick={logout}
+              className="btn-secondary flex items-center justify-center gap-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-950 dark:hover:bg-red-950/20"
+            >
+              <LogOut className="h-4 w-4" /> Sign Out
+            </button>
+          </div>
         </div>
 
         {/* Dashboard Panels Grid */}

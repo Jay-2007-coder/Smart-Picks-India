@@ -75,6 +75,14 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {user && (user as any).role === "admin" && (
+              <Link
+                href="/admin"
+                className="px-3 py-2 text-sm font-black text-red-500 hover:text-red-600 rounded-lg hover:bg-red-500/5 transition-colors"
+              >
+                Admin
+              </Link>
+            )}
           </div>
 
           {/* Search + Controls */}
@@ -184,6 +192,15 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {user && (user as any).role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 text-sm font-bold text-red-500 rounded-xl hover:bg-red-500/5 transition-colors"
+              >
+                Admin Panel
+              </Link>
+            )}
             
             {/* Mobile Auth Button */}
             {user ? (
