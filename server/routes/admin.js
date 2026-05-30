@@ -3,8 +3,17 @@ import User from "../models/User.js";
 import Deal from "../models/Deal.js";
 import PriceAlert from "../models/PriceAlert.js";
 import PriceHistory from "../models/PriceHistory.js";
+import Product from "../models/Product.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
 import { syncProductPrices, parseFullProducts, broadcastTopDeals } from "../utils/priceSync.js";
+import { scrapeAmazonProduct } from "../utils/scraper.js";
+import { sendTelegramMessage } from "../utils/telegram.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PRODUCTS_FILE_PATH = path.join(__dirname, "..", "..", "data", "products.ts");
 
 const router = express.Router();
 
@@ -108,6 +117,205 @@ router.post("/broadcast-deals", async (req, res, next) => {
   }
 });
 
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w\-]+/g, "") // Remove all non-word chars
+    .replace(/\-\-+/g, "-") // Replace multiple - with single -
+    .replace(/^-+/, "") // Trim - from start of text
+    .replace(/-+$/, ""); // Trim - from end of text
+}
+
+function appendProductToTS(product) {
+  if (!fs.existsSync(PRODUCTS_FILE_PATH)) {
+    throw new Error(`products.ts not found at: ${PRODUCTS_FILE_PATH}`);
+  }
+
+  const content = fs.readFileSync(PRODUCTS_FILE_PATH, "utf8");
+  const lastIndex = content.lastIndexOf("];");
+  if (lastIndex === -1) {
+    throw new Error("Could not find the end of products array in products.ts");
+  }
+
+  const features = product.features || [];
+  const pros = [
+    "Great discount on premium performance.",
+    "Verified Amazon customer rating.",
+    "Fast shipping options in India."
+  ];
+  const cons = [
+    "Price fluctuations are common; grab it while discounted."
+  ];
+  const tags = [product.category, "Amazon Deals", "SmartPicks Choice"];
+
+  const productString = `  {
+    slug: ${JSON.stringify(product.slug)},
+    title: ${JSON.stringify(product.title)},
+    image: ${JSON.stringify(product.image)},
+    category: ${JSON.stringify(product.category)},
+    description: ${JSON.stringify(product.description || "")},
+    price: ${product.price},
+    oldPrice: ${product.originalPrice},
+    rating: ${product.rating || 4.5},
+    reviewCount: ${product.reviewCount || 100},
+    affiliateLink: ${JSON.stringify(product.affiliateLink)},
+    features: ${JSON.stringify(features)},
+    pros: ${JSON.stringify(pros)},
+    cons: ${JSON.stringify(cons)},
+    featured: false,
+    trending: true,
+    dealOfTheDay: false,
+    tags: ${JSON.stringify(tags)},
+  }`;
+
+  const beforeArrayEnd = content.slice(0, lastIndex).trim();
+  const endsWithComma = beforeArrayEnd.endsWith(",");
+  
+  const newContent = beforeArrayEnd + 
+    (endsWithComma ? "" : ",\n") + 
+    productString + 
+    "\n];\n";
+    
+  fs.writeFileSync(PRODUCTS_FILE_PATH, newContent, "utf8");
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// POST SCRAPE AMAZON PRODUCT & AUTO-PUBLISH
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/scrape-product", async (req, res, next) => {
+  try {
+    const { asin, category } = req.body;
+
+    if (!asin || !category) {
+      return res.status(400).json({ success: false, message: "ASIN and Category are required." });
+    }
+
+    const cleanAsin = asin.toUpperCase().trim();
+    const cleanCategory = category.toLowerCase().trim();
+
+    // 1. Check duplicate in products.ts catalog first
+    const catalogProducts = parseFullProducts();
+    const isDuplicateInCatalog = catalogProducts.some(p => {
+      const match = p.affiliateLink.match(/\/dp\/([A-Z0-9]{10})/i) || p.affiliateLink.match(/\/gp\/product\/([A-Z0-9]{10})/i);
+      return match && match[1].toUpperCase() === cleanAsin;
+    });
+
+    if (isDuplicateInCatalog) {
+      return res.status(400).json({
+        success: false,
+        message: `Product with ASIN ${cleanAsin} already exists in the local products.ts catalog.`,
+      });
+    }
+
+    // 2. Check duplicate in MongoDB database
+    const isDuplicateInDb = await Product.findOne({ asin: cleanAsin });
+    if (isDuplicateInDb) {
+      return res.status(400).json({
+        success: false,
+        message: `Product with ASIN ${cleanAsin} already exists in MongoDB database.`,
+      });
+    }
+
+    // 3. Scrape from RapidAPI (or mock fallback)
+    console.log(`🤖 Scraping details for ASIN: ${cleanAsin} (Category: ${cleanCategory})...`);
+    const scraped = await scrapeAmazonProduct(cleanAsin);
+
+    // 4. Generate unique slug
+    let baseSlug = slugify(scraped.title);
+    if (!baseSlug.endsWith("-review")) {
+      baseSlug += "-review";
+    }
+
+    let slug = baseSlug;
+    let slugCounter = 1;
+    while (catalogProducts.some(p => p.slug === slug)) {
+      slug = `${baseSlug}-${slugCounter}`;
+      slugCounter++;
+    }
+
+    scraped.slug = slug;
+    scraped.category = cleanCategory;
+    scraped.affiliateLink = `https://www.amazon.in/dp/${cleanAsin}?tag=smartpick07d2-21`;
+
+    // 5. Save to MongoDB Product Collection
+    const newProduct = new Product({
+      title: scraped.title,
+      asin: cleanAsin,
+      category: cleanCategory,
+      price: scraped.price,
+      originalPrice: scraped.originalPrice,
+      discount: scraped.discount,
+      image: scraped.image,
+      rating: scraped.rating,
+      reviewCount: scraped.reviewCount,
+      affiliateLink: scraped.affiliateLink,
+      trending: true,
+    });
+    await newProduct.save();
+
+    // 6. Append to local products.ts
+    console.log(`✍️ Appending product to products.ts catalog...`);
+    appendProductToTS(scraped);
+
+    // 7. Inject mock PriceHistory records to feed the client SVG chart
+    console.log(`📈 Creating price history log for slug: ${slug}...`);
+    const pricePoints = [];
+    const basePrice = scraped.price;
+    for (let i = 4; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i * 6); // 5 records spanning 24 days
+      // Create slight variations (max 5%) using a wave function
+      const priceOffset = Math.round(basePrice * (1 + (Math.sin(i) * 0.05)));
+      pricePoints.push({
+        slug: slug,
+        price: i === 0 ? basePrice : priceOffset,
+        date,
+      });
+    }
+    await PriceHistory.insertMany(pricePoints);
+
+    // 8. Auto-post to Telegram Channel
+    console.log(`📢 Auto-posting scraped product to Telegram channel...`);
+    const siteUrl = process.env.CLIENT_URL || "https://smart-picks-india.vercel.app";
+    const tgText = `🔥 *HOT NEW DEAL AUTO-PUBLISHED!* 🔥\n\n` +
+      `*${scraped.title}*\n\n` +
+      `💰 *Deal Price:* *₹${scraped.price.toLocaleString("en-IN")}*  (~₹${scraped.originalPrice.toLocaleString("en-IN")}~)\n` +
+      `🏷️ *Discount:* *${scraped.discount}% OFF*\n` +
+      `⭐ *Rating:* ${scraped.rating} / 5 (${scraped.reviewCount.toLocaleString("en-IN")} ratings)\n\n` +
+      `📝 *Review:* "${scraped.description.slice(0, 100)}..."\n\n` +
+      `🔗 [Read Review & Claim Deal](${siteUrl}/product/${slug})\n` +
+      `🛒 [View direct on Amazon](${scraped.affiliateLink})`;
+
+    let telegramSent = false;
+    let telegramError = null;
+    try {
+      await sendTelegramMessage(null, tgText);
+      telegramSent = true;
+    } catch (tgErr) {
+      telegramError = tgErr.message;
+      console.warn("⚠️ Telegram dispatch failed:", tgErr.message);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Product successfully scraped, saved, and added to the catalog!`,
+      product: {
+        id: newProduct._id,
+        slug,
+        title: scraped.title,
+        price: scraped.price,
+        affiliateLink: scraped.affiliateLink,
+        image: scraped.image,
+      },
+      telegramSent,
+      telegramError,
+    });
+  } catch (err) {
+    next(err);
+  }
 // ──────────────────────────────────────────────────────────────────────────────
 // GET USERS LIST (ADMIN MANAGEMENT)
 // ──────────────────────────────────────────────────────────────────────────────

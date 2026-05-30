@@ -55,6 +55,14 @@ export default function AdminDashboard() {
   const [syncResult, setSyncResult] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState<boolean>(true);
 
+  // ASIN Scraper State
+  const [asin, setAsin] = useState<string>("");
+  const [category, setCategory] = useState<string>("tech");
+  const [scraping, setScraping] = useState<boolean>(false);
+  const [scrapeError, setScrapeError] = useState<string | null>(null);
+  const [scrapeSuccess, setScrapeSuccess] = useState<string | null>(null);
+  const [scrapedProduct, setScrapedProduct] = useState<any | null>(null);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login?redirect=/admin");
@@ -126,6 +134,38 @@ export default function AdminDashboard() {
       setSyncResult("Error triggering channel broadcast.");
     } finally {
       setBroadcasting(false);
+    }
+  };
+
+  const handleScrapeProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!asin) return;
+
+    setScraping(true);
+    setScrapeError(null);
+    setScrapeSuccess(null);
+    setScrapedProduct(null);
+
+    try {
+      const response = await fetch("/api/v1/admin/scrape-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ asin, category }),
+      });
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setScrapeSuccess(`Successfully published product! Telegram post: ${data.telegramSent ? "Sent ✅" : "Failed / Logged to console ❌"}`);
+        setScrapedProduct(data.product);
+        setAsin(""); // Clear form input
+        fetchAdminData(); // Reload statistics
+      } else {
+        setScrapeError(data.message || "Failed to scrape product.");
+      }
+    } catch (err) {
+      setScrapeError("An error occurred during product scraping.");
+    } finally {
+      setScraping(false);
     }
   };
 
@@ -207,6 +247,113 @@ export default function AdminDashboard() {
             <span>{syncResult}</span>
           </div>
         )}
+
+        {/* Quick Publish ASIN Scraper Form */}
+        <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
+          <div className="absolute -right-16 -bottom-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl" />
+          <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
+            <Layers className="h-5 w-5 text-red-500" /> Scrape & Publish Amazon Product
+          </h3>
+          <p className="text-xs text-muted-foreground mb-5">
+            Enter an Amazon ASIN to automatically fetch its details, create an affiliate link, save to MongoDB, append it to the products.ts catalog, and publish to the Telegram channel.
+          </p>
+
+          <form onSubmit={handleScrapeProduct} className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="w-full sm:w-1/2">
+              <label htmlFor="asin" className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                Amazon ASIN
+              </label>
+              <input
+                id="asin"
+                type="text"
+                value={asin}
+                onChange={(e) => setAsin(e.target.value)}
+                placeholder="e.g. B0CHX1W1XY, B0CXF4D189, B0CY5N681Z"
+                className="w-full h-11 px-4 text-xs bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-red-500 text-foreground"
+                required
+              />
+            </div>
+            
+            <div className="w-full sm:w-1/3">
+              <label htmlFor="category" className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                Product Category
+              </label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full h-11 px-4 text-xs bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-red-500 text-foreground appearance-none capitalize"
+              >
+                <option value="tech">tech</option>
+                <option value="kitchen">kitchen</option>
+                <option value="home">home</option>
+                <option value="clothing">clothing</option>
+                <option value="sports">sports</option>
+                <option value="books">books</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              disabled={scraping || !asin}
+              className="w-full sm:w-auto h-11 px-6 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              {scraping ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Scraping & Publishing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Fetch & Publish Product
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Scraper Status Alerts */}
+          {scrapeError && (
+            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
+              <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
+              <span>{scrapeError}</span>
+            </div>
+          )}
+
+          {scrapeSuccess && (
+            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
+              <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+              <div className="flex-1">
+                <span>{scrapeSuccess}</span>
+                {scrapedProduct && (
+                  <div className="mt-2.5 flex flex-col sm:flex-row gap-4 p-3.5 bg-background border border-border/80 rounded-2xl">
+                    {scrapedProduct.image && (
+                      <img
+                        src={scrapedProduct.image}
+                        alt={scrapedProduct.title}
+                        className="h-16 w-16 rounded-xl object-contain bg-white p-1 border border-border shrink-0"
+                      />
+                    )}
+                    <div>
+                      <h4 className="text-xs font-black text-foreground line-clamp-1">{scrapedProduct.title}</h4>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Price: <span className="text-emerald-500 font-bold">₹{scrapedProduct.price?.toLocaleString("en-IN")}</span> | Slug: <span className="font-semibold">{scrapedProduct.slug}</span>
+                      </p>
+                      <a
+                        href={scrapedProduct.affiliateLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] text-red-500 hover:underline font-bold mt-1.5 inline-block"
+                      >
+                        Generated Affiliate Link ↗
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Analytics Card Metrics */}
         {stats && (
