@@ -378,4 +378,25 @@ export const products: Product[] = [
     dealOfTheDay: true,
     tags: ["Home Decor India","Ceramic Vases","Flower Vases","Affordable Home Decor","Living Room Decor Ideas"],
   }
+,
+  {
+    slug: "boat-airdopes-plus-311-tws-earbuds-review",
+    title: "Boat Airdopes Plus 311 Review: Glass Design, ENx Tech, 50 Hrs Battery Earbuds",
+    image: "https://m.media-amazon.com/images/I/61c3+AAop3L._SL1500_.jpg",
+    category: "tech",
+    description: "Experience superior audio and style with the Boat Airdopes Plus 311. Featuring a stunning glass design, ENx™ Tech for crystal-clear calls, and a massive 50-hour battery life, these TWS earbuds deliver an immersive, ad-free music experience.
+Quickly power up with Fast Charge and enjoy seamless connectivity for all your listening needs.",
+    price: 1299,
+    oldPrice: 2999,
+    rating: 4.4,
+    reviewCount: 1550,
+    affiliateLink: "https://amzn.to/42qa772",
+    features: ["Premium Glass Design","ENx™ Technology for Clear Calls","ASAP™ Fast Charge Functionality","Up to 50 Hours Total Playback Battery","Ad-Free Music Streaming via App Support","True Wireless Stereo (TWS) Earbuds","Integrated Microphone for Hands-Free Calls"],
+    pros: ["Sleek and unique glass design offers a premium aesthetic.","Exceptional 50-hour battery life ensures long listening sessions.","ENx™ Tech significantly improves call clarity by reducing ambient noise.","Fast Charge feature provides quick power-ups when you're in a hurry.","App support for ad-free music streaming enhances the user experience."],
+    cons: ["Glass design might be prone to fingerprints and smudges, requiring frequent cleaning.","No Active Noise Cancellation (ANC) for listening, only Environmental Noise Cancellation (ENC) for calls.","Sound profile might be bass-heavy, potentially not ideal for audiophiles seeking a neutral sound."],
+    featured: false,
+    trending: true,
+    dealOfTheDay: false,
+    tags: ["Boat Airdopes","TWS Earbuds","Wireless Earphones","Bluetooth Earbuds","ENx Tech","50 Hours Battery","Fast Charge","Tech Gadgets","Audio Accessories","Charcoal Black"],
+  }
 ];
