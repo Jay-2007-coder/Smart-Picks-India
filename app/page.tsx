@@ -5,10 +5,10 @@ import BlogCard from "@/components/BlogCard";
 import NewsletterSection from "@/components/NewsletterSection";
 import FAQAccordion from "@/components/FAQAccordion";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
+import AnimatedSectionHeader from "@/components/AnimatedSectionHeader";
 import { products } from "@/data/products";
 import { categories } from "@/data/categories";
 import { blogPosts } from "@/data/blogPosts";
-import { deals } from "@/data/deals";
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
@@ -26,9 +26,9 @@ export default function HomePage() {
   const featuredProducts = [...products].reverse().filter((p) => p.featured).slice(0, 8);
   const trendingProducts = [...products].reverse().filter((p) => p.trending).slice(0, 4);
   const featuredBlogs = [...blogPosts].reverse().filter((p) => p.featured).slice(0, 3);
-  
-  // Dynamically calculate deals from products
-  const todayDeals = [...products].reverse()
+
+  const todayDeals = [...products]
+    .reverse()
     .filter((p) => p.oldPrice > p.price)
     .slice(0, 6)
     .map((p) => ({
@@ -42,7 +42,6 @@ export default function HomePage() {
       expiresIn: "Ending soon",
     }));
 
-  // Dynamically calculate category counts
   const categoriesWithCounts = categories.map((cat) => ({
     ...cat,
     count: products.filter((p) => p.category && p.category.toLowerCase() === cat.slug.toLowerCase()).length,
@@ -55,22 +54,20 @@ export default function HomePage() {
 
       {/* Today's Flash Deals */}
       {todayDeals.length > 0 && (
-        <section className="py-14 bg-gradient-to-b from-background to-muted/30">
+        <section className="py-16 bg-gradient-to-b from-background to-muted/30">
           <div className="container-custom">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Zap className="h-5 w-5 text-accent-500" />
-                  <span className="text-sm font-semibold text-accent-500 uppercase tracking-wide">Flash Sales</span>
-                </div>
-                <h2 className="section-title">Today&apos;s Best Deals</h2>
-              </div>
-              <Link href="/deals" className="btn-secondary hidden sm:flex text-sm">
-                View All Deals <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {todayDeals.map((deal) => {
+            <AnimatedSectionHeader
+              eyebrow={<><Zap className="h-4 w-4" /> Flash Sales</>}
+              eyebrowClass="text-accent-500"
+              title="Today's Best Deals"
+              action={
+                <Link href="/deals" className="btn-secondary hidden sm:flex text-sm">
+                  View All Deals <ArrowRight className="h-4 w-4" />
+                </Link>
+              }
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+              {todayDeals.map((deal, i) => {
                 const discount = calculateDiscount(deal.price, deal.oldPrice);
                 return (
                   <a
@@ -78,7 +75,7 @@ export default function HomePage() {
                     href={deal.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="card group overflow-hidden flex flex-col"
+                    className="card group overflow-hidden flex flex-col hover:shadow-lg hover:shadow-black/8 hover:-translate-y-1 transition-all duration-300"
                   >
                     <div className="relative aspect-square overflow-hidden">
                       <Image
@@ -86,16 +83,17 @@ export default function HomePage() {
                         alt={deal.title}
                         fill
                         sizes="200px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                      <span className="absolute top-2 left-2 badge bg-brand-600 text-white font-bold">
+                      <span className="absolute top-2 left-2 badge bg-brand-600 text-white font-black text-xs">
                         -{discount}%
                       </span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="p-3 flex flex-col gap-1 flex-1">
-                      <span className="text-xs text-accent-500 font-semibold">{deal.label}</span>
+                      <span className="text-xs text-accent-500 font-bold">{deal.label}</span>
                       <p className="text-xs font-semibold text-foreground line-clamp-2">{deal.title}</p>
-                      <p className="text-sm font-bold text-brand-600 mt-auto">{formatPrice(deal.price)}</p>
+                      <p className="text-sm font-black text-brand-600 mt-auto">{formatPrice(deal.price)}</p>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {deal.expiresIn} left
@@ -115,29 +113,30 @@ export default function HomePage() {
       )}
 
       {/* Categories */}
-      <section className="py-14">
+      <section className="py-16">
         <div className="container-custom">
-          <div className="text-center mb-10">
-            <h2 className="section-title">Shop by Category</h2>
-            <p className="section-subtitle">Find the best products in every category</p>
+          <AnimatedSectionHeader
+            title="Shop by Category"
+            subtitle="Find the best products in every category"
+            centered
+          />
+          <div className="mt-10">
+            <CategoryGrid categories={categoriesWithCounts} />
           </div>
-          <CategoryGrid categories={categoriesWithCounts} />
         </div>
       </section>
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
-        <section className="py-14 bg-muted/30">
+        <section className="py-16 bg-muted/30">
           <div className="container-custom">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="section-title">Top Rated Products</h2>
-                <p className="section-subtitle">Editor&apos;s best picks this month</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            <AnimatedSectionHeader
+              title="Top Rated Products"
+              subtitle="Editor's best picks this month"
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
               {featuredProducts.map((product, i) => (
-                <ProductCard key={product.slug} product={product} priority={i < 4} />
+                <ProductCard key={product.slug} product={product} priority={i < 4} index={i} />
               ))}
             </div>
           </div>
@@ -146,15 +145,16 @@ export default function HomePage() {
 
       {/* Trending Products */}
       {trendingProducts.length > 0 && (
-        <section className="py-14">
+        <section className="py-16">
           <div className="container-custom">
-            <div className="flex items-center gap-2 mb-8">
-              <TrendingUp className="h-5 w-5 text-purple-500" />
-              <h2 className="section-title">Trending Right Now</h2>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {trendingProducts.map((product) => (
-                <ProductCard key={product.slug} product={product} />
+            <AnimatedSectionHeader
+              eyebrow={<><TrendingUp className="h-4 w-4" /> Trending</>}
+              eyebrowClass="text-purple-500"
+              title="Trending Right Now"
+            />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+              {trendingProducts.map((product, i) => (
+                <ProductCard key={product.slug} product={product} index={i} />
               ))}
             </div>
           </div>
@@ -162,39 +162,39 @@ export default function HomePage() {
       )}
 
       {/* Blog Posts */}
-      <section className="py-14 bg-muted/30">
+      <section className="py-16 bg-muted/30">
         <div className="container-custom">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="section-title">Latest Reviews &amp; Guides</h2>
-              <p className="section-subtitle">In-depth articles to help you buy smarter</p>
-            </div>
-            <Link href="/blog" className="btn-secondary hidden sm:flex text-sm">
-              All Articles <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatedSectionHeader
+            title="Latest Reviews & Guides"
+            subtitle="In-depth articles to help you buy smarter"
+            action={
+              <Link href="/blog" className="btn-secondary hidden sm:flex text-sm">
+                All Articles <ArrowRight className="h-4 w-4" />
+              </Link>
+            }
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {featuredBlogs.map((post, i) => (
-              <BlogCard key={post.slug} post={post} priority={i === 0} />
+              <BlogCard key={post.slug} post={post} priority={i === 0} index={i} />
             ))}
           </div>
         </div>
       </section>
 
       {/* Newsletter */}
-      <section className="py-14">
+      <section className="py-16">
         <div className="container-custom">
           <NewsletterSection />
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-14 bg-muted/30">
+      <section className="py-16 bg-muted/30">
         <div className="container-custom max-w-3xl">
-          <div className="text-center mb-10">
-            <h2 className="section-title">Frequently Asked Questions</h2>
+          <AnimatedSectionHeader title="Frequently Asked Questions" centered />
+          <div className="mt-10">
+            <FAQAccordion faqs={homeFAQs} />
           </div>
-          <FAQAccordion faqs={homeFAQs} />
         </div>
       </section>
 
