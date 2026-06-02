@@ -433,6 +433,30 @@ router.post("/digital-product", uploadFields, async (req, res, next) => {
     const productFile = req.files?.["file"]?.[0];
     const previewFile = req.files?.["preview"]?.[0];
 
+    // Read files to buffer for database persistence (Render ephemeral disk workaround)
+    let coverImageBuffer = undefined;
+    let coverImageMimeType = undefined;
+    if (imageFile) {
+      coverImageBuffer = fs.readFileSync(imageFile.path);
+      coverImageMimeType = imageFile.mimetype;
+    }
+
+    let fileBuffer = undefined;
+    let fileMimeType = undefined;
+    let fileOriginalName = undefined;
+    if (productFile) {
+      fileBuffer = fs.readFileSync(productFile.path);
+      fileMimeType = productFile.mimetype;
+      fileOriginalName = productFile.originalname;
+    }
+
+    let previewBuffer = undefined;
+    let previewMimeType = undefined;
+    if (previewFile) {
+      previewBuffer = fs.readFileSync(previewFile.path);
+      previewMimeType = previewFile.mimetype;
+    }
+
     // Cover image is required
     let imageUrl = req.body.imageUrl || "";
     if (imageFile) {
@@ -486,9 +510,25 @@ router.post("/digital-product", uploadFields, async (req, res, next) => {
       filePath,
       previewPath,
       downloadLimit: limitNum,
+      coverImageBuffer,
+      coverImageMimeType,
+      fileBuffer,
+      fileMimeType,
+      fileOriginalName,
+      previewBuffer,
+      previewMimeType,
     });
 
     await product.save();
+
+    // Clean up temporary uploads from disk to save space and remain tidy
+    try {
+      if (imageFile && fs.existsSync(imageFile.path)) fs.unlinkSync(imageFile.path);
+      if (productFile && fs.existsSync(productFile.path)) fs.unlinkSync(productFile.path);
+      if (previewFile && fs.existsSync(previewFile.path)) fs.unlinkSync(previewFile.path);
+    } catch (cleanErr) {
+      console.warn("⚠️ Warning: Temporary file clean up failed:", cleanErr.message);
+    }
 
     res.status(201).json({
       success: true,
@@ -526,19 +566,35 @@ router.put("/digital-product/:id", uploadFields, async (req, res, next) => {
 
     if (imageFile) {
       product.imageUrl = `/api/v1/digital-store/image/${imageFile.filename}`;
+      product.coverImageBuffer = fs.readFileSync(imageFile.path);
+      product.coverImageMimeType = imageFile.mimetype;
     } else if (bodyImageUrl) {
       product.imageUrl = bodyImageUrl;
     }
 
     if (productFile) {
       product.filePath = productFile.path;
+      product.fileBuffer = fs.readFileSync(productFile.path);
+      product.fileMimeType = productFile.mimetype;
+      product.fileOriginalName = productFile.originalname;
     }
 
     if (previewFile) {
       product.previewPath = previewFile.path;
+      product.previewBuffer = fs.readFileSync(previewFile.path);
+      product.previewMimeType = previewFile.mimetype;
     }
 
     await product.save();
+
+    // Clean up temporary uploads from disk to save space and remain tidy
+    try {
+      if (imageFile && fs.existsSync(imageFile.path)) fs.unlinkSync(imageFile.path);
+      if (productFile && fs.existsSync(productFile.path)) fs.unlinkSync(productFile.path);
+      if (previewFile && fs.existsSync(previewFile.path)) fs.unlinkSync(previewFile.path);
+    } catch (cleanErr) {
+      console.warn("⚠️ Warning: Temporary file clean up failed:", cleanErr.message);
+    }
 
     res.status(200).json({
       success: true,

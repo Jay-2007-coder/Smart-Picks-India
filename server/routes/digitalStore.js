@@ -91,19 +91,32 @@ router.get("/", async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────────────────────
 // PUBLIC: SERVE COVER IMAGES SECURELY
 // ──────────────────────────────────────────────────────────────────────────────
-router.get("/image/:filename", (req, res) => {
-  const { filename } = req.params;
-  const ext = path.extname(filename).toLowerCase();
-  const allowedExtensions = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"];
-  if (!allowedExtensions.includes(ext)) {
-    return res.status(403).json({ success: false, message: "Access denied." });
-  }
-  const filePath = path.join(UPLOADS_DIR, filename);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    // If file does not exist locally (e.g. uploaded live on Render), redirect to live site to download
+router.get("/image/:filename", async (req, res, next) => {
+  try {
+    const { filename } = req.params;
+    const ext = path.extname(filename).toLowerCase();
+    const allowedExtensions = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"];
+    if (!allowedExtensions.includes(ext)) {
+      return res.status(403).json({ success: false, message: "Access denied." });
+    }
+
+    const filePath = path.join(UPLOADS_DIR, filename);
+    if (fs.existsSync(filePath)) {
+      return res.sendFile(filePath);
+    }
+
+    // Check if the image exists in MongoDB (Render ephemeral disk workaround)
+    const product = await DigitalProduct.findOne({ imageUrl: new RegExp(filename, "i") });
+    if (product && product.coverImageBuffer) {
+      res.setHeader("Content-Type", product.coverImageMimeType || "image/webp");
+      res.setHeader("Cache-Control", "public, max-age=86400"); // Cache for 1 day
+      return res.send(product.coverImageBuffer);
+    }
+
+    // If file does not exist locally and is not in DB, redirect to live site
     res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/image/${filename}`);
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -197,30 +210,52 @@ router.get("/download/:token", async (req, res, next) => {
     }
 
     const filePath = product.filePath;
-    if (!filePath || !fs.existsSync(filePath)) {
-      // If file doesn't exist locally, redirect to the live server to download it
-      return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download/${token}`);
+    if (filePath && fs.existsSync(filePath)) {
+      // Increment download metrics
+      purchase.downloadCount += 1;
+      await purchase.save();
+
+      product.downloadCount += 1;
+      await product.save();
+
+      // Log history
+      const history = new DownloadHistory({
+        userId: purchase.userId._id,
+        productId: product._id,
+        purchaseId: purchase._id,
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
+        userAgent: req.headers["user-agent"] || "",
+      });
+      await history.save();
+
+      const fileBasename = path.basename(filePath);
+      return res.download(filePath, fileBasename);
     }
 
-    // Increment download metrics
-    purchase.downloadCount += 1;
-    await purchase.save();
+    // Fallback: Check if stored in MongoDB as a binary buffer
+    if (product.fileBuffer) {
+      purchase.downloadCount += 1;
+      await purchase.save();
 
-    product.downloadCount += 1;
-    await product.save();
+      product.downloadCount += 1;
+      await product.save();
 
-    // Log history
-    const history = new DownloadHistory({
-      userId: purchase.userId._id,
-      productId: product._id,
-      purchaseId: purchase._id,
-      ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
-      userAgent: req.headers["user-agent"] || "",
-    });
-    await history.save();
+      const history = new DownloadHistory({
+        userId: purchase.userId._id,
+        productId: product._id,
+        purchaseId: purchase._id,
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
+        userAgent: req.headers["user-agent"] || "",
+      });
+      await history.save();
 
-    const fileBasename = path.basename(filePath);
-    res.download(filePath, fileBasename);
+      res.setHeader("Content-Disposition", `attachment; filename="${product.fileOriginalName || 'resource.pdf'}"`);
+      res.setHeader("Content-Type", product.fileMimeType || "application/octet-stream");
+      return res.send(product.fileBuffer);
+    }
+
+    // Otherwise redirect to the live site to download it
+    return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download/${token}`);
   } catch (err) {
     next(err);
   }
@@ -241,27 +276,46 @@ router.get("/download-free/:id", protect, async (req, res, next) => {
     }
 
     const filePath = product.filePath;
-    if (!filePath || !fs.existsSync(filePath)) {
-      // If file doesn't exist locally, redirect to the live server to download it
-      return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download-free/${id}`);
+    if (filePath && fs.existsSync(filePath)) {
+      // Increment count
+      product.downloadCount += 1;
+      await product.save();
+
+      // Log history
+      const history = new DownloadHistory({
+        userId: req.user._id,
+        productId: product._id,
+        purchaseId: null,
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
+        userAgent: req.headers["user-agent"] || "",
+      });
+      await history.save();
+
+      const fileBasename = path.basename(filePath);
+      return res.download(filePath, fileBasename);
     }
 
-    // Increment count
-    product.downloadCount += 1;
-    await product.save();
+    // Fallback: Check if stored in MongoDB as a binary buffer
+    if (product.fileBuffer) {
+      product.downloadCount += 1;
+      await product.save();
 
-    // Log history
-    const history = new DownloadHistory({
-      userId: req.user._id,
-      productId: product._id,
-      purchaseId: null,
-      ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
-      userAgent: req.headers["user-agent"] || "",
-    });
-    await history.save();
+      const history = new DownloadHistory({
+        userId: req.user._id,
+        productId: product._id,
+        purchaseId: null,
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
+        userAgent: req.headers["user-agent"] || "",
+      });
+      await history.save();
 
-    const fileBasename = path.basename(filePath);
-    res.download(filePath, fileBasename);
+      res.setHeader("Content-Disposition", `attachment; filename="${product.fileOriginalName || 'resource.pdf'}"`);
+      res.setHeader("Content-Type", product.fileMimeType || "application/octet-stream");
+      return res.send(product.fileBuffer);
+    }
+
+    // Otherwise redirect to the live site
+    return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download-free/${id}`);
   } catch (err) {
     next(err);
   }

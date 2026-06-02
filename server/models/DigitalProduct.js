@@ -89,6 +89,28 @@ const DigitalProductSchema = new Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
+    // Binary attachments for persistence on ephemeral hosting platforms (like Render Free Tier)
+    coverImageBuffer: {
+      type: Buffer,
+    },
+    coverImageMimeType: {
+      type: String,
+    },
+    fileBuffer: {
+      type: Buffer,
+    },
+    fileMimeType: {
+      type: String,
+    },
+    fileOriginalName: {
+      type: String,
+    },
+    previewBuffer: {
+      type: Buffer,
+    },
+    previewMimeType: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
