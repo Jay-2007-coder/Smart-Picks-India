@@ -30,6 +30,7 @@ export default function CodingHelper() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<HelperResult | null>(null);
+  const [quotaFallback, setQuotaFallback] = useState(false);
   
   // UI Preferences
   const [themeKey, setThemeKey] = useState("vscode");
@@ -105,6 +106,7 @@ export default function CodingHelper() {
     setLoading(true);
     setError("");
     setResult(null);
+    setQuotaFallback(false);
     setCopied(false);
     setSimState("idle");
     setSimLogs([]);
@@ -118,6 +120,7 @@ export default function CodingHelper() {
       const data = await response.json();
       if (response.ok && data.success) {
         setResult(data.result);
+        setQuotaFallback(!!data.quotaFallback);
         setActiveTab("refactored");
       } else {
         setError(data.message || "Failed to analyze code solution. Please try again.");
@@ -471,6 +474,24 @@ export default function CodingHelper() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-6"
               >
+                {/* Quota Fallback Banner */}
+                {quotaFallback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/8 px-4 py-3.5"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                        AI Quota Reached — Showing Offline Analysis
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                        All Gemini models hit the free-tier limit. This is a smart demo result. Wait ~1 min and re-submit for a live AI review.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
                 {/* Summary Badges */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-card border border-border/80 rounded-3xl p-4 shadow-sm text-center">

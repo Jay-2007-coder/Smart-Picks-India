@@ -8,46 +8,92 @@ router.use(protect);
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
-// Helper to make Gemini API requests
+// Gemini model priority cascade — cheapest/least-limited first on quota error
+const GEMINI_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-1.5-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-1.0-pro",
+];
+
+// Check if an error is a rate-limit / quota exhaustion error
+function isQuotaError(errMsg = "") {
+  const msg = errMsg.toLowerCase();
+  return (
+    msg.includes("quota") ||
+    msg.includes("rate limit") ||
+    msg.includes("resource_exhausted") ||
+    msg.includes("429") ||
+    msg.includes("too many requests") ||
+    msg.includes("free_tier")
+  );
+}
+
+/**
+ * callGemini — tries each model in GEMINI_MODELS cascade.
+ * Returns null (triggering mock fallback in route) when all models fail.
+ */
 async function callGemini(systemPrompt, userPrompt, responseJson = false) {
   if (!GEMINI_API_KEY) {
-    console.warn("⚠️ GEMINI_API_KEY not configured. Running AI helper in mock fallback mode.");
+    console.warn("⚠️  GEMINI_API_KEY not configured. Running AI helper in mock fallback mode.");
     return null;
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  
   const generationConfig = {
     temperature: 0.7,
-    maxOutputTokens: 1200,
-    responseMimeType: responseJson ? "application/json" : "text/plain"
+    maxOutputTokens: 1500,
+    responseMimeType: responseJson ? "application/json" : "text/plain",
   };
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userPrompt }],
-        },
-      ],
-      systemInstruction: {
-        parts: [{ text: systemPrompt }],
-      },
-      generationConfig,
-    }),
-  });
+  let lastError = null;
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error?.message || `HTTP status ${response.status}`);
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errMsg = data?.error?.message || `HTTP ${response.status}`;
+        if (isQuotaError(errMsg) || response.status === 429) {
+          console.warn(`⚡ Quota exhausted on ${model}. Trying next model...`);
+          lastError = errMsg;
+          continue; // try next model
+        }
+        throw new Error(errMsg); // non-quota error — bubble up
+      }
+
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (text) {
+        if (model !== GEMINI_MODELS[0]) {
+          console.info(`✅ Served by fallback model: ${model}`);
+        }
+        return text;
+      }
+
+      lastError = "Empty response";
+    } catch (err) {
+      if (isQuotaError(err.message)) {
+        console.warn(`⚡ Quota error on ${model}: ${err.message}. Trying next...`);
+        lastError = err.message;
+        continue;
+      }
+      throw err; // re-throw non-quota errors
+    }
   }
 
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  // All models exhausted — return null to trigger mock fallback
+  console.warn(`🚫 All Gemini models quota-exhausted. Using mock fallback. Last error: ${lastError}`);
+  return null;
 }
 
 // Helper to clean JSON response from Gemini code fences
@@ -102,7 +148,13 @@ JSON format:
 - Target Company Type: ${companyStr}
 Provide high-yield, conceptual, and coding questions commonly asked in actual rounds.`;
 
-    const aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    // Wrapped: callGemini returns null on quota exhaustion
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini interview-generator error:", aiErr.message);
+    }
 
     if (!aiOutput) {
       // Mock Fallback
@@ -172,7 +224,13 @@ ${resumeText}
 Job Description:
 ${jobDescription}`;
 
-    const aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    // Wrapped: callGemini returns null on quota exhaustion
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini resume-analyzer error:", aiErr.message);
+    }
 
     if (!aiOutput) {
       // Mock Fallback
@@ -232,7 +290,13 @@ Maintain high academic standard tone.`;
 - Tech Stack: ${techStack}
 - Details: ${description}`;
 
-    const markdownOutput = await callGemini(systemPrompt, userPrompt);
+    // Wrapped: callGemini returns null on quota exhaustion
+    let markdownOutput = null;
+    try {
+      markdownOutput = await callGemini(systemPrompt, userPrompt);
+    } catch (aiErr) {
+      console.error("Gemini project-report error:", aiErr.message);
+    }
 
     if (!markdownOutput) {
       // Mock Fallback
@@ -297,32 +361,40 @@ Language: ${langStr}
 Code submitted:
 ${code}`;
 
-    const aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    // callGemini returns null when all models are quota-exhausted → use mock
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini call failed (non-quota error):", aiErr.message);
+      // still fall through to mock
+    }
 
     if (!aiOutput) {
-      // Mock Fallback
+      // Intelligent mock fallback — quota exhausted or key missing
       const mockResult = {
-        timeComplexity: "O(n^2)",
+        timeComplexity: "O(n²)",
         spaceComplexity: "O(1)",
-        bugs: ["Uses nested loops, which is inefficient for large datasets", "Missing null parameter checks"],
-        refactoredSolution: `
-// Optimized using a Hash Map
+        bugs: [
+          "Uses nested loops — inefficient for large datasets",
+          "Missing null / empty-array boundary checks",
+        ],
+        refactoredSolution: `// Optimized using a Hash Map — O(n) time, O(n) space
 function twoSum(nums, target) {
   if (!nums || nums.length < 2) return [];
   const map = new Map();
   for (let i = 0; i < nums.length; i++) {
     const complement = target - nums[i];
-    if (map.has(complement)) {
-      return [map.get(complement), i];
-    }
+    if (map.has(complement)) return [map.get(complement), i];
     map.set(nums[i], i);
   }
   return [];
-}
-        `.trim(),
-        explanation: "The original nested loops search has O(n^2) time complexity. By introducing a Hash Map to record complement coordinates, we optimize lookups to O(1), bringing the overall time complexity down to O(n) linear search, trading a minor O(n) memory space.",
+}`,
+        explanation:
+          "⚠️ AI quota reached — showing a smart offline analysis. The brute-force O(n²) nested loop approach is replaced with a single-pass Hash Map that reduces time complexity to O(n) by storing each number's index and checking for its complement in O(1) lookup time.",
+        _quotaFallback: true,
       };
-      return res.status(200).json({ success: true, result: mockResult });
+      return res.status(200).json({ success: true, result: mockResult, quotaFallback: true });
     }
 
     try {
@@ -376,30 +448,59 @@ Keep answers concise, structured, and student-focused. Avoid excessive verbosity
       parts: [{ text: message }],
     });
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: contents,
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
-        },
-      }),
-    });
+    // Use model cascade with quota fallback
+    const generationConfig = { temperature: 0.7, maxOutputTokens: 1200 };
+    let reply = null;
+    let lastStudyError = null;
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error?.message || `HTTP status ${response.status}`);
+    for (const model of GEMINI_MODELS) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents,
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          const errMsg = data?.error?.message || `HTTP ${response.status}`;
+          if (isQuotaError(errMsg) || response.status === 429) {
+            console.warn(`⚡ Study-assistant quota on ${model}. Trying next...`);
+            lastStudyError = errMsg;
+            continue;
+          }
+          throw new Error(errMsg);
+        }
+
+        reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        if (reply) {
+          if (model !== GEMINI_MODELS[0]) console.info(`✅ Study-assistant served by: ${model}`);
+          break;
+        }
+      } catch (fetchErr) {
+        if (isQuotaError(fetchErr.message)) {
+          lastStudyError = fetchErr.message;
+          continue;
+        }
+        throw fetchErr;
+      }
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't formulate a response. Please try again.";
+    if (!reply) {
+      // All models quota-exhausted — return friendly offline message
+      reply = `⚠️ **AI Quota Reached** — All Gemini models are temporarily rate-limited on the free tier.\n\n` +
+        `**What you can do:**\n` +
+        `- Wait ~1 minute and try again (free tier resets per minute)\n` +
+        `- Upgrade your Gemini API key plan at [ai.google.dev](https://ai.google.dev)\n` +
+        `- In the meantime, I can still help with offline explanations!\n\n` +
+        `*(Last error: ${lastStudyError || "quota exhausted"})*`;
+    }
+
     res.status(200).json({ success: true, reply });
   } catch (err) {
     next(err);
