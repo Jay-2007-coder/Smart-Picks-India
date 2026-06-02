@@ -49,11 +49,22 @@ async function callGemini(systemPrompt, userPrompt) {
 // Helper to clean JSON response from Gemini code fences
 function cleanGeminiJson(rawText) {
   let cleanText = rawText.trim();
-  if (cleanText.startsWith("```json")) {
-    cleanText = cleanText.substring(7, cleanText.length - 3);
-  } else if (cleanText.startsWith("```")) {
-    cleanText = cleanText.substring(3, cleanText.length - 3);
+  
+  // Find first [ or { and last ] or }
+  const firstBracket = Math.min(
+    cleanText.indexOf("[") === -1 ? Infinity : cleanText.indexOf("["),
+    cleanText.indexOf("{") === -1 ? Infinity : cleanText.indexOf("{")
+  );
+  
+  const lastBracket = Math.max(
+    cleanText.lastIndexOf("]"),
+    cleanText.lastIndexOf("}")
+  );
+  
+  if (firstBracket !== Infinity && lastBracket !== -1 && lastBracket > firstBracket) {
+    cleanText = cleanText.substring(firstBracket, lastBracket + 1);
   }
+  
   return JSON.parse(cleanText.trim());
 }
 
