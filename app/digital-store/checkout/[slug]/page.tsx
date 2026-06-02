@@ -9,7 +9,7 @@ import { CreditCard, ArrowLeft, Send, CheckCircle2, ShieldAlert, Sparkles, Downl
 interface ProductPreview {
   title: string;
   description: string;
-  image: string;
+  imageUrl: string;
   price: number;
 }
 
@@ -218,7 +218,7 @@ export default function DigitalCheckout() {
             {/* Product Summary */}
             <div className="flex items-center gap-4 bg-muted/30 border border-border/50 rounded-2xl p-4 text-left">
               <div className="relative h-14 w-20 shrink-0 rounded-lg overflow-hidden bg-muted">
-                <img src={product.image} alt={product.title} className="object-cover w-full h-full" />
+                <img src={product.imageUrl} alt={product.title} className="object-cover w-full h-full" />
               </div>
               <div className="space-y-1">
                 <h4 className="font-extrabold text-foreground text-xs line-clamp-1">{product.title}</h4>
@@ -414,7 +414,7 @@ export default function DigitalCheckout() {
                 <h4 className="font-extrabold text-foreground text-sm">Purchase Details</h4>
                 <div className="space-y-4">
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-muted border border-border/50">
-                    <img src={product.image} alt={product.title} className="object-cover w-full h-full" />
+                    <img src={product.imageUrl} alt={product.title} className="object-cover w-full h-full" />
                   </div>
                   <div>
                     <h5 className="font-extrabold text-foreground text-xs leading-snug line-clamp-2">
