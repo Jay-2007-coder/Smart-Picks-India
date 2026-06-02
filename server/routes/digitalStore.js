@@ -102,7 +102,8 @@ router.get("/image/:filename", (req, res) => {
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
   } else {
-    res.status(404).json({ success: false, message: "Image not found." });
+    // If file does not exist locally (e.g. uploaded live on Render), redirect to live site to download
+    res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/image/${filename}`);
   }
 });
 
@@ -197,7 +198,8 @@ router.get("/download/:token", async (req, res, next) => {
 
     const filePath = product.filePath;
     if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, message: "File not found on server." });
+      // If file doesn't exist locally, redirect to the live server to download it
+      return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download/${token}`);
     }
 
     // Increment download metrics
@@ -240,7 +242,8 @@ router.get("/download-free/:id", protect, async (req, res, next) => {
 
     const filePath = product.filePath;
     if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, message: "File not found on server." });
+      // If file doesn't exist locally, redirect to the live server to download it
+      return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download-free/${id}`);
     }
 
     // Increment count
