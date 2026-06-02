@@ -2,10 +2,12 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle, Lock, Check, Copy } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle, Lock, Check, Copy, Settings, Laptop } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { tokenize, THEME_STYLES, Token } from "@/lib/highlighter";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,9 +17,13 @@ interface Message {
 interface CodeBlockProps {
   language: string;
   value: string;
+  themeKey: string;
+  fontSize: string;
+  fontFamily: string;
 }
 
-function CodeBlock({ language, value }: CodeBlockProps) {
+function CodeBlock({ language, value, themeKey, fontSize, fontFamily }: CodeBlockProps) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -26,32 +32,106 @@ function CodeBlock({ language, value }: CodeBlockProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSendToDsa = () => {
+    try {
+      sessionStorage.setItem("pending_dsa_code", value);
+      sessionStorage.setItem("pending_dsa_lang", language);
+      router.push("/student-hub/coding-helper");
+    } catch {
+      // ignore
+    }
+  };
+
+  const activeTheme = THEME_STYLES[themeKey] || THEME_STYLES.dracula;
+  const tokens = tokenize(value, language);
+
+  // Group tokens into lines to render line numbers
+  const lines: Token[][] = [[]];
+  let currentLineIdx = 0;
+
+  tokens.forEach((token) => {
+    if (token.value.includes("\n")) {
+      const parts = token.value.split("\n");
+      parts.forEach((part, partIdx) => {
+        if (part) {
+          lines[currentLineIdx].push({ type: token.type, value: part });
+        }
+        if (partIdx < parts.length - 1) {
+          lines.push([]);
+          currentLineIdx++;
+        }
+      });
+    } else {
+      lines[currentLineIdx].push(token);
+    }
+  });
+
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 text-slate-100 my-4 shadow-lg text-left no-print max-w-full">
+    <div className={`relative rounded-2xl overflow-hidden border ${activeTheme.border} ${activeTheme.bg} ${activeTheme.text} my-5 shadow-lg text-left no-print max-w-full`}>
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950/80">
-        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
-          {language}
-        </span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 hover:text-slate-100 bg-slate-800 border border-slate-700/50 px-2 py-0.5 rounded transition-all cursor-pointer"
-        >
-          {copied ? (
-            <>
-              <Check className="h-3 w-3 text-emerald-500" /> Copied!
-            </>
-          ) : (
-            <>
-              <Copy className="h-3 w-3" /> Copy
-            </>
-          )}
-        </button>
+      <div className={`flex items-center justify-between px-4 py-2 border-b ${activeTheme.border} ${activeTheme.headerBg}`}>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">
+            {language}
+          </span>
+          <span className="h-1 w-1 rounded-full bg-slate-500" />
+          <span className="text-[9px] text-muted-foreground font-mono">
+            {lines.length} line{lines.length === 1 ? "" : "s"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSendToDsa}
+            className="flex items-center gap-1 text-[9px] font-black text-brand-600 hover:text-brand-700 bg-brand-500/10 px-2 py-0.5 rounded transition-all cursor-pointer"
+            title="Analyze in DSA Coding Helper"
+          >
+            <Laptop className="h-3 w-3" /> Analyze DSA
+          </button>
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-[9px] font-black text-muted-foreground hover:text-foreground bg-slate-200 dark:bg-slate-800 border border-border/10 px-2 py-0.5 rounded transition-all cursor-pointer"
+          >
+            {copied ? (
+              <>
+                <Check className="h-3 w-3 text-emerald-500" /> Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3" /> Copy
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Code Area */}
-      <pre className="p-4 overflow-x-auto text-[11px] font-mono leading-relaxed bg-slate-900 scrollbar-thin">
-        <code>{value}</code>
+      <pre
+        className="p-4 overflow-x-auto leading-relaxed scrollbar-thin overflow-y-hidden"
+        style={{ fontSize, fontFamily }}
+      >
+        <code className="block select-text">
+          {lines.map((lineTokens, lineIdx) => (
+            <div key={lineIdx} className="flex hover:bg-slate-500/5 px-1 -mx-1">
+              <span className={`w-8 shrink-0 select-none text-right pr-3 font-mono ${activeTheme.lineNumberColor}`}>
+                {lineIdx + 1}
+              </span>
+              <span className="flex-1">
+                {lineTokens.length === 0 ? (
+                  <span className="inline-block">&nbsp;</span>
+                ) : (
+                  lineTokens.map((token, tokenIdx) => {
+                    const color = activeTheme.tokenColors[token.type] || activeTheme.tokenColors.plain;
+                    return (
+                      <span key={tokenIdx} style={{ color }}>
+                        {token.value}
+                      </span>
+                    );
+                  })
+                )}
+              </span>
+            </div>
+          ))}
+        </code>
       </pre>
     </div>
   );
@@ -75,6 +155,13 @@ export default function AIStudyAssistant() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  // Theme settings states
+  const [themeKey, setThemeKey] = useState("dracula");
+  const [fontSize, setFontSize] = useState("12px");
+  const [fontFamily, setFontFamily] = useState("Fira Code, monospace");
+  const [showSettings, setShowSettings] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -84,6 +171,32 @@ export default function AIStudyAssistant() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem("study_buddy_theme");
+      const savedSize = localStorage.getItem("study_buddy_font_size");
+      const savedFont = localStorage.getItem("study_buddy_font_family");
+      if (savedTheme) setThemeKey(savedTheme);
+      if (savedSize) setFontSize(savedSize);
+      if (savedFont) setFontFamily(savedFont);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleSavePref = (key: string, val: string, storageName: string) => {
+    if (key === "theme") setThemeKey(val);
+    else if (key === "size") setFontSize(val);
+    else if (key === "font") setFontFamily(val);
+
+    try {
+      localStorage.setItem(storageName, val);
+    } catch {
+      // ignore
+    }
+  };
 
   const handleSend = async (textToSend?: string) => {
     const messageText = textToSend || input;
@@ -99,7 +212,6 @@ export default function AIStudyAssistant() {
     setError("");
 
     try {
-      // Map history for API
       const history = newMessages
         .slice(1, -1) // skip welcome message and last user query
         .map((m) => ({
@@ -176,12 +288,69 @@ export default function AIStudyAssistant() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950/20 py-12">
       <div className="container-custom max-w-4xl flex flex-col h-[calc(100vh-8rem)]">
         {/* Back Link */}
-        <Link
-          href="/student-hub"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground mb-4 transition-colors no-print shrink-0"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Hub
-        </Link>
+        <div className="flex items-center justify-between mb-4 shrink-0 no-print">
+          <Link
+            href="/student-hub"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Hub
+          </Link>
+          
+          <div className="relative">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="inline-flex items-center gap-1 text-[11px] font-black text-muted-foreground hover:text-foreground bg-card border border-border/80 px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+            >
+              <Settings className="h-3.5 w-3.5" /> Editor Settings
+            </button>
+
+            {showSettings && (
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-2xl shadow-lg p-4 z-50 space-y-3">
+                <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-wider pb-1.5 border-b border-border/40">IDE Settings</h4>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-muted-foreground">Theme</label>
+                  <select
+                    value={themeKey}
+                    onChange={(e) => handleSavePref("theme", e.target.value, "study_buddy_theme")}
+                    className="h-8 w-full bg-background border border-border rounded-xl px-2 text-xs font-bold text-foreground focus-visible:outline-none"
+                  >
+                    <option value="dracula">Dracula</option>
+                    <option value="vscode">VS Code Dark</option>
+                    <option value="onedark">One Dark</option>
+                    <option value="monokai">Monokai</option>
+                    <option value="github">GitHub Theme</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-muted-foreground">Font Size</label>
+                  <select
+                    value={fontSize}
+                    onChange={(e) => handleSavePref("size", e.target.value, "study_buddy_font_size")}
+                    className="h-8 w-full bg-background border border-border rounded-xl px-2 text-xs font-bold text-foreground focus-visible:outline-none"
+                  >
+                    <option value="11px">11px</option>
+                    <option value="12px">12px (Default)</option>
+                    <option value="13px">13px</option>
+                    <option value="14px">14px</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-muted-foreground">Font Family</label>
+                  <select
+                    value={fontFamily}
+                    onChange={(e) => handleSavePref("font", e.target.value, "study_buddy_font_family")}
+                    className="h-8 w-full bg-background border border-border rounded-xl px-2 text-xs font-bold text-foreground focus-visible:outline-none"
+                  >
+                    <option value="Fira Code, monospace">Fira Code</option>
+                    <option value="JetBrains Mono, monospace">JetBrains Mono</option>
+                    <option value="Source Code Pro, monospace">Source Code Pro</option>
+                    <option value="Courier New, monospace">Courier New</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Title Header */}
         <div className="border-b border-border/80 pb-4 mb-6 flex justify-between items-center shrink-0">
@@ -221,7 +390,7 @@ export default function AIStudyAssistant() {
             {messages.map((m, idx) => {
               const isAssistant = m.role === "assistant";
               return (
-                <div key={idx} className={`flex gap-3 max-w-[85%] ${isAssistant ? "mr-auto" : "ml-auto flex-row-reverse"}`}>
+                <div key={idx} className={`flex gap-3 max-w-[90%] ${isAssistant ? "mr-auto" : "ml-auto flex-row-reverse"}`}>
                   <div
                     className={`h-8.5 w-8.5 shrink-0 rounded-xl flex items-center justify-center text-xs ${
                       isAssistant
@@ -266,6 +435,9 @@ export default function AIStudyAssistant() {
                               <CodeBlock
                                 language={match[1]}
                                 value={String(children).replace(/\n$/, "")}
+                                themeKey={themeKey}
+                                fontSize={fontSize}
+                                fontFamily={fontFamily}
                               />
                             );
                           },

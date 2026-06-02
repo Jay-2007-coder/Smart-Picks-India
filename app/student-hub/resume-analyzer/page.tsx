@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Sparkles, AlertTriangle, Play, RefreshCw, Key, HelpCircle, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { motion } from "framer-motion";
 
 interface BulletImprovement {
   original: string;
@@ -207,21 +208,72 @@ export default function ResumeAnalyzer() {
 
             {result && (
               <div className="space-y-6">
-                {/* Score panel */}
-                <div className="bg-card border border-border/80 rounded-3xl p-6 shadow-md text-center flex flex-col items-center justify-center space-y-4">
-                  <div className="relative flex items-center justify-center h-28 w-28 rounded-full border-4 border-brand-500/10">
-                    <span className="text-3xl font-black text-brand-600">{result.matchScore}%</span>
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-foreground text-sm">ATS Compatibility Score</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 max-w-xs leading-relaxed mx-auto">
-                      Based on keyword compliance, experience alignments, and technical requirements.
-                    </p>
-                  </div>
-                </div>
+                {/* Score panel with animated SVG ring */}
+                {(() => {
+                  const radius = 54;
+                  const circumference = 2 * Math.PI * radius;
+                  const offset = circumference - (result.matchScore / 100) * circumference;
+                  const scoreColor =
+                    result.matchScore >= 80
+                      ? "stroke-emerald-500"
+                      : result.matchScore >= 55
+                      ? "stroke-amber-500"
+                      : "stroke-rose-500";
+                  const scoreLabel =
+                    result.matchScore >= 80 ? "Strong Match" : result.matchScore >= 55 ? "Moderate Match" : "Weak Match";
+                  const labelColor =
+                    result.matchScore >= 80
+                      ? "text-emerald-600"
+                      : result.matchScore >= 55
+                      ? "text-amber-600"
+                      : "text-rose-600";
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-card border border-border/80 rounded-3xl p-6 shadow-md text-center flex flex-col items-center justify-center space-y-4"
+                    >
+                      <div className="relative flex items-center justify-center h-32 w-32">
+                        <svg className="h-full w-full -rotate-90">
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r={radius}
+                            className="stroke-slate-200 dark:stroke-slate-800"
+                            strokeWidth="9"
+                            fill="transparent"
+                          />
+                          <motion.circle
+                            cx="64"
+                            cy="64"
+                            r={radius}
+                            className={scoreColor}
+                            strokeWidth="9"
+                            fill="transparent"
+                            strokeDasharray={circumference}
+                            initial={{ strokeDashoffset: circumference }}
+                            animate={{ strokeDashoffset: offset }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute flex flex-col items-center justify-center">
+                          <span className="text-2xl font-black text-foreground">{result.matchScore}%</span>
+                          <span className={`text-[9px] font-black uppercase tracking-wider ${labelColor}`}>{scoreLabel}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-foreground text-sm">ATS Compatibility Score</h3>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 max-w-xs leading-relaxed mx-auto">
+                          Based on keyword compliance, experience alignments, and technical requirements.
+                        </p>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
 
                 {/* Missing Keywords badging */}
-                <div className="bg-card border border-border/80 rounded-3xl p-5 shadow-sm space-y-3">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border/80 rounded-3xl p-5 shadow-sm space-y-3">
                   <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Key className="h-4 w-4 text-brand-600" /> Missing Target Keywords
                   </h4>
@@ -241,7 +293,7 @@ export default function ResumeAnalyzer() {
                       </span>
                     )}
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Sentence Improvements */}
                 <div className="bg-card border border-border/80 rounded-3xl p-5 shadow-sm space-y-4">
@@ -254,13 +306,13 @@ export default function ResumeAnalyzer() {
                         <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-border/30">
                           <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">Original</p>
                           <p className="text-muted-foreground italic font-semibold leading-relaxed">
-                            "{bullet.original}"
+                            &quot;{bullet.original}&quot;
                           </p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-brand-500/5 border border-brand-500/15">
                           <p className="text-[10px] font-black uppercase text-brand-600 mb-1">AI Optimized</p>
                           <p className="text-foreground font-bold leading-relaxed">
-                            "{bullet.improved}"
+                            &quot;{bullet.improved}&quot;
                           </p>
                         </div>
                       </div>
