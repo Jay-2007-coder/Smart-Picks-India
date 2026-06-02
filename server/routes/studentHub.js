@@ -9,13 +9,20 @@ router.use(protect);
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 // Helper to make Gemini API requests
-async function callGemini(systemPrompt, userPrompt) {
+async function callGemini(systemPrompt, userPrompt, responseJson = false) {
   if (!GEMINI_API_KEY) {
     console.warn("⚠️ GEMINI_API_KEY not configured. Running AI helper in mock fallback mode.");
     return null;
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  
+  const generationConfig = {
+    temperature: 0.7,
+    maxOutputTokens: 1200,
+    responseMimeType: responseJson ? "application/json" : "text/plain"
+  };
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -31,10 +38,7 @@ async function callGemini(systemPrompt, userPrompt) {
       systemInstruction: {
         parts: [{ text: systemPrompt }],
       },
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1200,
-      },
+      generationConfig,
     }),
   });
 
@@ -98,7 +102,7 @@ JSON format:
 - Target Company Type: ${companyStr}
 Provide high-yield, conceptual, and coding questions commonly asked in actual rounds.`;
 
-    const aiOutput = await callGemini(systemPrompt, userPrompt);
+    const aiOutput = await callGemini(systemPrompt, userPrompt, true);
 
     if (!aiOutput) {
       // Mock Fallback
@@ -168,7 +172,7 @@ ${resumeText}
 Job Description:
 ${jobDescription}`;
 
-    const aiOutput = await callGemini(systemPrompt, userPrompt);
+    const aiOutput = await callGemini(systemPrompt, userPrompt, true);
 
     if (!aiOutput) {
       // Mock Fallback
@@ -293,7 +297,7 @@ Language: ${langStr}
 Code submitted:
 ${code}`;
 
-    const aiOutput = await callGemini(systemPrompt, userPrompt);
+    const aiOutput = await callGemini(systemPrompt, userPrompt, true);
 
     if (!aiOutput) {
       // Mock Fallback
