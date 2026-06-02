@@ -2,12 +2,59 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle, Lock } from "lucide-react";
+import { ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle, Lock, Check, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+interface CodeBlockProps {
+  language: string;
+  value: string;
+}
+
+function CodeBlock({ language, value }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 text-slate-100 my-4 shadow-lg text-left no-print max-w-full">
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950/80">
+        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+          {language}
+        </span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 hover:text-slate-100 bg-slate-800 border border-slate-700/50 px-2 py-0.5 rounded transition-all cursor-pointer"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3 w-3 text-emerald-500" /> Copied!
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" /> Copy
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Code Area */}
+      <pre className="p-4 overflow-x-auto text-[11px] font-mono leading-relaxed bg-slate-900 scrollbar-thin">
+        <code>{value}</code>
+      </pre>
+    </div>
+  );
 }
 
 const PRESETS = [
@@ -185,13 +232,50 @@ export default function AIStudyAssistant() {
                     {isAssistant ? <Bot className="h-4.5 w-4.5" /> : <User className="h-4.5 w-4.5" />}
                   </div>
                   <div
-                    className={`p-3.5 rounded-2xl text-xs font-semibold leading-relaxed whitespace-pre-line ${
+                    className={`p-3.5 rounded-2xl text-xs font-semibold leading-relaxed ${
                       isAssistant
                         ? "bg-muted/40 text-foreground"
                         : "bg-brand-600 text-white"
                     }`}
                   >
-                    {m.content}
+                    {isAssistant ? (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          h1: ({ children }) => <h1 className="text-sm font-black mt-3 mb-1.5 text-foreground uppercase tracking-wider">{children}</h1>,
+                          h2: ({ children }) => <h2 className="text-xs font-black mt-2 mb-1 text-foreground uppercase tracking-wider">{children}</h2>,
+                          h3: ({ children }) => <h3 className="text-xs font-bold mt-2 mb-1 text-foreground">{children}</h3>,
+                          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                          code(props: any) {
+                            const { children, className, node, ...rest } = props;
+                            const match = /language-(\w+)/.exec(className || "");
+                            const isInline = !match;
+                            
+                            if (isInline) {
+                              return (
+                                <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono font-bold text-brand-600 dark:text-brand-400" {...rest}>
+                                  {children}
+                                </code>
+                              );
+                            }
+
+                            return (
+                              <CodeBlock
+                                language={match[1]}
+                                value={String(children).replace(/\n$/, "")}
+                              />
+                            );
+                          },
+                        }}
+                      >
+                        {m.content}
+                      </ReactMarkdown>
+                    ) : (
+                      <div className="whitespace-pre-line">{m.content}</div>
+                    )}
                   </div>
                 </div>
               );
