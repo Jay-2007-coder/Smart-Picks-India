@@ -78,6 +78,21 @@ async function proxyImage(imageUrl: string): Promise<NextResponse> {
   }
 }
 
+const ASIN_MAP: Record<string, string> = {
+  "B0CHX1W1XY": "https://m.media-amazon.com/images/I/71657TiFeHL._SL1500_.jpg", // Apple iPhone 15
+  "B0DZXTVL6V": "https://m.media-amazon.com/images/I/61c3+AAop3L._SL1500_.jpg", // boAt Airdopes Plus 311
+  "B09B1NKKP6": "https://m.media-amazon.com/images/I/71fRHT5v7FL._SX679_.jpg",   // Echo Show 8
+  "B0D5CSNLT2": "https://m.media-amazon.com/images/I/41+w1kM10xL._SX679_.jpg",   // Fire TV Stick HD
+  "B08V8R3RMB": "https://m.media-amazon.com/images/I/51TjJOTfslL._SX679_.jpg",   // Philips Air Fryer
+  "B00K3G8K1S": "https://m.media-amazon.com/images/I/41FUvMUmrUL._SX679_.jpg",   // LG Solo Microwave
+  "B097RD2JZ7": "https://m.media-amazon.com/images/I/61xjQLSNw3L._SX679_.jpg",   // OnePlus Nord CE 5G
+  "B0D9BGD7H7": "https://m.media-amazon.com/images/I/61nFB4NFVKL._SX679_.jpg",   // Realme Buds T310
+  "B0CM353R5D": "https://m.media-amazon.com/images/I/71mLCnbhMrL._SX679_.jpg",   // Amazfit Smartwatch
+  "B09R1NDHL2": "https://m.media-amazon.com/images/I/71Tz+AGLXDL._SY741_.jpg",   // Pilgrim Body Lotion
+  "B0CQXGG8YY": "https://m.media-amazon.com/images/I/71wl5F6BCAL._SX679_.jpg",   // Ninja Air Fryer Pro
+  "B0BLV169G7": "https://m.media-amazon.com/images/I/81gCxABPHYL._SX679_.jpg",   // Ceramic Vases Set of 2
+};
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const asin = searchParams.get("asin");
@@ -90,7 +105,14 @@ export async function GET(request: Request) {
 
   // --- Option B: resolve by ASIN then proxy ---
   if (asin && /^[A-Z0-9]{10}$/i.test(asin)) {
-    const resolved = await resolveByAsin(asin.toUpperCase());
+    const cleanAsin = asin.toUpperCase();
+    
+    // Check static lookup first to bypass deprecated/broken widgets
+    if (ASIN_MAP[cleanAsin]) {
+      return proxyImage(ASIN_MAP[cleanAsin]);
+    }
+
+    const resolved = await resolveByAsin(cleanAsin);
     if (resolved) return proxyImage(resolved);
   }
 
