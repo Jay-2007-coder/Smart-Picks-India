@@ -226,9 +226,9 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-50 py-12 dark:bg-neutral-950">
       <div className="container-custom mx-auto px-4 max-w-6xl animate-fade-in">
         {/* Dashboard Title & Actions */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 border-b border-border/80 pb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 border-b border-border/80 pb-6">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Security Dashboard</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">Student Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Manage your personal information, active login sessions, and safety credentials.
             </p>
@@ -249,6 +249,30 @@ export default function DashboardPage() {
               <LogOut className="h-4 w-4" /> Sign Out
             </button>
           </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-border/60 gap-4 mb-8">
+          {[
+            { href: "/dashboard", label: "Profile & Security" },
+            { href: "/dashboard/purchases", label: "My Purchases" },
+            { href: "/dashboard/favorites", label: "Favorites" },
+          ].map((tab) => {
+            const isActive = tab.href === "/dashboard";
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`pb-3 text-sm font-bold border-b-2 transition-all ${
+                  isActive
+                    ? "border-brand-600 text-brand-600 dark:text-brand-500"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Dashboard Panels Grid */}

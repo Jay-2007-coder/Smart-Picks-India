@@ -18,6 +18,9 @@ import {
   Activity,
   Layers,
   Send,
+  ShoppingCart,
+  DollarSign,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -27,6 +30,10 @@ interface Stats {
   activeAlerts: number;
   priceHistoryPoints: number;
   totalProductsCatalog: number;
+  totalDigitalSales?: number;
+  totalDownloads?: number;
+  totalRevenue?: number;
+  conversionRate?: number;
 }
 
 interface CategoryStat {
@@ -213,6 +220,14 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted-foreground">Monitor system analytics, watchlist performance, and trigger product price audits.</p>
           </div>
           <div className="flex flex-wrap gap-2.5 items-center">
+            <Link
+              href="/admin/digital-store"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Manage Digital Store
+            </Link>
+
             <button
               onClick={handleSyncPrices}
               disabled={syncing || broadcasting}
@@ -415,6 +430,59 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-2xl font-black text-foreground leading-none">{stats.priceHistoryPoints}</p>
                 <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Audited price updates</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Digital Products Stats */}
+        {stats && stats.totalDigitalSales !== undefined && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-emerald-500/30 transition-all duration-200">
+              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-emerald-500/5 blur-xl group-hover:scale-150 transition-transform" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Digital Revenue</span>
+                <DollarSign className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground leading-none">₹{stats.totalRevenue?.toLocaleString("en-IN")}</p>
+                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Net marketplace earnings</p>
+              </div>
+            </div>
+
+            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-200">
+              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-blue-500/5 blur-xl group-hover:scale-150 transition-transform" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Total Sales</span>
+                <ShoppingCart className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground leading-none">{stats.totalDigitalSales}</p>
+                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Completed transactions</p>
+              </div>
+            </div>
+
+            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-purple-500/30 transition-all duration-200">
+              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-purple-500/5 blur-xl group-hover:scale-150 transition-transform" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Downloads</span>
+                <Download className="h-5 w-5 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground leading-none">{stats.totalDownloads}</p>
+                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Total file downloads</p>
+              </div>
+            </div>
+
+            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-rose-500/30 transition-all duration-200">
+              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-rose-500/5 blur-xl group-hover:scale-150 transition-transform" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Conversion Rate</span>
+                <Activity className="h-5 w-5 text-rose-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground leading-none">{stats.conversionRate}%</p>
+                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">User purchase ratio</p>
               </div>
             </div>
           </div>

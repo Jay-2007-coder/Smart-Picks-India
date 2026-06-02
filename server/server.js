@@ -14,6 +14,8 @@ import alertsRouter from "./routes/alerts.js";
 import assistantRouter from "./routes/assistant.js";
 import dealsRouter from "./routes/deals.js";
 import adminRouter from "./routes/admin.js";
+import digitalStoreRouter from "./routes/digitalStore.js";
+import studentHubRouter from "./routes/studentHub.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { syncProductPrices } from "./utils/priceSync.js";
 
@@ -78,6 +80,8 @@ app.use("/api/v1/alerts", alertsRouter);
 app.use("/api/v1/assistant", assistantRouter);
 app.use("/api/v1/deals", dealsRouter);
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/digital-store", digitalStoreRouter);
+app.use("/api/v1/student-hub", studentHubRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

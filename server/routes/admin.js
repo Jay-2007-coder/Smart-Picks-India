@@ -4,16 +4,48 @@ import Deal from "../models/Deal.js";
 import PriceAlert from "../models/PriceAlert.js";
 import PriceHistory from "../models/PriceHistory.js";
 import Product from "../models/Product.js";
+import DigitalProduct from "../models/DigitalProduct.js";
+import Purchase from "../models/Purchase.js";
+import DownloadHistory from "../models/DownloadHistory.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
 import { syncProductPrices, parseFullProducts, broadcastTopDeals } from "../utils/priceSync.js";
 import { scrapeAmazonProduct } from "../utils/scraper.js";
 import { sendTelegramMessage, escapeHtml } from "../utils/telegram.js";
 import fs from "fs";
 import path from "path";
+import multer from "multer";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCTS_FILE_PATH = path.join(__dirname, "..", "..", "data", "products.ts");
+const UPLOADS_DIR = path.join(__dirname, "..", "uploads", "digital-products");
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Multer Storage Configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB file size limit
+});
+
+const uploadFields = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "file", maxCount: 1 },
+  { name: "preview", maxCount: 1 },
+]);
 
 const router = express.Router();
 
@@ -61,6 +93,26 @@ router.get("/stats", async (req, res, next) => {
       { $sort: { _id: 1 } },
     ]);
 
+    // Digital Products Analytics
+    const totalDigitalSales = await Purchase.countDocuments({ status: "completed" });
+    const totalDownloads = await DownloadHistory.countDocuments({});
+    
+    const revenueAggregation = await Purchase.aggregate([
+      { $match: { status: "completed" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const totalRevenue = revenueAggregation[0]?.total || 0;
+
+    const conversionRate = totalUsers > 0 ? Math.round((totalDigitalSales / totalUsers) * 100) : 0;
+
+    // Top Digital Products
+    const topDigitalProducts = await DigitalProduct.find({ status: "active" })
+      .sort({ downloadCount: -1 })
+      .limit(5);
+
+    // Mock Affiliate earnings (since actual conversions occur on Amazon)
+    const mockAffiliateEarnings = 1250;
+
     res.status(200).json({
       success: true,
       stats: {
@@ -69,9 +121,15 @@ router.get("/stats", async (req, res, next) => {
         activeAlerts,
         priceHistoryPoints,
         totalProductsCatalog: products.length,
+        totalDigitalSales,
+        totalDownloads,
+        totalRevenue,
+        conversionRate,
+        affiliateEarnings: mockAffiliateEarnings,
       },
       categoryStats,
       usersTrend,
+      topDigitalProducts,
     });
   } catch (err) {
     next(err);
@@ -345,15 +403,170 @@ router.post("/scrape-product", async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
-// GET USERS LIST (ADMIN MANAGEMENT)
+// GET ALL DIGITAL PRODUCTS LIST (ADMIN CONTROL)
 // ──────────────────────────────────────────────────────────────────────────────
-router.get("/users", async (req, res, next) => {
+router.get("/digital-products", async (req, res, next) => {
   try {
-    const users = await User.find({}).select("-password").sort({ createdAt: -1 });
-    
+    const products = await DigitalProduct.find({}).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, products });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// POST: CREATE NEW DIGITAL PRODUCT
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/digital-product", uploadFields, async (req, res, next) => {
+  try {
+    const { title, category, description, price, type, downloadLimit } = req.body;
+
+    if (!title || !category || !description || price === undefined) {
+      return res.status(400).json({ success: false, message: "Required fields missing." });
+    }
+
+    const priceNum = parseFloat(price);
+    const typeStr = type || "free";
+    const limitNum = parseInt(downloadLimit, 10) || 0;
+
+    const imageFile = req.files?.["image"]?.[0];
+    const productFile = req.files?.["file"]?.[0];
+    const previewFile = req.files?.["preview"]?.[0];
+
+    // Cover image is required
+    let imageUrl = req.body.imageUrl || "";
+    if (imageFile) {
+      imageUrl = `/api/v1/digital-store/image/${imageFile.filename}`;
+    }
+
+    if (!imageUrl) {
+      return res.status(400).json({ success: false, message: "Product cover image is required." });
+    }
+
+    let filePath = "";
+    if (productFile) {
+      filePath = productFile.path;
+    }
+
+    if (typeStr !== "free" && !filePath) {
+      return res.status(400).json({ success: false, message: "Product file upload is required for paid/freemium models." });
+    }
+
+    let previewPath = "";
+    if (previewFile) {
+      previewPath = previewFile.path;
+    }
+
+    const slugifyTitle = (text) => text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\-]+/g, "")
+      .replace(/\-\-+/g, "-")
+      .replace(/^-+/, "")
+      .replace(/-+$/, "");
+
+    let baseSlug = slugifyTitle(title);
+    let slug = baseSlug;
+    let slugCounter = 1;
+    while (await DigitalProduct.findOne({ slug })) {
+      slug = `${baseSlug}-${slugCounter}`;
+      slugCounter++;
+    }
+
+    const product = new DigitalProduct({
+      title,
+      slug,
+      category: category.toLowerCase(),
+      description,
+      price: priceNum,
+      type: typeStr,
+      imageUrl,
+      filePath,
+      previewPath,
+      downloadLimit: limitNum,
+    });
+
+    await product.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Digital product created successfully!",
+      product,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PUT: EDIT DIGITAL PRODUCT
+// ──────────────────────────────────────────────────────────────────────────────
+router.put("/digital-product/:id", uploadFields, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { title, category, description, price, type, downloadLimit, imageUrl: bodyImageUrl } = req.body;
+
+    const product = await DigitalProduct.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found." });
+    }
+
+    if (title) product.title = title;
+    if (category) product.category = category.toLowerCase();
+    if (description) product.description = description;
+    if (price !== undefined) product.price = parseFloat(price);
+    if (type) product.type = type;
+    if (downloadLimit !== undefined) product.downloadLimit = parseInt(downloadLimit, 10);
+
+    const imageFile = req.files?.["image"]?.[0];
+    const productFile = req.files?.["file"]?.[0];
+    const previewFile = req.files?.["preview"]?.[0];
+
+    if (imageFile) {
+      product.imageUrl = `/api/v1/digital-store/image/${imageFile.filename}`;
+    } else if (bodyImageUrl) {
+      product.imageUrl = bodyImageUrl;
+    }
+
+    if (productFile) {
+      product.filePath = productFile.path;
+    }
+
+    if (previewFile) {
+      product.previewPath = previewFile.path;
+    }
+
+    await product.save();
+
     res.status(200).json({
       success: true,
-      users,
+      message: "Product updated successfully!",
+      product,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// DELETE: ARCHIVE DIGITAL PRODUCT
+// ──────────────────────────────────────────────────────────────────────────────
+router.delete("/digital-product/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await DigitalProduct.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found." });
+    }
+
+    product.status = "inactive";
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Digital product archived successfully.",
     });
   } catch (err) {
     next(err);
