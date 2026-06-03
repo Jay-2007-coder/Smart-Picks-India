@@ -629,4 +629,42 @@ router.delete("/digital-product/:id", async (req, res, next) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────────────────────
+// PUT: ACTIVATE/DURATION SETTING FOR PRODUCT FLASH DEAL
+// ──────────────────────────────────────────────────────────────────────────────
+router.put("/products/:slug/flash-deal", async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    const { durationHours, flashDeal } = req.body;
+
+    const product = await Product.findOne({ slug });
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found." });
+    }
+
+    if (flashDeal === false) {
+      product.flashDeal = false;
+      product.flashDealEndsAt = null;
+    } else {
+      const hours = parseFloat(durationHours) || 24;
+      product.flashDeal = true;
+      product.flashDealEndsAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+    }
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Product flash deal settings updated successfully.`,
+      product: {
+        slug: product.slug,
+        flashDeal: product.flashDeal,
+        flashDealEndsAt: product.flashDealEndsAt,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

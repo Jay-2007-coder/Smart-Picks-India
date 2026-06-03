@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, Suspense } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   User,
@@ -14,11 +14,13 @@ import {
   Loader2,
   ArrowRight,
   ShieldAlert,
+  Gift
 } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { register, user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -33,7 +35,16 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [refCode, setRefCode] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+
+  // Read refCode from query parameter
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) {
+      setRefCode(ref);
+    }
+  }, [searchParams]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -106,6 +117,7 @@ export default function RegisterPage() {
         password,
         confirmPassword,
         acceptTerms,
+        refCode,
       };
 
       const res = await register(payload);
@@ -117,6 +129,7 @@ export default function RegisterPage() {
         setPhone("");
         setPassword("");
         setConfirmPassword("");
+        setRefCode("");
         setAcceptTerms(false);
       } else {
         // Handle field-specific Zod validation errors
@@ -226,6 +239,24 @@ export default function RegisterPage() {
               {errors.phone && (
                 <p className="mt-1 text-xs text-destructive">{errors.phone[0]}</p>
               )}
+            </div>
+
+            {/* Referral Code (Optional) */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                Referral Code (Optional)
+              </label>
+              <div className="relative">
+                <Gift className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
+                <input
+                  type="text"
+                  value={refCode}
+                  onChange={(e) => setRefCode(e.target.value)}
+                  placeholder="e.g. johnABCD"
+                  className="w-full rounded-xl border border-border bg-background/50 py-3 pr-4 pl-12 text-sm placeholder:text-muted-foreground/60 focus:border-brand-600 focus:outline-none dark:focus:border-brand-500 font-semibold"
+                  disabled={isPending}
+                />
+              </div>
             </div>
 
             {/* Password */}
@@ -400,5 +431,17 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-radial from-slate-50 to-slate-150 px-4 py-16 dark:from-neutral-900 dark:to-neutral-950">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

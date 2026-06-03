@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Filter, BookOpen, Download, Star, Sparkles, Tag, ArrowRight, Grid, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DigitalProductSkeleton, SkeletonGrid } from "@/components/Skeletons";
 
 interface Product {
   _id: string;
@@ -178,7 +179,9 @@ export default function DigitalStore() {
                 <Filter className="h-4 w-4 text-brand-600" /> Categories
               </h3>
               <div className="space-y-1.5 relative">
-                {categories.map((cat) => (
+                {categories
+                  .filter((cat) => getCategoryCount(cat.id) > 0)
+                  .map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
@@ -282,22 +285,7 @@ export default function DigitalStore() {
 
             {/* Catalog Grid */}
             {loading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-card border border-border/80 rounded-3xl h-[380px] w-full animate-pulse p-4 flex flex-col justify-between"
-                  >
-                    <div className="aspect-video w-full rounded-2xl bg-muted" />
-                    <div className="space-y-3 flex-1 mt-4">
-                      <div className="h-4 bg-muted rounded-full w-2/3" />
-                      <div className="h-3 bg-muted rounded-full w-full" />
-                      <div className="h-3 bg-muted rounded-full w-5/6" />
-                    </div>
-                    <div className="h-9 bg-muted rounded-2xl w-full" />
-                  </div>
-                ))}
-              </div>
+              <SkeletonGrid count={6} skeleton={DigitalProductSkeleton} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" />
             ) : filteredProducts.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}

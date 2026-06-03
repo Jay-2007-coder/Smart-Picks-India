@@ -16,8 +16,12 @@ import dealsRouter from "./routes/deals.js";
 import adminRouter from "./routes/admin.js";
 import digitalStoreRouter from "./routes/digitalStore.js";
 import studentHubRouter from "./routes/studentHub.js";
+import newsletterRouter from "./routes/newsletter.js";
+import affiliateRouter from "./routes/affiliate.js";
+import aiRouter from "./routes/ai.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { syncProductPrices } from "./utils/priceSync.js";
+import { initPriceSyncCron } from "./jobs/priceSync.js";
 
 // Initialize environment variables from root first, then locally
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -82,6 +86,9 @@ app.use("/api/v1/deals", dealsRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/digital-store", digitalStoreRouter);
 app.use("/api/v1/student-hub", studentHubRouter);
+app.use("/api/v1/newsletter", newsletterRouter);
+app.use("/api/v1/affiliate", affiliateRouter);
+app.use("/api/v1/ai", aiRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -122,6 +129,8 @@ mongoose
     syncProductPrices().catch((err) => {
       console.error("❌ Initial price sync failed:", err.message);
     });
+    // Start price history cron logger daemon
+    initPriceSyncCron();
 
     app.listen(PORT, () => {
       console.log(`🚀 Express server is running on http://localhost:${PORT}`);

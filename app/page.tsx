@@ -1,7 +1,11 @@
 import HeroSection from "@/components/HeroSection";
+import AIProductFinder from "@/components/AIProductFinder";
+import FlashDealsSection from "@/components/FlashDealsSection";
 import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
 import BlogCard from "@/components/BlogCard";
+import RecentlyViewedBar from "@/components/RecentlyViewedBar";
+import HomePersonalizer from "@/components/HomePersonalizer";
 import NewsletterSection from "@/components/NewsletterSection";
 import FAQAccordion from "@/components/FAQAccordion";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
@@ -51,6 +55,12 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <HeroSection heroProducts={[...products].reverse().slice(0, 4)} />
+
+      {/* AI Product Recommendation Finder */}
+      <AIProductFinder />
+
+      {/* Super Flash Deals with Live Countdown Timers */}
+      <FlashDealsSection />
 
       {/* Today's Flash Deals */}
       {todayDeals.length > 0 && (
@@ -112,6 +122,9 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Recently Viewed Products */}
+      <RecentlyViewedBar />
+
       {/* Categories */}
       <section className="py-16">
         <div className="container-custom">
@@ -126,40 +139,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      {featuredProducts.length > 0 && (
-        <section className="py-16 bg-muted/30">
-          <div className="container-custom">
-            <AnimatedSectionHeader
-              title="Top Rated Products"
-              subtitle="Editor's best picks this month"
-            />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-              {featuredProducts.map((product, i) => (
-                <ProductCard key={product.slug} product={product} priority={i < 4} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Trending Products */}
-      {trendingProducts.length > 0 && (
-        <section className="py-16">
-          <div className="container-custom">
-            <AnimatedSectionHeader
-              eyebrow={<><TrendingUp className="h-4 w-4" /> Trending</>}
-              eyebrowClass="text-purple-500"
-              title="Trending Right Now"
-            />
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-              {trendingProducts.map((product, i) => (
-                <ProductCard key={product.slug} product={product} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Personalized Feed Control & Product Listings */}
+      <HomePersonalizer initialFeatured={featuredProducts} initialTrending={trendingProducts} />
 
       {/* Blog Posts */}
       <section className="py-16 bg-muted/30">

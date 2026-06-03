@@ -163,17 +163,17 @@ export default function AIChatbot() {
       {/* Floating Capsule Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 text-white shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 border border-white/20"
+        className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-[#ffffff] dark:bg-[#1a1a1a] text-slate-800 dark:text-white border border-slate-200 dark:border-[rgba(255,255,255,0.15)] shadow-lg hover:scale-[1.05] active:scale-95 transition-all duration-200 cursor-pointer"
         title="Open AI Assistant"
       >
         <div className="relative">
           {isOpen ? (
-            <X className="h-6 w-6 transform rotate-90 transition-transform duration-300" />
+            <X className="h-5 w-5 transform rotate-90 transition-transform duration-200" />
           ) : (
-            <MessageSquare className="h-6 w-6 transform scale-100 transition-transform duration-300 animate-pulse" />
+            <MessageSquare className="h-5 w-5 transform scale-100 transition-transform duration-200" />
           )}
           {!isOpen && (
-            <span className="absolute -top-3.5 -right-3.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black border-2 border-white animate-bounce shadow-md">
+            <span className="absolute -top-2.5 -right-2.5 flex items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black p-1 leading-none shadow-sm">
               AI
             </span>
           )}

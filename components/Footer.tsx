@@ -8,6 +8,7 @@ const footerLinks = {
     { href: "/", label: "Home" },
     { href: "/deals", label: "Today's Deals" },
     { href: "/blog", label: "Blog" },
+    { href: "/affiliate", label: "Affiliate" },
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
   ],

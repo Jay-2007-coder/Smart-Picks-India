@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/use-auth";
+import { CompareProvider } from "@/hooks/useCompare";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIChatbot from "@/components/AIChatbot";
-import Script from "next/script";
+import StickyCompareBar from "@/components/StickyCompareBar";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import { Suspense } from "react";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -42,33 +45,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Pinterest Rich Pins */}
         <meta name="p:domain_verify" content="41b175c4987172b0c7266d50e7598ec6" />
-        {/* Google Analytics placeholder */}
+        {/* 
+          Google Analytics 4 setup. 
+          To configure, set NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX in .env.local 
+        */}
         {process.env.NEXT_PUBLIC_GA_ID && (
-          <>
-            <Script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script
-              id="google-analytics"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}');`,
-              }}
-            />
-          </>
+          <Suspense fallback={null}>
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+          </Suspense>
         )}
       </head>
       <body className={`${inter.variable} ${outfit.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
-            <div className="flex min-h-screen flex-col bg-background">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <AIChatbot />
-            </div>
+            <CompareProvider>
+              <div className="flex min-h-screen flex-col bg-background">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <AIChatbot />
+                <StickyCompareBar />
+              </div>
+            </CompareProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

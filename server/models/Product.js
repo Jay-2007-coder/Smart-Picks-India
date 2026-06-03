@@ -89,6 +89,14 @@ const ProductSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    flashDeal: {
+      type: Boolean,
+      default: false,
+    },
+    flashDealEndsAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

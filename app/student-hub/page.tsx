@@ -16,6 +16,7 @@ import {
   HelpCircle,
   GraduationCap,
   ArrowRight,
+  Trophy,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -132,6 +133,21 @@ const itemVariants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" as const } },
 };
 
+const toSentenceCase = (text: string) => {
+  if (text === "Academic Utilities") return "Academic utilities";
+  if (text === "Career & Placements") return "Career & placements";
+  if (text === "AI & Productivity Assistants") return "AI tools";
+  return text;
+};
+
+const getCardBorder = (title: string, category: string) => {
+  if (category === "Academic Utilities") return "border-l-4 border-l-[#1D9E75]";
+  if (title === "Aptitude Quiz Practice") return "border-l-4 border-l-amber-500";
+  if (category === "Career & Placements") return "border-l-4 border-l-blue-500";
+  if (category === "AI & Productivity Assistants") return "border-l-4 border-l-purple-500";
+  return "";
+};
+
 export default function StudentHub() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950/20 py-12">
@@ -141,7 +157,7 @@ export default function StudentHub() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-neutral-900 to-rose-950 px-8 py-14 text-white text-center shadow-xl border border-white/5 mb-12 select-none"
+          className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0F6E56] via-neutral-900 to-[#042C53] px-8 py-14 text-white text-center shadow-xl border border-white/5 mb-12 select-none"
         >
           <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-200 via-rose-500 to-red-600 pointer-events-none" />
           <div className="max-w-2xl mx-auto relative z-10">
@@ -149,7 +165,7 @@ export default function StudentHub() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-brand-500/20 text-brand-300 border border-brand-500/30 uppercase tracking-widest mb-6"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-teal-500/20 text-teal-300 border border-teal-500/30 uppercase tracking-widest mb-6"
             >
               <GraduationCap className="h-4 w-4" /> placement hub
             </motion.span>
@@ -169,6 +185,19 @@ export default function StudentHub() {
             >
               Access engineering tools, mock aptitude quizzes, AI resume graders, code analyzers, and secure PDF guides.
             </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-6 flex justify-center"
+            >
+              <Link 
+                href="/student-hub/leaderboard" 
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-xs font-black shadow-lg shadow-teal-500/20 transition-all uppercase tracking-wider"
+              >
+                <Trophy className="h-4 w-4" /> View Leaderboard
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -185,8 +214,8 @@ export default function StudentHub() {
               key={section.category}
               className="space-y-6"
             >
-              <h2 className="text-sm font-black text-foreground uppercase tracking-widest border-l-4 border-brand-600 pl-3">
-                {section.category}
+              <h2 className="text-sm font-black text-foreground border-l-4 border-[#1D9E75] pl-3">
+                {toSentenceCase(section.category)}
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 {section.items.map((tool) => (
@@ -198,7 +227,7 @@ export default function StudentHub() {
                   >
                     <Link
                       href={tool.href}
-                      className="group bg-card border border-border/80 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-brand-500/20 transition-all duration-300 flex items-start gap-4 h-full"
+                      className={`group bg-card border border-border/80 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-brand-500/20 transition-all duration-300 flex items-start gap-4 h-full ${getCardBorder(tool.title, section.category)}`}
                     >
                       <motion.div
                         whileHover={{ rotate: [0, -8, 8, -4, 4, 0] }}
@@ -208,8 +237,18 @@ export default function StudentHub() {
                         <tool.icon className="h-5 w-5" />
                       </motion.div>
                       <div className="space-y-1 flex-1">
-                        <h4 className="font-extrabold text-foreground text-sm leading-snug group-hover:text-brand-600 transition-colors flex items-center gap-1.5">
-                          {tool.title}{" "}
+                        <h4 className="font-extrabold text-foreground text-sm leading-snug group-hover:text-brand-600 transition-colors flex flex-wrap items-center gap-1.5">
+                          {tool.title}
+                          {["Resume Builder", "AI Study Buddy"].includes(tool.title) && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-teal-500/10 text-teal-600 border border-teal-500/20 uppercase tracking-wider">
+                              Most Used
+                            </span>
+                          )}
+                          {["DSA Coding Helper", "Portfolio Generator"].includes(tool.title) && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
+                              New
+                            </span>
+                          )}
                           <ArrowRight className="h-3.5 w-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 text-brand-600" />
                         </h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">

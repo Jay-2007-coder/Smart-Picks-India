@@ -1,6 +1,6 @@
 import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import BlogCard from "@/components/BlogCard";
+import BlogClient from "@/components/BlogClient";
 import { blogPosts } from "@/data/blogPosts";
 
 export const metadata = generateSEOMetadata({
@@ -16,18 +16,14 @@ export default function BlogListingPage() {
 
       <div className="mt-8 mb-12 text-center max-w-2xl mx-auto">
         <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-          Latest Reviews & Guides
+          Latest Reviews &amp; Guides
         </h1>
         <p className="text-lg text-muted-foreground">
           In-depth analysis, top 10 lists, and buying advice to help you make smarter purchasing decisions.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {blogPosts.map((post, i) => (
-          <BlogCard key={post.slug} post={post} priority={i < 3} />
-        ))}
-      </div>
+      <BlogClient initialPosts={blogPosts} />
     </div>
   );
 }

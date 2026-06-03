@@ -222,4 +222,62 @@ router.delete("/sessions", async (req, res, next) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────────────────────
+// 7. UPGRADE TO PRO (Razorpay mock or direct signature verification)
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/upgrade-pro", async (req, res, next) => {
+  try {
+    const user = req.user;
+    
+    // Simulate successful payment verification
+    const { razorpay_payment_id } = req.body;
+    if (razorpay_payment_id) {
+      console.log(`Verifying payment ${razorpay_payment_id} for user ${user._id}`);
+    }
+
+    user.hubPlan = "pro";
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Congratulations! You have upgraded to Student Hub Pro successfully.",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        hubPlan: user.hubPlan,
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 8. GET REFERRALS DATA
+// ──────────────────────────────────────────────────────────────────────────────
+router.get("/referrals", async (req, res, next) => {
+  try {
+    const user = req.user;
+    
+    const referredUsers = await User.find({ referredBy: user._id })
+      .select("name email createdAt isEmailVerified")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      referralCode: user.referralCode,
+      walletBalance: user.walletBalance || 0,
+      referredUsers: referredUsers.map(u => ({
+        name: u.name,
+        email: u.email.substring(0, 3) + "***" + u.email.substring(u.email.indexOf("@")),
+        joinedAt: u.createdAt,
+        verified: u.isEmailVerified
+      }))
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

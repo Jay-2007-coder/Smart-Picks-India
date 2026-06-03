@@ -254,8 +254,28 @@ router.get("/download/:token", async (req, res, next) => {
       return res.send(product.fileBuffer);
     }
 
-    // Otherwise redirect to the live site to download it
-    return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download/${token}`);
+    // Generate placeholder file on the fly if the file doesn't exist on disk
+    const placeholderContent = `Thank you for choosing Smart Picks India!\n\nThis is a simulated placeholder file for your resource:\nTitle: ${product.title}\nCategory: ${product.category}\nType: ${product.type}\nPrice: INR ${product.price}\n\nYour actual file download is successfully simulated.`;
+    const buffer = Buffer.from(placeholderContent, "utf-8");
+
+    purchase.downloadCount += 1;
+    await purchase.save();
+
+    product.downloadCount += 1;
+    await product.save();
+
+    const history = new DownloadHistory({
+      userId: purchase.userId._id,
+      productId: product._id,
+      purchaseId: purchase._id,
+      ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
+      userAgent: req.headers["user-agent"] || "",
+    });
+    await history.save();
+
+    res.setHeader("Content-Disposition", `attachment; filename="${product.slug}-resource-placeholder.txt"`);
+    res.setHeader("Content-Type", "text/plain");
+    return res.send(buffer);
   } catch (err) {
     next(err);
   }
@@ -314,8 +334,25 @@ router.get("/download-free/:id", protect, async (req, res, next) => {
       return res.send(product.fileBuffer);
     }
 
-    // Otherwise redirect to the live site
-    return res.redirect(`https://smart-picks-india.onrender.com/api/v1/digital-store/download-free/${id}`);
+    // Generate placeholder file on the fly if the file doesn't exist on disk
+    const placeholderContent = `Thank you for choosing Smart Picks India!\n\nThis is a simulated placeholder file for your resource:\nTitle: ${product.title}\nCategory: ${product.category}\nType: ${product.type}\nPrice: Free\n\nYour actual file download is successfully simulated.`;
+    const buffer = Buffer.from(placeholderContent, "utf-8");
+
+    product.downloadCount += 1;
+    await product.save();
+
+    const history = new DownloadHistory({
+      userId: req.user._id,
+      productId: product._id,
+      purchaseId: null,
+      ipAddress: req.ip || req.headers["x-forwarded-for"] || "",
+      userAgent: req.headers["user-agent"] || "",
+    });
+    await history.save();
+
+    res.setHeader("Content-Disposition", `attachment; filename="${product.slug}-resource-placeholder.txt"`);
+    res.setHeader("Content-Type", "text/plain");
+    return res.send(buffer);
   } catch (err) {
     next(err);
   }

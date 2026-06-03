@@ -79,6 +79,34 @@ const UserSchema = new mongoose.Schema(
         status: { type: String, enum: ["success", "failed"] },
       },
     ],
+    xp: {
+      type: Number,
+      default: 0,
+    },
+    hubPlan: {
+      type: String,
+      enum: ["free", "pro"],
+      default: "free",
+    },
+    hubUsage: {
+      type: Number,
+      default: 0,
+    },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

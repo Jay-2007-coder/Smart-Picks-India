@@ -137,6 +137,60 @@ router.get("/product/:slug", async (req, res, next) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────────────────────
+// PUBLIC: GET FLASH DEALS (Active timers)
+// ──────────────────────────────────────────────────────────────────────────────
+router.get("/flash", async (req, res, next) => {
+  try {
+    const now = new Date();
+    // Query MongoDB for products with flashDeal active and not expired
+    let flashProducts = await Product.find({
+      flashDeal: true,
+      flashDealEndsAt: { $gt: now },
+    });
+
+    // Fallback: If no flash deals found in DB, return 4 static products as simulated flash deals
+    if (flashProducts.length === 0) {
+      const { parseFullProducts } = await import("../utils/priceSync.js");
+      const allStatic = parseFullProducts();
+      // Take some products with high discounts (e.g. oldPrice > price)
+      const deals = allStatic
+        .filter((p) => p.oldPrice > p.price)
+        .slice(0, 4)
+        .map((p) => {
+          // Simulate expiration date: 3 hours and 45 minutes from now
+          const expiresAt = new Date(Date.now() + 3.75 * 60 * 60 * 1000);
+          return {
+            ...p,
+            flashDeal: true,
+            flashDealEndsAt: expiresAt,
+          };
+        });
+      return res.status(200).json({ success: true, deals });
+    }
+
+    res.status(200).json({
+      success: true,
+      deals: flashProducts.map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        image: p.image,
+        category: p.category,
+        description: p.description,
+        price: p.price,
+        oldPrice: p.originalPrice || p.price,
+        rating: p.rating,
+        reviewCount: p.reviewCount,
+        affiliateLink: p.affiliateLink,
+        flashDeal: true,
+        flashDealEndsAt: p.flashDealEndsAt,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Apply protect middleware for submit and vote routes
 router.use(protect);
 

@@ -22,6 +22,7 @@ const dashboardTabs = [
   { href: "/dashboard", label: "Profile & Security" },
   { href: "/dashboard/purchases", label: "My Purchases" },
   { href: "/dashboard/favorites", label: "Favorites" },
+  { href: "/dashboard/referrals", label: "Referrals" },
 ];
 
 export default function UserFavorites() {

@@ -62,6 +62,16 @@ export default function SubmitDealPage() {
 
       const data = await response.json();
       if (response.ok && data.success) {
+        try {
+          const confetti = (await import("canvas-confetti")).default;
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        } catch (confettiErr) {
+          console.error("Confetti error:", confettiErr);
+        }
         setMessage({ type: "success", text: "Deal shared successfully! Redirecting..." });
         setTimeout(() => {
           router.push("/deals?tab=community");

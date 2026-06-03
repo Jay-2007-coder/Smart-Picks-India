@@ -7,17 +7,22 @@ import { Star, ShoppingCart, TrendingUp, Zap, Heart, Eye } from "lucide-react";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import type { Product } from "@/data/products";
 import { motion } from "framer-motion";
+import { useCompare } from "@/hooks/useCompare";
+import QuickViewModal from "@/components/QuickViewModal";
 
 interface ProductCardProps {
   product: Product;
   priority?: boolean;
   index?: number;
+  aiBadge?: boolean;
 }
 
-export default function ProductCard({ product, priority = false, index = 0 }: ProductCardProps) {
+export default function ProductCard({ product, priority = false, index = 0, aiBadge = false }: ProductCardProps) {
+  const { toggleCompare, isInCompare } = useCompare();
   const discount = calculateDiscount(product.price, product.oldPrice);
   const [imgSrc, setImgSrc] = useState(product.image);
   const [wishlist, setWishlist] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const isProxied = imgSrc.startsWith("/api/product-image");
 
@@ -30,9 +35,9 @@ export default function ProductCard({ product, priority = false, index = 0 }: Pr
       whileHover={{ y: -4 }}
       className="card group flex flex-col overflow-hidden transition-shadow hover:shadow-xl hover:shadow-black/8"
     >
-      {/* Image */}
-      <Link href={`/product/${product.slug}`} className="relative block overflow-hidden">
-        <div className="relative aspect-square bg-muted">
+      {/* Image Container */}
+      <div className="relative aspect-square bg-muted overflow-hidden">
+        <Link href={`/product/${product.slug}`} className="relative block w-full h-full">
           <Image
             src={imgSrc}
             alt={product.title}
@@ -49,17 +54,15 @@ export default function ProductCard({ product, priority = false, index = 0 }: Pr
           />
           {/* Overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {/* Quick View button on hover */}
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-white bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
-              <Eye className="h-3 w-3" /> Quick View
-            </span>
-          </div>
-        </div>
+        </Link>
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          {aiBadge && (
+            <span className="badge bg-teal-600 text-white flex items-center gap-1 shadow font-black text-[10px]">
+              ✨ AI Pick
+            </span>
+          )}
           {discount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
@@ -85,12 +88,44 @@ export default function ProductCard({ product, priority = false, index = 0 }: Pr
         <motion.button
           whileTap={{ scale: 0.85 }}
           onClick={(e) => { e.preventDefault(); setWishlist((v) => !v); }}
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-border/40 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-border/40 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10"
           aria-label="Wishlist"
         >
           <Heart className={`h-3.5 w-3.5 transition-colors ${wishlist ? "fill-rose-500 text-rose-500" : "text-muted-foreground"}`} />
         </motion.button>
-      </Link>
+
+        {/* Compare Checkbox */}
+        <div
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleCompare(product);
+          }}
+          className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 dark:bg-slate-900/95 text-[10px] font-bold text-foreground border border-border/40 shadow-sm opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10 hover:scale-105"
+        >
+          <input
+            type="checkbox"
+            checked={isInCompare(product.slug)}
+            onChange={() => {}} // toggled by parent click handler
+            className="h-3.5 w-3.5 accent-teal-600 rounded cursor-pointer"
+          />
+          <span className="text-[10px] font-black">Compare</span>
+        </div>
+
+        {/* Quick View button on hover */}
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-10">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setQuickViewOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold text-white bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 hover:bg-black hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <Eye className="h-3 w-3" /> Quick View
+          </button>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-4 gap-2">
@@ -143,6 +178,7 @@ export default function ProductCard({ product, priority = false, index = 0 }: Pr
           Buy on Amazon
         </motion.a>
       </div>
+      <QuickViewModal product={quickViewOpen ? product : null} onClose={() => setQuickViewOpen(false)} />
     </motion.article>
   );
 }

@@ -22,8 +22,8 @@ export const blogPosts: BlogPost[] = [
     image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=1000&q=85",
     category: "tech",
     tags: ["earbuds", "budget audio", "TWS", "best picks"],
-    datePublished: "2024-01-15",
-    dateModified: "2024-03-10",
+    datePublished: "2025-06-15",
+    dateModified: "2025-06-18",
     readTime: "8 min read",
     featured: true,
     toc: [
@@ -153,8 +153,8 @@ Prioritize these three things:
     image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1000&q=85",
     category: "kitchen",
     tags: ["kitchen gadgets", "budget kitchen", "cooking tools", "amazon finds"],
-    datePublished: "2024-02-01",
-    dateModified: "2024-03-15",
+    datePublished: "2025-06-20",
+    dateModified: "2025-06-22",
     readTime: "6 min read",
     featured: true,
     toc: [
@@ -204,8 +204,8 @@ A set of seamless, heat-resistant (up to 230°C) silicone spatulas is mandatory 
     image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=1000&q=85",
     category: "gadgets",
     tags: ["power bank", "fast charging", "portable charger", "budget"],
-    datePublished: "2024-03-05",
-    dateModified: "2024-03-25",
+    datePublished: "2025-06-25",
+    dateModified: "2025-06-26",
     readTime: "6 min read",
     featured: true,
     toc: [

@@ -9,9 +9,11 @@ import RatingStars from "@/components/RatingStars";
 import CTASection from "@/components/CTASection";
 import RelatedProducts from "@/components/RelatedProducts";
 import PinterestShareButton from "@/components/PinterestShareButton";
+import WhatsAppAlertButton from "@/components/WhatsAppAlertButton";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import PriceHistoryChart from "@/components/PriceHistoryChart";
 import PriceAlertTracker from "@/components/PriceAlertTracker";
+import RecentlyViewedTracker from "@/components/RecentlyViewedTracker";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -95,6 +97,7 @@ export default async function ProductPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <RecentlyViewedTracker slug={product.slug} />
 
       <div className="container-custom py-8">
         <Breadcrumbs items={[{ label: product.category, href: `/category/${product.category}` }, { label: product.title }]} />
@@ -142,6 +145,7 @@ export default async function ProductPage({ params }: Props) {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <PinterestShareButton url={`https://smart-picks-india.vercel.app/product/${product.slug}`} image={product.image} description={product.description} />
+              <WhatsAppAlertButton slug={product.slug} title={product.title} price={product.price} oldPrice={product.oldPrice || product.price} />
             </div>
 
             {/* Price Trend & Watchlist */}

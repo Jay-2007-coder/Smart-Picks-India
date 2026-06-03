@@ -80,6 +80,24 @@ export default function AptitudePractice() {
     return () => clearInterval(timer);
   }, [timeLeft, gameState]);
 
+  // Confetti celebration on perfect score
+  useEffect(() => {
+    if (gameState === "summary" && score === QUESTIONS.length) {
+      try {
+        import("canvas-confetti").then((module) => {
+          const confetti = module.default;
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 }
+          });
+        });
+      } catch (e) {
+        console.error("Confetti error:", e);
+      }
+    }
+  }, [gameState, score]);
+
   const startQuiz = () => {
     setGameState("quiz");
     setCurrentIdx(0);

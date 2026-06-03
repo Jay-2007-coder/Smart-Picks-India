@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles } from "lucide-react";
+import { CommunityDealSkeleton, SkeletonGrid } from "@/components/Skeletons";
 
 interface CommunityDeal {
   id: string;
@@ -40,6 +41,7 @@ interface DealsClientProps {
     affiliateLink: string;
     label: string;
     expiresIn: string;
+    rating: number;
   }>;
 }
 
@@ -53,6 +55,42 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
   const [communityDeals, setCommunityDeals] = useState<CommunityDeal[]>([]);
   const [communitySort, setCommunitySort] = useState<"hot" | "new">("hot");
   const [loadingDeals, setLoadingDeals] = useState<boolean>(false);
+
+  // Client-side filters state
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedDiscount, setSelectedDiscount] = useState<string>("all");
+  const [selectedSort, setSelectedSort] = useState<string>("highest-discount");
+
+  const filteredCuratedDeals = React.useMemo(() => {
+    let result = curatedDeals.map(d => ({
+      ...d,
+      discount: calculateDiscount(d.price, d.oldPrice)
+    }));
+
+    // Filter by Category
+    if (selectedCategory !== "all") {
+      result = result.filter(d => d.category.toLowerCase() === selectedCategory.toLowerCase());
+    }
+
+    // Filter by Discount
+    if (selectedDiscount !== "all") {
+      const minDiscount = parseInt(selectedDiscount);
+      if (!isNaN(minDiscount)) {
+        result = result.filter(d => d.discount >= minDiscount);
+      }
+    }
+
+    // Sort
+    if (selectedSort === "highest-discount") {
+      result.sort((a, b) => b.discount - a.discount);
+    } else if (selectedSort === "lowest-price") {
+      result.sort((a, b) => a.price - b.price);
+    } else if (selectedSort === "highest-rated") {
+      result.sort((a, b) => b.rating - a.rating);
+    }
+
+    return result;
+  }, [curatedDeals, selectedCategory, selectedDiscount, selectedSort]);
 
   // Sync tab with URL search parameter
   useEffect(() => {
@@ -194,63 +232,131 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
 
       {/* Verified Deals Panel */}
       {activeTab === "verified" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {curatedDeals.map((deal) => {
-            const discount = calculateDiscount(deal.price, deal.oldPrice);
-            return (
-              <div key={deal.slug} className="card overflow-hidden flex flex-col group border border-border/80 bg-card rounded-3xl shadow-sm hover:shadow-md hover:border-border transition-all duration-300">
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                  <Image
-                    src={deal.image}
-                    alt={deal.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    <span className="badge bg-red-600 text-white font-black px-3 py-1 rounded-full text-xs shadow-sm">
-                      {discount}% OFF
-                    </span>
-                    <span className="badge bg-amber-500 text-black font-black px-3 py-1 rounded-full text-[10px] uppercase tracking-wider shadow-sm">
-                      {deal.label}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5 flex flex-col flex-1">
-                  <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2">
-                    {deal.category}
-                  </span>
-                  <h3 className="font-bold text-foreground text-base mb-4 leading-snug line-clamp-2">
-                    <Link href={`/product/${deal.slug}`} className="hover:text-red-500 transition-colors">
-                      {deal.title}
-                    </Link>
-                  </h3>
-
-                  <div className="flex items-baseline gap-2 mt-auto mb-4">
-                    <span className="text-2xl font-black text-foreground">{formatPrice(deal.price)}</span>
-                    <span className="text-sm font-semibold text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between mb-4 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 px-3 py-2.5 rounded-2xl border border-amber-500/10">
-                    <span className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 animate-pulse" /> Offer validity:
-                    </span>
-                    <span>{deal.expiresIn}</span>
-                  </div>
-
-                  <a
-                    href={deal.affiliateLink}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="btn-primary w-full text-xs py-3 rounded-2xl text-center font-bold"
+        <div className="space-y-6">
+          {/* Horizontal Filter Bar */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card border border-border/80 p-4.5 rounded-3xl shadow-sm">
+            {/* Category chips list */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-xs font-bold text-muted-foreground mr-1">Category:</span>
+              {["All", "Tech", "Kitchen", "Home", "Gadgets", "Fashion", "Study"].map((cat) => {
+                const catId = cat.toLowerCase();
+                const isActive = selectedCategory === catId;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(catId)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-[#d43f36] text-white shadow-sm"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    Claim Deal Now
-                  </a>
-                </div>
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-wrap gap-4 items-center">
+              {/* Discount Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Discount:</span>
+                <select
+                  value={selectedDiscount}
+                  onChange={(e) => setSelectedDiscount(e.target.value)}
+                  className="h-9 rounded-xl border border-input/80 bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d43f36]"
+                >
+                  <option value="all">All Discounts</option>
+                  <option value="20">20%+ off</option>
+                  <option value="40">40%+ off</option>
+                  <option value="50">50%+ off</option>
+                </select>
               </div>
-            );
-          })}
+
+              {/* Sort Select */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Sort By:</span>
+                <select
+                  value={selectedSort}
+                  onChange={(e) => setSelectedSort(e.target.value)}
+                  className="h-9 rounded-xl border border-input/80 bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d43f36]"
+                >
+                  <option value="highest-discount">Highest Discount</option>
+                  <option value="lowest-price">Lowest Price</option>
+                  <option value="highest-rated">Highest Rated</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {filteredCuratedDeals.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground rounded-3xl border border-dashed border-border/80 bg-card p-6 shadow-sm">
+              <p className="text-base font-bold text-foreground">No matching verified deals</p>
+              <p className="text-xs text-muted-foreground mt-1">Try relaxing your category or discount filters.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCuratedDeals.map((deal) => {
+                const discount = deal.discount;
+                return (
+                  <div key={deal.slug} className="card overflow-hidden flex flex-col group border border-border/80 bg-card rounded-3xl shadow-sm hover:shadow-md hover:border-border transition-all duration-300">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                      <Image
+                        src={deal.image}
+                        alt={deal.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute top-4 left-4 flex flex-col gap-2">
+                        <span className="badge bg-red-600 text-white font-black px-3 py-1 rounded-full text-xs shadow-sm">
+                          {discount}% OFF
+                        </span>
+                        <span className="badge bg-amber-500 text-black font-black px-3 py-1 rounded-full text-[10px] uppercase tracking-wider shadow-sm">
+                          {deal.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-5 flex flex-col flex-1">
+                      <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                        {deal.category}
+                      </span>
+                      <h3 className="font-bold text-foreground text-base mb-4 leading-snug line-clamp-2">
+                        <Link href={`/product/${deal.slug}`} className="hover:text-red-500 transition-colors">
+                          {deal.title}
+                        </Link>
+                      </h3>
+
+                      <div className="flex items-center gap-2 mt-auto mb-4">
+                        <span className="text-2xl font-black text-foreground">{formatPrice(deal.price)}</span>
+                        <span className="text-sm font-semibold text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
+                        <span className="text-xs font-black text-red-600 bg-red-500/10 px-2 py-0.5 rounded-md">
+                          ({discount}% OFF)
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-4 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 px-3 py-2.5 rounded-2xl border border-amber-500/10">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 animate-pulse" /> Offer validity:
+                        </span>
+                        <span>{deal.expiresIn}</span>
+                      </div>
+
+                      <a
+                        href={deal.affiliateLink}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="btn-primary w-full text-xs py-3 rounded-2xl text-center font-bold"
+                      >
+                        Buy on Amazon
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -258,9 +364,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
       {activeTab === "community" && (
         <div className="space-y-4">
           {loadingDeals ? (
-            <div className="flex h-48 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-500/20 border-t-red-600" />
-            </div>
+            <SkeletonGrid count={3} skeleton={CommunityDealSkeleton} className="flex flex-col gap-4" />
           ) : communityDeals.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground rounded-3xl border border-dashed border-border/80 bg-card p-6 shadow-sm select-none">
               <Award className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />

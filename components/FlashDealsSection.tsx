@@ -1,0 +1,151 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Zap, ArrowRight, ShoppingCart } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimatedSectionHeader from "@/components/AnimatedSectionHeader";
+import FlashDealTimer from "@/components/FlashDealTimer";
+import { formatPrice, calculateDiscount } from "@/lib/utils";
+
+interface FlashProduct {
+  slug: string;
+  title: string;
+  image: string;
+  category: string;
+  description: string;
+  price: number;
+  oldPrice: number;
+  rating: number;
+  reviewCount: number;
+  affiliateLink: string;
+  flashDealEndsAt: string;
+}
+
+export default function FlashDealsSection() {
+  const [deals, setDeals] = useState<FlashProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchFlashDeals() {
+      try {
+        const response = await fetch("/api/v1/deals/flash");
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setDeals(data.deals || []);
+        }
+      } catch (err) {
+        console.error("Failed to load flash deals", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchFlashDeals();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-12 bg-gradient-to-b from-background to-muted/20">
+        <div className="container-custom">
+          <div className="h-6 w-48 bg-muted animate-pulse rounded-full mb-8" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card flex flex-col h-[280px] bg-card border border-border/50 animate-pulse rounded-2xl overflow-hidden">
+                <div className="aspect-square bg-muted/65" />
+                <div className="p-3 gap-2 flex flex-col flex-1">
+                  <div className="h-4 bg-muted/65 rounded w-3/4" />
+                  <div className="h-3 bg-muted/65 rounded w-1/2" />
+                  <div className="h-8 bg-muted/65 rounded w-full mt-auto" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (deals.length === 0) return null;
+
+  return (
+    <section className="py-12 bg-gradient-to-b from-background to-muted/25 border-b border-border/40">
+      <div className="container-custom">
+        <AnimatedSectionHeader
+          eyebrow={<><Zap className="h-4 w-4" /> Limited Time</>}
+          eyebrowClass="text-accent-500 animate-pulse"
+          title="Super Flash Deals"
+          subtitle="Extreme discount drops. Claim before countdown ends!"
+          action={
+            <Link href="/deals" className="btn-secondary hidden sm:flex text-xs">
+              View All Deals <ArrowRight className="h-4 w-4" />
+            </Link>
+          }
+        />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8">
+          {deals.map((deal, idx) => {
+            const discount = calculateDiscount(deal.price, deal.oldPrice);
+            return (
+              <motion.article
+                key={deal.slug}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
+                whileHover={{ y: -3 }}
+                className="card group overflow-hidden flex flex-col hover:shadow-xl hover:shadow-black/8 hover:border-accent-500/30 transition-all duration-300 relative border border-border/60"
+              >
+                {/* Glowing subtle top border for flash deal */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-500 to-rose-500 z-10" />
+
+                {/* Card Image Wrapper */}
+                <div className="relative aspect-square overflow-hidden bg-muted">
+                  <Image
+                    src={deal.image}
+                    alt={deal.title}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <span className="absolute top-3 left-3 badge bg-rose-600 text-white font-black text-[10px] shadow z-10">
+                    -{discount}% OFF
+                  </span>
+                </div>
+
+                {/* Card Details */}
+                <div className="p-4 flex flex-col gap-2 flex-1">
+                  <div className="mb-1">
+                    <FlashDealTimer endsAt={deal.flashDealEndsAt} />
+                  </div>
+
+                  <Link href={`/product/${deal.slug}`}>
+                    <h4 className="text-xs sm:text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-accent-500 transition-colors">
+                      {deal.title}
+                    </h4>
+                  </Link>
+
+                  <div className="flex items-baseline gap-2 mt-auto">
+                    <span className="text-base font-black text-foreground">{formatPrice(deal.price)}</span>
+                    <span className="text-xs text-muted-foreground line-through">
+                      {formatPrice(deal.oldPrice)}
+                    </span>
+                  </div>
+
+                  <a
+                    href={deal.affiliateLink}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="btn-primary bg-accent-500 hover:bg-accent-600 text-white text-xs py-1.5 w-full justify-center mt-2 flex items-center gap-1 shadow-md shadow-accent-500/10"
+                  >
+                    <ShoppingCart className="h-3.5 w-3.5" /> Buy Amazon
+                  </a>
+                </div>
+              </motion.article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}

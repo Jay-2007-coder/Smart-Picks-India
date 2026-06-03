@@ -47,6 +47,14 @@ const DigitalProductSchema = new Schema(
       },
       trim: true,
     },
+    fileUrl: {
+      type: String,
+      trim: true,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
     previewPath: {
       type: String,
       trim: true,

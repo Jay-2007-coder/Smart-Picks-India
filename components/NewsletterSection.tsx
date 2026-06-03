@@ -6,17 +6,32 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setStatus("loading");
-    await new Promise((r) => setTimeout(r, 1000));
-    const existing = JSON.parse(localStorage.getItem("spi_newsletter") || "[]");
-    existing.push({ email, date: new Date().toISOString() });
-    localStorage.setItem("spi_newsletter", JSON.stringify(existing));
-    setStatus("success");
-    setEmail("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/v1/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setStatus("success");
+        setEmail("");
+      } else {
+        setStatus("error");
+        setErrorMessage(data.message || "Failed to subscribe. Please try again.");
+      }
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage("An unexpected error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -77,36 +92,47 @@ export default function NewsletterSection() {
               You&apos;re subscribed! Welcome 🎉
             </motion.div>
           ) : (
-            <motion.form
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row gap-3"
-            >
-              <input
-                type="email"
-                required
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-brand-200/70 focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/15 transition-all"
-                id="newsletter-email"
-              />
-              <motion.button
-                type="submit"
-                disabled={status === "loading"}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-brand-700 hover:bg-brand-50 font-bold px-5 py-3 shrink-0 transition-all shadow-lg"
+            <div className="flex flex-col gap-3 w-full">
+              <motion.form
+                key="form"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onSubmit={handleSubmit}
+                className="flex flex-col sm:flex-row gap-3 w-full"
               >
-                {status === "loading" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>Subscribe Free <ArrowRight className="h-4 w-4" /></>
-                )}
-              </motion.button>
-            </motion.form>
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-brand-200/70 focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/15 transition-all animate-none"
+                  id="newsletter-email"
+                />
+                <motion.button
+                  type="submit"
+                  disabled={status === "loading"}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-brand-700 hover:bg-brand-50 font-bold px-5 py-3 shrink-0 transition-all shadow-lg cursor-pointer"
+                >
+                  {status === "loading" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>Subscribe Free <ArrowRight className="h-4 w-4" /></>
+                  )}
+                </motion.button>
+              </motion.form>
+              {status === "error" && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-200 text-xs font-bold text-left px-1 mt-1"
+                >
+                  ⚠️ {errorMessage}
+                </motion.p>
+              )}
+            </div>
           )}
         </AnimatePresence>
         <p className="mt-4 text-xs text-brand-200/70">No spam. Unsubscribe anytime. 100% free.</p>

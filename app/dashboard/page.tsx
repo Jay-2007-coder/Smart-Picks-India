@@ -257,6 +257,7 @@ export default function DashboardPage() {
             { href: "/dashboard", label: "Profile & Security" },
             { href: "/dashboard/purchases", label: "My Purchases" },
             { href: "/dashboard/favorites", label: "Favorites" },
+            { href: "/dashboard/referrals", label: "Referrals" },
           ].map((tab) => {
             const isActive = tab.href === "/dashboard";
             return (

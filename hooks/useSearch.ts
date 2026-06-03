@@ -7,6 +7,7 @@ export interface SearchResult {
   type: "product" | "blog" | "category";
   image?: string;
   category?: string;
+  price?: number;
 }
 
 export function useSearch() {

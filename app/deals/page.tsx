@@ -22,8 +22,9 @@ export default function DealsPage() {
       oldPrice: p.oldPrice,
       category: p.category,
       affiliateLink: p.affiliateLink,
-      label: "🔥 Hot Deal",
+      label: p.dealOfTheDay ? "⚡ Deal of the Day" : p.featured ? "🌟 Featured" : "🔥 Hot Deal",
       expiresIn: "Ending soon",
+      rating: p.rating,
     }));
 
   return (

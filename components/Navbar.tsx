@@ -22,8 +22,10 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   const { query, setQuery, results, loading, open, setOpen, clear } = useSearch();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const searchRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -37,6 +39,9 @@ export default function Navbar() {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -45,6 +50,7 @@ export default function Navbar() {
   // Close mobile menu when route changes
   useEffect(() => {
     setMobileOpen(false);
+    setDropdownOpen(false);
   }, [pathname]);
 
   const resultTypeUrl = (r: { type: string; slug: string }) => {
@@ -104,35 +110,36 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            {user && (user as any).role === "admin" && (
-              <Link
-                href="/admin"
-                className="px-3 py-2 text-sm font-black text-red-500 hover:text-red-600 rounded-lg hover:bg-red-500/5 transition-colors"
-              >
-                Admin
-              </Link>
-            )}
+            {/* Admin link moved to avatar dropdown */}
           </div>
 
           {/* Search + Controls */}
           <div className="flex items-center gap-2">
             {/* Search Bar */}
             <div ref={searchRef} className="relative hidden sm:block">
-              <div className="flex items-center rounded-xl border border-border bg-muted/50 px-3 py-1.5 gap-2 w-56 focus-within:w-72 focus-within:border-brand-500/50 focus-within:bg-background transition-all duration-300 focus-within:shadow-sm">
-                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="text-sm bg-transparent outline-none w-full placeholder:text-muted-foreground"
-                />
-                {query && (
-                  <button onClick={clear} className="text-muted-foreground hover:text-foreground transition-colors">
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (query.trim()) {
+                  setOpen(false);
+                  window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
+                }
+              }}>
+                <div className="flex items-center rounded-xl border border-border bg-muted/50 px-3 py-1.5 gap-2 w-48 focus-within:w-80 focus-within:border-brand-500/50 focus-within:bg-background transition-all duration-300 focus-within:shadow-md">
+                  <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Search products, blogs..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="text-sm bg-transparent outline-none w-full placeholder:text-muted-foreground"
+                  />
+                  {query && (
+                    <button type="button" onClick={clear} className="text-muted-foreground hover:text-foreground transition-colors">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              </form>
               {/* Search Dropdown */}
               <AnimatePresence>
                 {open && (
@@ -141,29 +148,107 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute top-full mt-2 w-80 right-0 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden"
+                    className="absolute top-full mt-2 w-96 right-0 bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-xl z-50 overflow-hidden max-h-[450px] overflow-y-auto"
                   >
                     {loading ? (
-                      <div className="p-4 text-sm text-muted-foreground">Searching…</div>
+                      <div className="p-4 text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-brand-500 border-t-transparent" />
+                        Searching…
+                      </div>
                     ) : results.length === 0 ? (
                       <div className="p-4 text-sm text-muted-foreground">No results found</div>
                     ) : (
-                      <ul>
-                        {results.map((r) => (
-                          <li key={r.slug}>
-                            <Link
-                              href={resultTypeUrl(r)}
-                              onClick={clear}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
-                            >
-                              <span className="text-xs font-medium uppercase text-brand-500 bg-brand-50 dark:bg-brand-950 rounded-full px-2 py-0.5">
-                                {r.type}
-                              </span>
-                              <span className="text-sm text-foreground line-clamp-1">{r.title}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="p-2 flex flex-col gap-3">
+                        {results.filter(r => r.type === "product").length > 0 && (
+                          <div>
+                            <div className="px-3 py-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              Products
+                            </div>
+                            <ul className="mt-1 flex flex-col gap-0.5">
+                              {results.filter(r => r.type === "product").map((r) => (
+                                <li key={r.slug}>
+                                  <Link
+                                    href={resultTypeUrl(r)}
+                                    onClick={clear}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-muted rounded-xl transition-colors"
+                                  >
+                                    {r.image && (
+                                      <img src={r.image} alt={r.title} className="h-8 w-8 rounded-lg object-cover bg-muted" />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                                      {r.price && <p className="text-xs text-brand-600 font-semibold">₹{r.price}</p>}
+                                    </div>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {results.filter(r => r.type === "blog").length > 0 && (
+                          <div>
+                            <div className="px-3 py-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              Articles
+                            </div>
+                            <ul className="mt-1 flex flex-col gap-0.5">
+                              {results.filter(r => r.type === "blog").map((r) => (
+                                <li key={r.slug}>
+                                  <Link
+                                    href={resultTypeUrl(r)}
+                                    onClick={clear}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-muted rounded-xl transition-colors"
+                                  >
+                                    {r.image && (
+                                      <img src={r.image} alt={r.title} className="h-8 w-8 rounded-lg object-cover bg-muted" />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                                    </div>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {results.filter(r => r.type === "category").length > 0 && (
+                          <div>
+                            <div className="px-3 py-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              Categories
+                            </div>
+                            <ul className="mt-1 flex flex-col gap-0.5">
+                              {results.filter(r => r.type === "category").map((r) => (
+                                <li key={r.slug}>
+                                  <Link
+                                    href={resultTypeUrl(r)}
+                                    onClick={clear}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-muted rounded-xl transition-colors"
+                                  >
+                                    <div className="h-8 w-8 rounded-lg bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-600">
+                                      <Sparkles className="h-4 w-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                                    </div>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="border-t border-border mt-1 pt-2 px-3 pb-1 flex justify-between items-center">
+                          <span className="text-[10px] text-muted-foreground">Press Enter to search all</span>
+                          <Link
+                            href={`/search?q=${encodeURIComponent(query)}`}
+                            onClick={clear}
+                            className="text-xs text-brand-600 font-bold hover:underline"
+                          >
+                            View all results
+                          </Link>
+                        </div>
+                      </div>
                     )}
                   </motion.div>
                 )}
@@ -190,21 +275,60 @@ export default function Navbar() {
               </AnimatePresence>
             </motion.button>
 
-            {/* Auth Link */}
+            {/* Auth Link with Dropdown */}
             {user ? (
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl border border-border bg-card hover:bg-muted transition-colors shrink-0 hover:border-brand-500/20"
-              >
-                {user.profileImage ? (
-                  <img src={user.profileImage} alt={user.name} className="h-6 w-6 rounded-full object-cover ring-2 ring-brand-500/20" />
-                ) : (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-xs font-black text-white">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <span className="hidden lg:inline">{user.name.split(" ")[0]}</span>
-              </Link>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl border border-border bg-card hover:bg-muted transition-colors shrink-0 hover:border-brand-500/20 cursor-pointer"
+                >
+                  {user.profileImage ? (
+                    <img src={user.profileImage} alt={user.name} className="h-6 w-6 rounded-full object-cover ring-2 ring-brand-500/20" />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-xs font-black text-white">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="hidden lg:inline">{user.name.split(" ")[0]}</span>
+                </button>
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-card p-2 shadow-xl z-50 flex flex-col gap-1"
+                    >
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setDropdownOpen(false)}
+                        className="block w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-xl transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={async () => {
+                          setDropdownOpen(false);
+                          await logout();
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-500/5 rounded-xl transition-colors cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                      {user.role === "admin" && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block w-full px-4 py-2.5 text-xs font-black text-red-600 hover:bg-red-500/10 rounded-xl transition-colors border-t border-border mt-1 pt-2"
+                        >
+                          Admin Panel
+                        </Link>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link
@@ -310,16 +434,27 @@ export default function Navbar() {
               )}
             </div>
             {/* Mobile search */}
-            <div className="mt-3 flex items-center rounded-xl border border-border bg-muted/50 px-3 py-2 gap-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="text-sm bg-transparent outline-none w-full"
-              />
-            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (query.trim()) {
+                  setMobileOpen(false);
+                  window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
+                }
+              }}
+              className="mt-3"
+            >
+              <div className="flex items-center rounded-xl border border-border bg-muted/50 px-3 py-2 gap-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search products, blogs..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="text-sm bg-transparent outline-none w-full"
+                />
+              </div>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>

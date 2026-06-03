@@ -35,7 +35,7 @@ function hashToken(token) {
 // ──────────────────────────────────────────────────────────────────────────────
 router.post("/register", authLimiter, validate(registerSchema), async (req, res, next) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, refCode } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -62,7 +62,16 @@ router.post("/register", authLimiter, validate(registerSchema), async (req, res,
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user (inactive by default: isEmailVerified = false)
+    // Handle referral code checks
+    let referrer = null;
+    if (refCode) {
+      referrer = await User.findOne({ referralCode: refCode.trim() });
+    }
+
+    // Generate unique referral code for the new user
+    const generatedRefCode = name.replace(/[^a-zA-Z]/g, "").substring(0, 4).toLowerCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    // Create user
     const user = new User({
       name,
       email,
@@ -70,9 +79,17 @@ router.post("/register", authLimiter, validate(registerSchema), async (req, res,
       password: hashedPassword,
       isEmailVerified: false,
       isPhoneVerified: false,
+      referralCode: generatedRefCode,
+      referredBy: referrer ? referrer._id : null,
     });
 
     await user.save();
+
+    // Credit ₹50 to the referrer
+    if (referrer) {
+      referrer.walletBalance = (referrer.walletBalance || 0) + 50;
+      await referrer.save();
+    }
 
     // Generate Verification Token
     const verificationToken = crypto.randomBytes(32).toString("hex");
@@ -394,12 +411,14 @@ async function processSocialLoginUser({ provider, accountId, email, name, avatar
       await user.save();
     } else {
       // 3. Create a brand new user
+      const generatedRefCode = name.replace(/[^a-zA-Z]/g, "").substring(0, 4).toLowerCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
       user = new User({
         name,
         email,
         profileImage: avatarUrl || null,
         isEmailVerified: true, // Social accounts are trusted & pre-verified
         socialAccounts: [{ provider, accountId, email, avatarUrl }],
+        referralCode: generatedRefCode,
       });
       await user.save();
     }
