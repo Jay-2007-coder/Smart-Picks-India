@@ -80,7 +80,7 @@ export default function Navbar() {
             </motion.div>
             <span className="font-display text-lg font-bold">
               Smart<span className="text-brand-600">Picks</span>{" "}
-              <span className="hidden xs:inline">India</span>
+              <span className="hidden sm:inline">India</span>
             </span>
           </Link>
 
