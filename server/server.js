@@ -34,9 +34,47 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-picks-auth";
 
 // ──────────────────────────────────────────────────────────────────────────────
+// CUSTOM SECURITY MIDDLEWARES
+// ──────────────────────────────────────────────────────────────────────────────
+
+// Custom NoSQL query injection sanitization middleware
+function sanitizeMongo(req, res, next) {
+  const clean = (obj) => {
+    if (obj && typeof obj === "object") {
+      for (const key in obj) {
+        if (key.startsWith("$") || key.includes(".")) {
+          delete obj[key];
+        } else {
+          clean(obj[key]);
+        }
+      }
+    }
+  };
+  clean(req.body);
+  clean(req.query);
+  clean(req.params);
+  next();
+}
+
+// HTTP Parameter Pollution prevention middleware
+function preventHpp(req, res, next) {
+  if (req.query && typeof req.query === "object") {
+    for (const key in req.query) {
+      if (Array.isArray(req.query[key])) {
+        // Safe fallback: extract last query value to prevent array type crashes
+        req.query[key] = req.query[key][req.query[key].length - 1];
+      }
+    }
+  }
+  next();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARES
 // ──────────────────────────────────────────────────────────────────────────────
 app.use(helmet());
+app.use(sanitizeMongo);
+app.use(preventHpp);
 
 const allowedOrigins = [
   "http://localhost:3000",
