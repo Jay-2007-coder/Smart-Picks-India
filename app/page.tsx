@@ -176,13 +176,9 @@ export default function HomePage() {
           <div className="mt-10">
             <FAQAccordion faqs={homeFAQs} />
           </div>
-        </div>
-      </section>
-
-      {/* Affiliate Disclosure */}
-      <section className="pb-14">
-        <div className="container-custom max-w-3xl">
-          <AffiliateDisclosure />
+          <div className="mt-8">
+            <AffiliateDisclosure />
+          </div>
         </div>
       </section>
     </div>
