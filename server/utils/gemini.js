@@ -24,7 +24,12 @@ export function isQuotaError(errMsg = "") {
     msg.includes("resource_exhausted") ||
     msg.includes("429") ||
     msg.includes("too many requests") ||
-    msg.includes("free_tier")
+    msg.includes("free_tier") ||
+    msg.includes("high demand") ||
+    msg.includes("temporary") ||
+    msg.includes("overloaded") ||
+    msg.includes("503") ||
+    msg.includes("service unavailable")
   );
 }
 
@@ -41,7 +46,7 @@ export async function callGemini(systemPrompt, userPromptOrContents, responseJso
 
   const generationConfig = {
     temperature: 0.7,
-    maxOutputTokens: 1500,
+    maxOutputTokens: 8192,
     responseMimeType: responseJson ? "application/json" : "text/plain",
   };
 
@@ -101,11 +106,48 @@ export async function callGemini(systemPrompt, userPromptOrContents, responseJso
   return null;
 }
 
-// Helper to clean JSON response from Gemini code fences
 export function cleanGeminiJson(rawText) {
   let cleanText = rawText.trim();
   
-  // Find first [ or { and last ] or }
+  // 1. Try to extract from ```json ... ``` or ``` ... ```
+  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
+  const match = cleanText.match(codeBlockRegex);
+  if (match && match[1]) {
+    try {
+      return JSON.parse(match[1].trim());
+    } catch (e) {
+      // If code block contents don't parse, fall back to bracket extraction on the match content
+      cleanText = match[1].trim();
+    }
+  }
+  
+  // 2. Try to find the outermost JSON object {} or array []
+  const firstCurly = cleanText.indexOf("{");
+  const lastCurly = cleanText.lastIndexOf("}");
+  const firstSquare = cleanText.indexOf("[");
+  const lastSquare = cleanText.lastIndexOf("]");
+  
+  // Try parsing the curly brace matching block first if it exists
+  if (firstCurly !== -1 && lastCurly !== -1 && lastCurly > firstCurly) {
+    const curlyCandidate = cleanText.substring(firstCurly, lastCurly + 1);
+    try {
+      return JSON.parse(curlyCandidate.trim());
+    } catch (e) {
+      // Continue to other methods if it fails
+    }
+  }
+  
+  // Try parsing the square brace matching block if it exists
+  if (firstSquare !== -1 && lastSquare !== -1 && lastSquare > firstSquare) {
+    const squareCandidate = cleanText.substring(firstSquare, lastSquare + 1);
+    try {
+      return JSON.parse(squareCandidate.trim());
+    } catch (e) {
+      // Continue to other methods if it fails
+    }
+  }
+  
+  // 3. Fallback to the original index-based extraction logic
   const firstBracket = Math.min(
     cleanText.indexOf("[") === -1 ? Infinity : cleanText.indexOf("["),
     cleanText.indexOf("{") === -1 ? Infinity : cleanText.indexOf("{")
