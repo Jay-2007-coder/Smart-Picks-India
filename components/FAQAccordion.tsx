@@ -20,21 +20,21 @@ export default function FAQAccordion({ faqs }: { faqs: FAQ[] }) {
           <div
             key={i}
             className={cn(
-              "rounded-2xl border transition-all duration-300 overflow-hidden",
+              "rounded-2xl border transition-all duration-350 overflow-hidden",
               isOpen
-                ? "border-brand-500/25 bg-brand-500/5 dark:bg-brand-950/20 shadow-md shadow-brand-500/2"
-                : "border-border bg-card/45 backdrop-blur-sm hover:border-border-accent/80 hover:bg-muted/40"
+                ? "border-brand-500/30 bg-brand-500/5 dark:bg-brand-950/20 shadow-sm"
+                : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/40 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-850/40"
             )}
           >
             <button
               onClick={() => setOpenIndex(isOpen ? null : i)}
-              className="flex w-full items-center justify-between px-5.5 py-4 text-left gap-4 cursor-pointer focus:outline-none select-none"
+              className="flex w-full items-center justify-between px-5.5 py-4.5 text-left gap-4 cursor-pointer focus:outline-none select-none"
               aria-expanded={isOpen}
             >
               <span
                 className={cn(
                   "text-xs sm:text-sm font-bold tracking-tight transition-colors duration-200 leading-snug",
-                  isOpen ? "text-brand-600 dark:text-brand-400" : "text-foreground"
+                  isOpen ? "text-brand-650 dark:text-brand-400" : "text-slate-800 dark:text-slate-100"
                 )}
               >
                 {faq.question}
@@ -44,7 +44,7 @@ export default function FAQAccordion({ faqs }: { faqs: FAQ[] }) {
                   "flex h-7 w-7 items-center justify-center rounded-lg border border-transparent transition-all duration-300 shrink-0",
                   isOpen 
                     ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 border-brand-500/10" 
-                    : "text-muted-foreground hover:bg-muted"
+                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                 )}
               >
                 <ChevronDown
@@ -66,8 +66,8 @@ export default function FAQAccordion({ faqs }: { faqs: FAQ[] }) {
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5.5 pb-4.5 pt-0.5 border-t border-border/20">
-                    <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed font-semibold">
+                  <div className="px-5.5 pb-4.5 pt-0.5 border-t border-slate-100 dark:border-slate-800/30">
+                    <p className="text-[11px] sm:text-xs text-slate-650 dark:text-slate-350 leading-relaxed font-semibold">
                       {faq.answer}
                     </p>
                   </div>
