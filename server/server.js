@@ -19,6 +19,7 @@ import studentHubRouter from "./routes/studentHub.js";
 import newsletterRouter from "./routes/newsletter.js";
 import affiliateRouter from "./routes/affiliate.js";
 import aiRouter from "./routes/ai.js";
+import blogRouter from "./routes/blog.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { syncProductPrices } from "./utils/priceSync.js";
 import { initPriceSyncCron } from "./jobs/priceSync.js";
@@ -127,6 +128,7 @@ app.use("/api/v1/student-hub", studentHubRouter);
 app.use("/api/v1/newsletter", newsletterRouter);
 app.use("/api/v1/affiliate", affiliateRouter);
 app.use("/api/v1/ai", aiRouter);
+app.use("/api/v1/blog", blogRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

@@ -3,11 +3,12 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, Tag, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Tag, ArrowRight, Plus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { BlogPost } from "@/data/blogPosts";
 import BlogCard from "@/components/BlogCard";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
 
 interface BlogClientProps {
   initialPosts: BlogPost[];
@@ -82,6 +83,7 @@ export function FeaturedBlogCard({ post }: { post: BlogPost }) {
 export default function BlogClient({ initialPosts }: BlogClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const categories = ["All", "Tech", "Kitchen", "Gadgets", "Fashion", "Study", "Home"];
+  const { user } = useAuth() as any;
 
   const filteredPosts = useMemo(() => {
     if (selectedCategory === "all") return initialPosts;
@@ -90,6 +92,18 @@ export default function BlogClient({ initialPosts }: BlogClientProps) {
 
   return (
     <div className="space-y-8 select-none">
+      {/* Admin Quick Link */}
+      {user && user.role === "admin" && (
+        <div className="flex justify-end -mb-4 animate-fade-in">
+          <Link
+            href="/admin#blog-generator"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-tr from-red-650 via-indigo-650 to-indigo-700 px-4 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10"
+          >
+            <Plus className="h-4 w-4" /> Add Blog Post
+          </Link>
+        </div>
+      )}
+
       {/* Category filter tabs */}
       <div className="flex flex-wrap gap-2 justify-center border-b border-border/60 pb-6">
         {categories.map((cat) => {

@@ -5,7 +5,7 @@ import rehypeSlug from "rehype-slug";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Tag, ChevronRight } from "lucide-react";
-import { blogPosts } from "@/data/blogPosts";
+import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { generateMetadata as generateSEOMetadata, generateArticleSchema, generateFAQSchema } from "@/lib/seo";
 import { formatDate } from "@/lib/utils";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -15,13 +15,38 @@ import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import RelatedProducts from "@/components/RelatedProducts";
 import { products } from "@/data/products";
 
+export const revalidate = 0;
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
+async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
+  // 1. Check static posts
+  const staticPost = blogPosts.find((p) => p.slug === slug);
+  if (staticPost) return staticPost;
+
+  // 2. Check dynamic database posts
+  try {
+    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const res = await fetch(`${backendUrl}/api/v1/blog/${slug}`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.blog) {
+        return data.blog as BlogPost;
+      }
+    }
+  } catch (err) {
+    console.error(`Error fetching dynamic blog by slug '${slug}':`, err);
+  }
+  return null;
+}
+
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  const post = await fetchBlogPost(slug);
   if (!post) return {};
 
   return generateSEOMetadata({
@@ -35,7 +60,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  const post = await fetchBlogPost(slug);
 
   if (!post) {
     notFound();

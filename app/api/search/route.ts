@@ -23,7 +23,24 @@ export async function GET(request: Request) {
     threshold: 0.4,
   });
 
-  const blogFuse = new Fuse(blogPosts, {
+  // Fetch dynamic blogs and merge with static blogs for search indexing
+  let allBlogs = [...blogPosts];
+  try {
+    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const res = await fetch(`${backendUrl}/api/v1/blog`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.blogs)) {
+        allBlogs = [...data.blogs, ...blogPosts];
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching dynamic blogs for search:", err);
+  }
+
+  const blogFuse = new Fuse(allBlogs, {
     keys: [
       { name: "title", weight: 0.6 },
       { name: "excerpt", weight: 0.2 },

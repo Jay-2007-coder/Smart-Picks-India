@@ -199,15 +199,15 @@ function appendProductToTS(product) {
   }
 
   const features = product.features || [];
-  const pros = [
+  const pros = product.pros && product.pros.length > 0 ? product.pros : [
     "Great discount on premium performance.",
     "Verified Amazon customer rating.",
     "Fast shipping options in India."
   ];
-  const cons = [
+  const cons = product.cons && product.cons.length > 0 ? product.cons : [
     "Price fluctuations are common; grab it while discounted."
   ];
-  const tags = [product.category, "Amazon Deals", "SmartPicks Choice"];
+  const tags = product.tags && product.tags.length > 0 ? product.tags : [product.category, "Amazon Deals", "SmartPicks Choice"];
 
   const productString = `  {
     slug: ${JSON.stringify(product.slug)},
@@ -393,6 +393,224 @@ router.post("/scrape-product", async (req, res, next) => {
         price: scraped.price,
         affiliateLink: scraped.affiliateLink,
         image: scraped.image,
+      },
+      telegramSent,
+      telegramError,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// POST: MANUALLY PUBLISH PRODUCT & AUTO-PUBLISH
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/add-product", async (req, res, next) => {
+  try {
+    const {
+      title,
+      asin,
+      category,
+      price,
+      originalPrice,
+      image,
+      description,
+      affiliateLink,
+      features,
+      pros,
+      cons,
+      tags,
+      telegramBroadcast,
+    } = req.body;
+
+    if (!title || !category || price === undefined || originalPrice === undefined || !image) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields (Title, Category, Price, Original Price, Image URL) are missing.",
+      });
+    }
+
+    const priceNum = parseFloat(price);
+    const originalPriceNum = parseFloat(originalPrice);
+    const discount = Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100) || 0;
+
+    const cleanCategory = category.toLowerCase().trim();
+
+    // Generate/Normalize ASIN
+    let cleanAsin = (asin || "").toUpperCase().trim();
+    if (!cleanAsin) {
+      const uniqueId = Math.random().toString(36).substring(2, 7).toUpperCase();
+      cleanAsin = `MANUAL-${uniqueId}`;
+    }
+
+    // Check duplicate in products.ts catalog first
+    const catalogProducts = parseFullProducts();
+    const isDuplicateInCatalog = catalogProducts.some(p => {
+      const match = p.affiliateLink.match(/\/dp\/([A-Z0-9-]{10,20})/i) || p.affiliateLink.match(/\/gp\/product\/([A-Z0-9-]{10,20})/i);
+      return (match && match[1].toUpperCase() === cleanAsin) || p.slug === slugify(title);
+    });
+
+    if (isDuplicateInCatalog) {
+      return res.status(400).json({
+        success: false,
+        message: `Product with ASIN/Slug already exists in local products.ts catalog.`,
+      });
+    }
+
+    // Check duplicate in MongoDB database
+    const isDuplicateInDb = await Product.findOne({
+      $or: [{ asin: cleanAsin }, { slug: slugify(title) }],
+    });
+    if (isDuplicateInDb) {
+      return res.status(400).json({
+        success: false,
+        message: `Product with ASIN/Slug already exists in MongoDB database.`,
+      });
+    }
+
+    // Generate unique slug
+    let baseSlug = slugify(title);
+    if (!baseSlug.endsWith("-review")) {
+      baseSlug += "-review";
+    }
+
+    let slug = baseSlug;
+    let slugCounter = 1;
+    while (catalogProducts.some(p => p.slug === slug)) {
+      slug = `${baseSlug}-${slugCounter}`;
+      slugCounter++;
+    }
+
+    const finalAffiliateLink = affiliateLink || `https://www.amazon.in/dp/${cleanAsin}?tag=smartpick07d2-21`;
+
+    // Process lists
+    const featuresArray = Array.isArray(features)
+      ? features
+      : typeof features === "string"
+      ? features.split(/[,\n]/).map(f => f.trim()).filter(Boolean)
+      : [];
+
+    const prosArray = Array.isArray(pros)
+      ? pros
+      : typeof pros === "string"
+      ? pros.split(/[,\n]/).map(p => p.trim()).filter(Boolean)
+      : [
+          "Great discount on premium performance.",
+          "Verified customer rating.",
+          "Fast shipping options in India.",
+        ];
+
+    const consArray = Array.isArray(cons)
+      ? cons
+      : typeof cons === "string"
+      ? cons.split(/[,\n]/).map(c => c.trim()).filter(Boolean)
+      : [
+          "Price fluctuations are common; grab it while discounted.",
+        ];
+
+    const tagsArray = Array.isArray(tags)
+      ? tags
+      : typeof tags === "string"
+      ? tags.split(",").map(t => t.trim()).filter(Boolean)
+      : [cleanCategory, "Amazon Deals", "SmartPicks Choice"];
+
+    // 5. Save to MongoDB Product Collection
+    const newProduct = new Product({
+      title,
+      asin: cleanAsin,
+      category: cleanCategory,
+      price: priceNum,
+      originalPrice: originalPriceNum,
+      discount,
+      image,
+      rating: 4.5,
+      reviewCount: 100,
+      affiliateLink: finalAffiliateLink,
+      trending: true,
+      slug: slug,
+      description: description || "",
+      features: featuresArray,
+      pros: prosArray,
+      cons: consArray,
+      tags: tagsArray,
+      featured: false,
+      dealOfTheDay: false,
+    });
+    await newProduct.save();
+
+    // 6. Append to local products.ts
+    const productToAppend = {
+      slug,
+      title,
+      image,
+      category: cleanCategory,
+      description: description || "",
+      price: priceNum,
+      originalPrice: originalPriceNum,
+      rating: 4.5,
+      reviewCount: 100,
+      affiliateLink: finalAffiliateLink,
+      features: featuresArray,
+      pros: prosArray,
+      cons: consArray,
+      tags: tagsArray,
+    };
+    appendProductToTS(productToAppend);
+
+    // 7. Inject mock PriceHistory records to feed the client SVG chart
+    const pricePoints = [];
+    const basePrice = priceNum;
+    for (let i = 4; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i * 6);
+      const priceOffset = Math.round(basePrice * (1 + (Math.sin(i) * 0.05)));
+      pricePoints.push({
+        slug: slug,
+        price: i === 0 ? basePrice : priceOffset,
+        date,
+      });
+    }
+    await PriceHistory.insertMany(pricePoints);
+
+    // 8. Auto-post to Telegram Channel
+    let telegramSent = false;
+    let telegramError = null;
+
+    if (telegramBroadcast) {
+      const siteUrl = process.env.CLIENT_URL || "https://smart-picks-india.vercel.app";
+      const safeTitle = escapeHtml(title);
+      const safeDesc = escapeHtml((description || "").slice(0, 120));
+      const reviewLink = `${siteUrl}/product/${slug}`;
+
+      const tgHtml =
+        `🔥 <b>HOT NEW DEAL PUBLISHED!</b> 🔥\n\n` +
+        `<b>${safeTitle}</b>\n\n` +
+        `💰 Deal Price: <b>₹${priceNum.toLocaleString("en-IN")}</b>  <s>₹${originalPriceNum.toLocaleString("en-IN")}</s>\n` +
+        `🏷️ Discount: <b>${discount}% OFF</b>\n\n` +
+        `📝 <i>"${safeDesc}..."</i>\n\n` +
+        `🛒 <a href="${finalAffiliateLink}">👉 BUY NOW</a>\n` +
+        `📄 <a href="${reviewLink}">Read Full Review on SmartPicks India</a>\n\n` +
+        `👉 Join @smartpicks_deals_deal for more instant budget deals!`;
+
+      try {
+        await sendTelegramMessage(null, tgHtml);
+        telegramSent = true;
+      } catch (tgErr) {
+        telegramError = tgErr.message;
+        console.warn("⚠️ Telegram manual dispatch failed:", tgErr.message);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Product successfully added and catalog updated!`,
+      product: {
+        id: newProduct._id,
+        slug,
+        title,
+        price: priceNum,
+        affiliateLink: finalAffiliateLink,
+        image,
       },
       telegramSent,
       telegramError,

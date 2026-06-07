@@ -1,7 +1,9 @@
 import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import BlogClient from "@/components/BlogClient";
-import { blogPosts } from "@/data/blogPosts";
+import { blogPosts as staticPosts } from "@/data/blogPosts";
+
+export const revalidate = 0; // bypass static caching to get new posts instantly
 
 export const metadata = generateSEOMetadata({
   title: "Blog & Buying Guides",
@@ -9,7 +11,34 @@ export const metadata = generateSEOMetadata({
   canonical: "https://smart-picks-india.vercel.app/blog",
 });
 
-export default function BlogListingPage() {
+async function getDynamicBlogs() {
+  try {
+    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const res = await fetch(`${backendUrl}/api/v1/blog`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.blogs)) {
+        return data.blogs;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch dynamic blogs:", err);
+  }
+  return [];
+}
+
+export default async function BlogListingPage() {
+  const dynamicPosts = await getDynamicBlogs();
+
+  // Merge dynamic database blogs with local static blogs and sort by datePublished desc
+  const allPosts = [...dynamicPosts, ...staticPosts].sort((a, b) => {
+    const dateA = new Date(a.datePublished).getTime() || 0;
+    const dateB = new Date(b.datePublished).getTime() || 0;
+    return dateB - dateA;
+  });
+
   return (
     <div className="container-custom py-8">
       <Breadcrumbs items={[{ label: "Blog" }]} />
@@ -23,7 +52,7 @@ export default function BlogListingPage() {
         </p>
       </div>
 
-      <BlogClient initialPosts={blogPosts} />
+      <BlogClient initialPosts={allPosts} />
     </div>
   );
 }

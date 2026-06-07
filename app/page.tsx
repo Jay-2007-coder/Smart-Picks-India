@@ -12,11 +12,13 @@ import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import AnimatedSectionHeader from "@/components/AnimatedSectionHeader";
 import { products } from "@/data/products";
 import { categories } from "@/data/categories";
-import { blogPosts } from "@/data/blogPosts";
+import { blogPosts as staticBlogs } from "@/data/blogPosts";
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { Zap, TrendingUp, ArrowRight, Clock } from "lucide-react";
+
+export const revalidate = 0; // fetch fresh deals and blog posts
 
 const homeFAQs = [
   { question: "Is Smart Picks India affiliated with Amazon?", answer: "Yes, we are an Amazon Associates affiliate. We earn a small commission when you purchase through our links, at no extra cost to you." },
@@ -26,10 +28,35 @@ const homeFAQs = [
   { question: "Can I trust the prices shown on your site?", answer: "Prices are updated regularly but may vary. Always check the current price on Amazon India before purchasing, as deals can expire quickly." },
 ];
 
-export default function HomePage() {
+async function getDynamicBlogs() {
+  try {
+    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const res = await fetch(`${backendUrl}/api/v1/blog`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.blogs)) {
+        return data.blogs;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch dynamic blogs for homepage:", err);
+  }
+  return [];
+}
+
+export default async function HomePage() {
   const featuredProducts = [...products].reverse().filter((p) => p.featured).slice(0, 8);
   const trendingProducts = [...products].reverse().filter((p) => p.trending).slice(0, 4);
-  const featuredBlogs = [...blogPosts].reverse().filter((p) => p.featured).slice(0, 3);
+  
+  const dynamicBlogs = await getDynamicBlogs();
+  const allBlogs = [...dynamicBlogs, ...staticBlogs].sort((a, b) => {
+    const dateA = new Date(a.datePublished).getTime() || 0;
+    const dateB = new Date(b.datePublished).getTime() || 0;
+    return dateB - dateA;
+  });
+  const featuredBlogs = allBlogs.filter((p) => p.featured).slice(0, 3);
 
   const todayDeals = [...products]
     .reverse()
