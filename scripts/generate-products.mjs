@@ -49,7 +49,9 @@ function generateFallbackContent(productName, category, price, oldPrice, affilia
   let slug = productName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+    .replace(/(^-|-$)/g, "")
+    .substring(0, 60)        // max 60 chars to prevent mega-long slugs
+    .replace(/-+$/, "");     // remove trailing dash after truncation
   
   if (!slug.endsWith("-review")) {
     slug += "-review";
