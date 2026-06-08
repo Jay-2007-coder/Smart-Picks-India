@@ -41,7 +41,7 @@ export const products: Product[] = [
   {
     slug: "philips-air-fryer-hd9200-review",
     title: "Philips Air Fryer HD9200 Review: Healthy and Crispy Cooking for Every Home",
-    image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?w=600&q=80",
     category: "home",
     description: "Discover the Philips Daily Collection Air Fryer HD9200. With Rapid Air Technology and a compact design, it allows you to fry, bake, grill, and roast with up to 90% less fat.",
     price: 6495,
@@ -60,7 +60,7 @@ export const products: Product[] = [
   {
     slug: "lg-32-inch-ultragear-monitor-review",
     title: "LG 32 inch UltraGear Gaming Monitor Review: Immersive QHD Performance",
-    image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80",
+    image: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=600&q=80",
     category: "tech",
     description: "We review the LG UltraGear 32-inch QHD gaming monitor. Boasting a fast 165Hz refresh rate and 1ms MBR, it delivers smooth, stutter-free visuals for gaming and productive workspaces.",
     price: 22999,
