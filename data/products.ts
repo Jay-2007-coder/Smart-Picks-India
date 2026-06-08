@@ -178,4 +178,24 @@ export const products: Product[] = [
     dealOfTheDay: false,
     tags: ["Boat Rockerz 411","Wireless Gaming Headphones","Over-Ear Bluetooth Headset"],
   }
+,
+  {
+    slug: "lenovo-loq-2024-12th-gen-core-i5-12450hx-nvidia-rtx-3050-6gb-16gb-ram-512gb-ssd-15-6-39-6cm-windows-11-office-home-2024-100-srgb-3-mon-game-pass-grey-2-4kg-83gs00lnin-gaming-laptop-review",
+    title: "Lenovo LOQ 2024 12th Gen Core i5-12450HX | NVIDIA RTX 3050 6GB (16GB RAM/512GB SSD/15.6\" (39.6cm)/Windows 11/Office Home 2024/100% sRGB/3 Mon. Game Pass/Grey/2.4Kg), 83GS00LNIN Gaming Laptop Review: Is This Your Next Best Pick?",
+    image: "https://m.media-amazon.com/images/I/81xQ0Y1ZwfL._SL1500_.jpg",
+    category: "tech",
+    description: "Discover our comprehensive review of the Lenovo LOQ 2024 12th Gen Core i5-12450HX | NVIDIA RTX 3050 6GB (16GB RAM/512GB SSD/15.6\" (39.6cm)/Windows 11/Office Home 2024/100% sRGB/3 Mon. Game Pass/Grey/2.4Kg), 83GS00LNIN Gaming Laptop. We examine its key features, pros, cons, and real-world performance in the tech segment to see if it delivers real value.",
+    price: 0,
+    oldPrice: 0,
+    rating: 4.4,
+    reviewCount: 1200,
+    affiliateLink: "https://amzn.to/4fsgiPF",
+    features: ["High-performance design optimized for daily tasks and productivity.","Comfortable, ergonomic build offering excellent durability.","Modern aesthetic and premium finish in its price category.","Seamless integration and simple, user-friendly controls.","Efficient power management and reliability under standard usage."],
+    pros: ["Great value for money offering robust performance.","Premium design elements make it stand out visually.","Highly reliable build quality backed by top standards."],
+    cons: ["May lack some specialized features found on ultra-premium models.","Price fluctuations are common during peak high-demand sales."],
+    featured: false,
+    trending: true,
+    dealOfTheDay: false,
+    tags: ["tech","product review","smart picks","lenovo","2024","12th","core"],
+  }
 ];
