@@ -23,6 +23,27 @@ router.get("/leaderboard", async (req, res, next) => {
   }
 });
 
+// POST submit quiz score to earn XP
+router.post("/quiz/submit", awardXp, async (req, res, next) => {
+  try {
+    const { score, totalQuestions } = req.body;
+    const bonusXp = Math.max(0, parseInt(score || 0) * 2);
+
+    if (req.user && bonusXp > 0) {
+      req.user.xp = (req.user.xp || 0) + bonusXp;
+      await req.user.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Quiz score of ${score}/${totalQuestions} processed successfully!`,
+      bonusXp,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 import { callGemini, cleanGeminiJson, GEMINI_API_KEY } from "../utils/gemini.js";
 
 
