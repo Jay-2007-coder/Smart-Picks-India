@@ -75,5 +75,25 @@ export const products: Product[] = [
     trending: true,
     dealOfTheDay: true,
     tags: ["LG UltraGear","Gaming Monitor","QHD Display","Desktop Tech"],
-  },
+  }
+,
+  {
+    slug: "boat-rockerz-411-wireless-headphones-review",
+    title: "Boat Rockerz 411 Review: Low Latency, 40-Hr Battery & ENx Tech for Gamers & Music Lovers",
+    image: "https://m.media-amazon.com/images/I/71QdB7hDCAL._SL1500_.jpg",
+    category: "tech",
+    description: "Experience immersive audio and lag-free gaming with the Boat Rockerz 411 wireless over-ear headphones. Boasting 40ms low latency, a massive 40-hour battery, and crystal-clear calls thanks to ENx Tech, these headphones are perfect for entertainment on the go. Dive into superior sound without breaking the bank.",
+    price: 1299,
+    oldPrice: 2999,
+    rating: 4.4,
+    reviewCount: 1250,
+    affiliateLink: "https://amzn.to/4uDUh4A",
+    features: ["40ms Low Latency BEAST Mode","Up to 40 Hours Playback on a Single Charge","Powerful 40mm Dynamic Drivers for Immersive Sound","ENx™ Technology for Crystal-Clear Voice Calls","Stream Ad-Free Music via App Support","Bluetooth v5.0 for Seamless Wireless Connectivity","Integrated Microphone for Hands-Free Calling","Comfortable Over-Ear Design in Active Black"],
+    pros: ["Exceptional Low Latency (40ms) ideal for Gaming & Streaming","Marathon Battery Life of up to 40 Hours for extended use","Immersive and punchy sound with powerful 40mm drivers","Crystal-clear voice calls thanks to ENx™ Technology","Comfortable over-ear fit suitable for long listening sessions","Unique app support for ad-free music streaming adds value"],
+    cons: ["No Active Noise Cancellation (ANC) feature","Predominantly plastic build might not feel premium to some"],
+    featured: false,
+    trending: true,
+    dealOfTheDay: false,
+    tags: ["Boat Rockerz 411","Wireless Headphones","Bluetooth Headset","Low Latency Headphones","Gaming Headphones","Over-Ear Headphones","Boat Audio","Tech Review","Affiliate Product","Budget Headphones"],
+  }
 ];
