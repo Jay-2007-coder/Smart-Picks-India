@@ -59,6 +59,8 @@ export default function AdminDashboard() {
   const { user, loading } = useAuth() as any;
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<"analytics" | "products" | "blogs">("analytics");
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [usersList, setUsersList] = useState<UserInfo[]>([]);
@@ -515,8 +517,50 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Quick Publish ASIN Scraper Form */}
-        <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
+        {/* Navigation Tab Pills */}
+        <div className="bg-card border border-border/80 p-1.5 rounded-2xl flex gap-1 mb-8 overflow-x-auto scrollbar-none max-w-max shadow-sm">
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+              activeTab === "analytics"
+                ? "bg-red-500/10 text-red-500 shadow-sm border border-red-500/15"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+            }`}
+          >
+            <LineChart className="h-4 w-4" />
+            Overview & Analytics
+          </button>
+
+          <button
+            onClick={() => setActiveTab("products")}
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+              activeTab === "products"
+                ? "bg-emerald-500/10 text-emerald-500 shadow-sm border border-emerald-500/15"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+            }`}
+          >
+            <Layers className="h-4 w-4" />
+            Manage Products
+          </button>
+
+          <button
+            onClick={() => setActiveTab("blogs")}
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+              activeTab === "blogs"
+                ? "bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/15"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            Manage Blogs
+          </button>
+        </div>
+
+        {/* Tab Contents */}
+        {activeTab === "products" && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Quick Publish ASIN Scraper Form */}
+            <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
           <div className="absolute -right-16 -bottom-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl" />
           <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
             <Layers className="h-5 w-5 text-red-500" /> Scrape & Publish Amazon Product
@@ -878,9 +922,13 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+      </div>
+    )}
 
-        {/* Blog Post Helper & Code Template Generator */}
-        <div id="blog-generator" className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
+        {activeTab === "blogs" && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Blog Post Helper & Code Template Generator */}
+            <div id="blog-generator" className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
           <div className="absolute -left-16 -top-16 h-36 w-36 rounded-full bg-brand-500/5 blur-2xl" />
           <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
             <FileText className="h-5 w-5 text-indigo-500" /> Publish & Manage Blog Posts
@@ -1136,9 +1184,13 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+      </div>
+    )}
 
-        {/* Analytics Card Metrics */}
-        {stats && (
+        {activeTab === "analytics" && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Analytics Card Metrics */}
+            {stats && (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-200">
               <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-blue-500/5 blur-xl group-hover:scale-150 transition-transform" />
@@ -1340,6 +1392,8 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    )}
+  </div>
+</div>
+);
 }
