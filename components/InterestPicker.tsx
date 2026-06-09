@@ -98,24 +98,31 @@ export default function InterestPicker({ isOpen, onClose, onSave }: InterestPick
               {availableCategories.map((cat) => {
                 const isSelected = selected.includes(cat.id);
                 return (
-                  <button
+                  <motion.button
                     key={cat.id}
                     onClick={() => toggleCategory(cat.id)}
+                    whileHover={{ y: -2, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between h-24 relative overflow-hidden group cursor-pointer ${
                       isSelected
-                        ? "border-brand-500 bg-brand-500/[0.03] dark:bg-brand-500/[0.01]"
-                        : "border-border hover:border-brand-500/30 bg-card hover:bg-muted/30"
+                        ? "border-brand-500 bg-brand-500/[0.04] dark:bg-brand-500/[0.02] shadow-sm shadow-brand-500/5"
+                        : "border-border hover:border-brand-550/30 bg-card hover:bg-muted/40"
                     }`}
                   >
-                    <span className="text-2xl mb-2">{cat.icon}</span>
-                    <span className="text-xs font-bold text-foreground">{cat.label}</span>
+                    <span className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-200">{cat.icon}</span>
+                    <span className="text-xs font-black text-foreground group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">{cat.label}</span>
                     
                     {isSelected && (
-                      <span className="absolute top-3 right-3 h-4 w-4 rounded-full bg-brand-600 flex items-center justify-center text-white">
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute top-3 right-3 h-4.5 w-4.5 rounded-full bg-brand-600 flex items-center justify-center text-white shadow"
+                      >
                         <Check className="h-2.5 w-2.5 stroke-[3px]" />
-                      </span>
+                      </motion.span>
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>

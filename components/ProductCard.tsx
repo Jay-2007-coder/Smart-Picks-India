@@ -34,8 +34,12 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.45, delay: index * 0.07, ease: "easeOut" }}
-        whileHover={{ y: -4 }}
-        className="card group flex flex-col overflow-hidden transition-shadow hover:shadow-xl hover:shadow-black/8"
+        whileHover={{
+          y: -6,
+          boxShadow: "0 20px 40px -15px rgba(0,0,0,0.15), 0 0 20px 2px rgba(212,63,54,0.06)",
+          borderColor: "rgba(212,63,54,0.25)"
+        }}
+        className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80"
       >
         {/* Image Container */}
         <div className="relative aspect-square bg-muted overflow-hidden">
@@ -171,9 +175,9 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
             href={product.affiliateLink}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="btn-primary w-full mt-2 text-center justify-center"
+            className="btn-primary w-full mt-2 text-center justify-center bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 border border-brand-500/20 shadow-md font-bold text-xs py-2.5"
             id={`buy-${product.slug}`}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(212, 63, 54, 0.2)" }}
             whileTap={{ scale: 0.97 }}
           >
             <ShoppingCart className="h-4 w-4" />

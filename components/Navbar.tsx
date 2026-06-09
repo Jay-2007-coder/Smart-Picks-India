@@ -179,7 +179,7 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute top-full mt-2.5 w-96 right-0 bg-card border border-border/80 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[450px] overflow-y-auto"
+                    className="absolute top-full mt-2.5 w-96 right-0 bg-background/85 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[450px] overflow-y-auto"
                   >
                     {loading ? (
                       <div className="p-4 text-xs font-bold text-muted-foreground flex items-center gap-2">
@@ -201,13 +201,13 @@ export default function Navbar() {
                                   <Link
                                     href={resultTypeUrl(r)}
                                     onClick={clear}
-                                    className="flex items-center gap-3 px-3 py-2 hover:bg-muted/70 rounded-xl transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 rounded-xl transition-all duration-200 hover:scale-[1.01] group/item"
                                   >
                                     {r.image && (
-                                      <img src={r.image} alt={r.title} className="h-8.5 w-8.5 rounded-lg object-cover bg-muted border border-border/40" />
+                                      <img src={r.image} alt={r.title} className="h-8.5 w-8.5 rounded-lg object-cover bg-muted border border-border/40 group-hover/item:scale-105 transition-transform duration-200" />
                                     )}
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-bold text-foreground truncate">{r.title}</p>
+                                      <p className="text-xs font-bold text-foreground group-hover/item:text-brand-600 dark:group-hover/item:text-brand-400 transition-colors truncate">{r.title}</p>
                                       {r.price && <p className="text-[10px] text-brand-600 font-extrabold mt-0.5">₹{r.price}</p>}
                                     </div>
                                   </Link>
@@ -228,13 +228,13 @@ export default function Navbar() {
                                   <Link
                                     href={resultTypeUrl(r)}
                                     onClick={clear}
-                                    className="flex items-center gap-3 px-3 py-2 hover:bg-muted/70 rounded-xl transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 rounded-xl transition-all duration-200 hover:scale-[1.01] group/item"
                                   >
                                     {r.image && (
-                                      <img src={r.image} alt={r.title} className="h-8.5 w-8.5 rounded-lg object-cover bg-muted border border-border/40" />
+                                      <img src={r.image} alt={r.title} className="h-8.5 w-8.5 rounded-lg object-cover bg-muted border border-border/40 group-hover/item:scale-105 transition-transform duration-200" />
                                     )}
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-bold text-foreground truncate">{r.title}</p>
+                                      <p className="text-xs font-bold text-foreground group-hover/item:text-brand-600 dark:group-hover/item:text-brand-400 transition-colors truncate">{r.title}</p>
                                     </div>
                                   </Link>
                                 </li>
@@ -254,13 +254,13 @@ export default function Navbar() {
                                   <Link
                                     href={resultTypeUrl(r)}
                                     onClick={clear}
-                                    className="flex items-center gap-3 px-3 py-2 hover:bg-muted/70 rounded-xl transition-colors"
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 rounded-xl transition-all duration-200 hover:scale-[1.01] group/item"
                                   >
-                                    <div className="h-8 w-8 rounded-lg bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-600 shrink-0 border border-brand-500/10">
+                                    <div className="h-8 w-8 rounded-lg bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-600 group-hover/item:text-brand-550 group-hover/item:scale-105 shrink-0 border border-brand-500/10 transition-all duration-200">
                                       <Sparkles className="h-4 w-4 animate-pulse" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-bold text-foreground truncate">{r.title}</p>
+                                      <p className="text-xs font-bold text-foreground group-hover/item:text-brand-600 dark:group-hover/item:text-brand-400 transition-colors truncate">{r.title}</p>
                                     </div>
                                   </Link>
                                 </li>

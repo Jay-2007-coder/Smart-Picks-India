@@ -58,34 +58,41 @@ export default function HomePersonalizer({ initialFeatured, initialTrending }: H
   return (
     <>
       {/* Settings bar if personalized */}
-      <div className="container-custom mt-8 flex justify-between items-center flex-wrap gap-3">
+      <div className="container-custom mt-8 flex justify-between items-center flex-wrap gap-4 bg-muted/20 border border-border/60 p-4 rounded-3xl backdrop-blur-sm shadow-sm select-none">
         <div className="flex items-center gap-2">
           {interests.length > 0 ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-500/10 text-brand-600 border border-brand-500/20">
-              <Sparkles className="h-3.5 w-3.5 fill-current animate-pulse-scale" />
-              Feed customized for: {interests.map(i => i.toUpperCase()).join(", ")}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-extrabold bg-brand-500/5 text-brand-600 dark:text-brand-400 border border-brand-500/10 shadow-sm"
+            >
+              <Sparkles className="h-3.5 w-3.5 fill-current animate-pulse-scale shrink-0" />
+              <span>Feed customized for: <strong className="font-black text-foreground">{interests.map(i => i.toUpperCase()).join(", ")}</strong></span>
               <button
                 onClick={clearInterests}
-                className="ml-1 hover:text-foreground text-brand-500 transition-colors"
+                className="ml-2 hover:bg-brand-500/10 hover:text-brand-700 p-1 rounded-lg transition-colors cursor-pointer"
                 title="Clear preferences"
               >
                 <X className="h-3.5 w-3.5 stroke-[3px]" />
               </button>
-            </span>
+            </motion.div>
           ) : (
-            <span className="text-xs font-semibold text-muted-foreground">
-              Standard product listings. Customize to see your interests first.
-            </span>
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground pl-1">
+              <span className="h-2 w-2 rounded-full bg-border" />
+              <span>Standard product listings. Customize to see your interests first.</span>
+            </div>
           )}
         </div>
 
-        <button
+        <motion.button
           onClick={() => setPickerOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border border-border bg-card hover:bg-muted text-foreground transition-all cursor-pointer shadow-sm active:scale-95"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider border border-border/80 bg-card hover:bg-muted text-foreground transition-all cursor-pointer shadow-sm"
         >
           <SlidersHorizontal className="h-3.5 w-3.5 text-brand-600" />
           Customize Feed
-        </button>
+        </motion.button>
       </div>
 
       {/* Featured Products Section */}
