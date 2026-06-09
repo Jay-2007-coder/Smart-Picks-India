@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, Sparkles, User, HelpCircle } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   role: "user" | "model";
@@ -161,131 +162,151 @@ export default function AIChatbot() {
   return (
     <>
       {/* Floating Capsule Action Button */}
-      <button
+      <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-[#ffffff] dark:bg-[#1a1a1a] text-slate-800 dark:text-white border border-slate-200 dark:border-[rgba(255,255,255,0.15)] shadow-lg hover:scale-[1.05] active:scale-95 transition-all duration-200 cursor-pointer"
+        whileHover={{ scale: 1.06, boxShadow: "0 10px 25px rgba(212,63,54,0.2)" }}
+        whileTap={{ scale: 0.94 }}
+        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border shadow-lg hover:border-brand-500/35 transition-colors duration-200 cursor-pointer"
         title="Open AI Assistant"
       >
         <div className="relative">
           {isOpen ? (
             <X className="h-5 w-5 transform rotate-90 transition-transform duration-200" />
           ) : (
-            <MessageSquare className="h-5 w-5 transform scale-100 transition-transform duration-200" />
+            <MessageSquare className="h-5 w-5 transform scale-100 transition-transform duration-200 text-brand-600 dark:text-brand-400" />
           )}
           {!isOpen && (
-            <span className="absolute -top-2.5 -right-2.5 flex items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black p-1 leading-none shadow-sm">
+            <span className="absolute -top-2.5 -right-2.5 flex items-center justify-center rounded-full bg-amber-400 text-[9px] font-black text-black px-1 py-0.5 leading-none shadow-sm animate-pulse-scale">
               AI
             </span>
           )}
         </div>
-      </button>
+      </motion.button>
 
       {/* Modern Glassmorphic Chat Window */}
-      {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-[390px] max-w-[calc(100vw-32px)] flex-col rounded-3xl border border-white/20 bg-card/90 backdrop-blur-xl shadow-2xl overflow-hidden transition-all duration-300 select-none border-t-red-500/20">
-          {/* Top Banner Header */}
-          <div className="relative flex items-center justify-between bg-gradient-to-r from-neutral-900 via-neutral-900 to-rose-950 px-5 py-4 text-white">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-200 via-rose-400 to-red-600 pointer-events-none" />
-            <div className="flex items-center gap-3 relative z-10">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20 border border-red-500/40">
-                <Bot className="h-4.5 w-4.5 text-red-500" />
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-neutral-900" />
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 30 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="fixed bottom-24 right-6 z-50 flex h-[520px] w-[390px] max-w-[calc(100vw-32px)] flex-col rounded-3xl border border-border/80 bg-background/85 backdrop-blur-xl shadow-2xl overflow-hidden select-none animate-none"
+          >
+            {/* Top Banner Header */}
+            <div className="relative flex items-center justify-between bg-gradient-to-r from-neutral-955 via-neutral-900 to-rose-955 px-5 py-4 text-white border-b border-border/10">
+              <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-200 via-rose-450 to-red-655 pointer-events-none" />
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20 border border-red-500/40">
+                  <Bot className="h-4.5 w-4.5 text-red-500" />
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-neutral-950" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black tracking-tight leading-none flex items-center gap-1">
+                    SmartPicks AI <Sparkles className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                  </h4>
+                  <span className="text-[10px] font-semibold text-white/70">Assistant &bull; Online</span>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-black tracking-tight leading-none flex items-center gap-1">
-                  SmartPicks AI <Sparkles className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                </h4>
-                <span className="text-[10px] font-semibold text-white/70">Assistant &bull; Online</span>
-              </div>
+              <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white transition-colors relative z-10 cursor-pointer">
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white transition-colors relative z-10">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
 
-          {/* Messages Flow Area */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-500/[0.03]">
-            {messages.map((msg, index) => (
-              <div key={index} className={`flex items-start gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                <div
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-sm ${
-                    msg.role === "user"
-                      ? "bg-gradient-to-tr from-red-600 to-rose-600 text-white"
-                      : "bg-card border border-border/80 text-foreground"
-                  }`}
+            {/* Messages Flow Area */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-500/[0.02]">
+              {messages.map((msg, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.25, delay: index === messages.length - 1 ? 0.05 : 0 }}
+                  className={`flex items-start gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                 >
-                  {msg.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-red-500" />}
-                </div>
-
-                <div
-                  className={`rounded-2xl px-4 py-3 max-w-[76%] shadow-sm transition-all duration-200 ${
-                    msg.role === "user"
-                      ? "bg-gradient-to-tr from-red-600 to-rose-600 text-white rounded-tr-none"
-                      : "bg-card text-foreground border border-border/80 rounded-tl-none"
-                  }`}
-                >
-                  {renderMessageContent(msg.content)}
-                </div>
-              </div>
-            ))}
-
-            {loading && (
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card border border-border/80 text-foreground">
-                  <Bot className="h-4 w-4 text-red-500" />
-                </div>
-                <div className="rounded-2xl rounded-tl-none bg-card border border-border/80 px-4.5 py-3.5 shadow-sm">
-                  <div className="flex gap-1.5 items-center">
-                    <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-red-500/70 [animation-delay:-0.3s]" />
-                    <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-red-500/70 [animation-delay:-0.15s]" />
-                    <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-red-500/70" />
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-gradient-to-tr from-brand-600 to-rose-600 text-white"
+                        : "bg-background border border-border/80 text-foreground"
+                    }`}
+                  >
+                    {msg.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-brand-650 dark:text-brand-400" />}
                   </div>
+
+                  <div
+                    className={`rounded-2xl px-4 py-3 max-w-[76%] shadow-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-gradient-to-r from-brand-600 to-rose-600 text-white rounded-tr-none"
+                        : "bg-background/80 dark:bg-slate-900/80 border border-border/60 backdrop-blur-md text-foreground rounded-tl-none"
+                    }`}
+                  >
+                    {renderMessageContent(msg.content)}
+                  </div>
+                </motion.div>
+              ))}
+
+              {loading && (
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background border border-border/80 text-foreground">
+                    <Bot className="h-4 w-4 text-brand-650 dark:text-brand-400" />
+                  </div>
+                  <div className="rounded-2xl rounded-tl-none bg-background border border-border/80 px-4.5 py-3 shadow-sm">
+                    <div className="flex gap-1.5 items-center">
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-brand-500/70 [animation-delay:-0.3s]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-brand-500/70 [animation-delay:-0.15s]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-brand-500/70" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Quick suggestions pill line */}
+            {messages.length === 1 && (
+              <div className="px-5 py-3 bg-muted/20 border-t border-border/50">
+                <p className="text-[9px] font-black text-muted-foreground mb-2 uppercase tracking-widest flex items-center gap-1">
+                  <HelpCircle className="h-3 w-3" /> Quick Questions
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((s, idx) => (
+                    <motion.button
+                      key={idx}
+                      onClick={() => handleSendMessage(s)}
+                      whileHover={{ scale: 1.03, y: -1 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="rounded-xl border border-border/80 bg-background/90 px-3.5 py-1.5 text-xs text-muted-foreground font-extrabold hover:border-brand-500 hover:text-brand-650 transition-all duration-200 shadow-sm cursor-pointer"
+                    >
+                      {s}
+                    </motion.button>
+                  ))}
                 </div>
               </div>
             )}
 
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick suggestions pill line */}
-          {messages.length === 1 && (
-            <div className="px-5 py-3 bg-muted/20 border-t border-border/50">
-              <p className="text-[9px] font-black text-muted-foreground mb-2 uppercase tracking-widest flex items-center gap-1">
-                <HelpCircle className="h-3 w-3" /> Quick Questions
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((s, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSendMessage(s)}
-                    className="rounded-xl border border-border/80 bg-card px-3 py-1.5 text-xs text-muted-foreground font-semibold hover:border-red-500 hover:text-red-500 transition-all duration-200 shadow-sm active:scale-95"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Form Input Control Bar */}
-          <form onSubmit={handleFormSubmit} className="flex items-center gap-2 border-t border-border/60 bg-card px-5 py-4">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask about tech reviews, coupon deals..."
-              className="flex-1 bg-muted/30 h-10 rounded-2xl border border-input/60 px-4 text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500/30 focus-visible:border-red-500/40"
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || loading}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 text-white hover:shadow-md hover:scale-103 transition-all duration-200 disabled:opacity-50"
-            >
-              <Send className="h-4.5 w-4.5" />
-            </button>
-          </form>
-        </div>
-      )}
+            {/* Form Input Control Bar */}
+            <form onSubmit={handleFormSubmit} className="flex items-center gap-2 border-t border-border/60 bg-background/90 px-5 py-4">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Ask about reviews, deals, store products..."
+                className="flex-1 bg-muted/30 h-10 rounded-2xl border border-input px-4 text-xs font-bold placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-500/20 focus-visible:border-brand-500/40"
+              />
+              <motion.button
+                type="submit"
+                disabled={!inputValue.trim() || loading}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-600 to-rose-600 text-white hover:shadow-md transition-all duration-200 disabled:opacity-50 cursor-pointer"
+              >
+                <Send className="h-4.5 w-4.5" />
+              </motion.button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

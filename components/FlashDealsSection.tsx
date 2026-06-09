@@ -93,8 +93,12 @@ export default function FlashDealsSection() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: idx * 0.08 }}
-                whileHover={{ y: -3 }}
-                className="card group overflow-hidden flex flex-col hover:shadow-xl hover:shadow-black/8 hover:border-accent-500/30 transition-all duration-300 relative border border-border/60"
+                whileHover={{
+                  y: -5,
+                  boxShadow: "0 20px 35px -10px rgba(0,0,0,0.15), 0 0 18px 2px rgba(249,115,22,0.06)",
+                  borderColor: "rgba(249,115,22,0.25)"
+                }}
+                className="card group overflow-hidden flex flex-col transition-all duration-300 relative border border-border/60"
               >
                 {/* Glowing subtle top border for flash deal */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-500 to-rose-500 z-10" />
@@ -136,7 +140,7 @@ export default function FlashDealsSection() {
                     href={deal.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="btn-primary bg-accent-500 hover:bg-accent-600 text-white text-xs py-1.5 w-full justify-center mt-2 flex items-center gap-1 shadow-md shadow-accent-500/10"
+                    className="btn-primary bg-gradient-to-r from-accent-500 to-rose-500 hover:from-accent-600 hover:to-rose-600 text-white border border-accent-500/20 text-xs py-1.5 w-full justify-center mt-2 flex items-center gap-1 shadow-md hover:shadow-[0_8px_16px_rgba(249,115,22,0.2)] transition-all duration-200"
                   >
                     <ShoppingCart className="h-3.5 w-3.5" /> Buy Amazon
                   </a>

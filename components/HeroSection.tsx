@@ -128,7 +128,13 @@ export default function HeroSection({ heroProducts }: { heroProducts: Product[] 
                   initial={{ opacity: 0, scale: 0.85 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.75 + i * 0.1 }}
-                  className="flex flex-col items-center text-center p-3 rounded-2xl border border-white/8 bg-white/5 backdrop-blur-sm"
+                  whileHover={{
+                    y: -4,
+                    borderColor: "rgba(228,93,84,0.35)",
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    boxShadow: "0 10px 20px -5px rgba(0,0,0,0.3)"
+                  }}
+                  className="flex flex-col items-center text-center p-3 rounded-2xl border border-white/8 bg-white/5 backdrop-blur-sm transition-all duration-300"
                 >
                   <stat.icon className="h-4 w-4 text-brand-400 mb-1" />
                   <span className="text-lg font-black text-white">{stat.value}</span>
@@ -158,8 +164,13 @@ export default function HeroSection({ heroProducts }: { heroProducts: Product[] 
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.12 }}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  className={`rounded-2xl overflow-hidden bg-white/8 backdrop-blur-sm border border-white/10 p-3 shadow-xl cursor-pointer transition-shadow hover:shadow-brand-600/10 hover:shadow-2xl ${i % 2 === 1 ? "mt-6" : ""}`}
+                  whileHover={{
+                    y: -6,
+                    scale: 1.02,
+                    borderColor: "rgba(228,93,84,0.3)",
+                    boxShadow: "0 15px 30px -5px rgba(228,93,84,0.1)"
+                  }}
+                  className={`rounded-2xl overflow-hidden bg-white/8 backdrop-blur-sm border border-white/10 p-3 shadow-xl cursor-pointer transition-all duration-300 ${i % 2 === 1 ? "mt-6" : ""}`}
                 >
                   <div className="relative aspect-square rounded-xl overflow-hidden mb-3 bg-white/5">
                     {item.image && (
