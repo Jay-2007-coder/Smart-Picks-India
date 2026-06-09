@@ -471,13 +471,13 @@ export default function CodingHelper() {
               </div>
 
               {/* IDE Editor Shell */}
-              <div className="rounded-2xl overflow-hidden border border-slate-850 bg-[#16171d] shadow-2xl flex flex-col h-[390px] relative">
+              <div className="rounded-2xl overflow-hidden border border-slate-800 bg-[#16171d] shadow-2xl flex flex-col h-[390px] relative">
                 
                 {/* Visual Laser Scanning Bar */}
                 {loading && <div className="laser-scanner" />}
 
                 {/* Editor Tab Bar */}
-                <div className="bg-[#1c1d24] px-4 py-2.5 border-b border-slate-850 flex items-center justify-between">
+                <div className="bg-[#1c1d24] px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {/* Mock Traffic Lights */}
                     <div className="flex items-center gap-1.5 select-none">
@@ -501,7 +501,7 @@ export default function CodingHelper() {
                 {/* Editor Content Area */}
                 <div className="flex-1 flex overflow-hidden">
                   {/* Line Numbers gutter */}
-                  <div className="w-10 bg-[#121318] border-r border-slate-850 text-[10px] text-slate-600/70 font-mono text-right pr-3 pt-3 select-none leading-relaxed font-fira">
+                  <div className="w-10 bg-[#121318] border-r border-slate-800 text-[10px] text-slate-600/70 font-mono text-right pr-3 pt-3 select-none leading-relaxed font-fira">
                     {codeLines.map((_, idx) => (
                       <div key={idx} className="h-[21px] flex items-center justify-end">{idx + 1}</div>
                     ))}
@@ -548,7 +548,7 @@ export default function CodingHelper() {
             {/* Empty Board view */}
             {!loading && !result && (
               <div className="bg-slate-900/30 border border-dashed border-slate-800 rounded-3xl p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-4 h-[525px] shadow-2xl relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-slate-850/20 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-slate-800/20 rounded-full blur-2xl pointer-events-none" />
                 
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900/60 border border-slate-800/60 text-slate-500 relative z-10">
                   <Laptop className="h-8 w-8 text-indigo-500/40 animate-pulse" />
@@ -672,7 +672,7 @@ export default function CodingHelper() {
                 <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl overflow-hidden shadow-2xl flex flex-col relative">
                   
                   {/* Tab Selector Headers */}
-                  <div className="bg-[#171922] border-b border-slate-850/60 flex flex-wrap justify-between items-center px-4.5 py-1 no-print">
+                  <div className="bg-[#171922] border-b border-slate-800/60 flex flex-wrap justify-between items-center px-4.5 py-1 no-print">
                     <div className="flex gap-1 -mb-px">
                       <button
                         onClick={() => setActiveTab("refactored")}
@@ -750,7 +750,7 @@ export default function CodingHelper() {
                   </div>
 
                   {/* Rendered workspace content wrapper */}
-                  <div className={`p-4 bg-[#121318] text-[#e1e4e8] overflow-hidden min-h-[300px] border-t border-slate-850/60 scrollbar-custom overflow-x-auto`}>
+                  <div className={`p-4 bg-[#121318] text-[#e1e4e8] overflow-hidden min-h-[300px] border-t border-slate-800/60 scrollbar-custom overflow-x-auto`}>
                     
                     {/* Tab 1: Refactored Code Block */}
                     {activeTab === "refactored" && (
@@ -825,7 +825,7 @@ export default function CodingHelper() {
                   <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                     <Info className="h-4 w-4 text-indigo-400" /> Explanation Breakdown
                   </h4>
-                  <p className="text-xs font-semibold leading-relaxed text-slate-400 whitespace-pre-line bg-slate-950/20 border border-slate-850 px-4 py-3 rounded-2xl">
+                  <p className="text-xs font-semibold leading-relaxed text-slate-400 whitespace-pre-line bg-slate-950/20 border border-slate-800 px-4 py-3 rounded-2xl">
                     {result.explanation}
                   </p>
                 </div>
