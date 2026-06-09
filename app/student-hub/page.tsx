@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Trophy,
   Briefcase,
+  Compass,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -40,6 +41,14 @@ const tools = [
         icon: Calendar,
         color: "text-purple-500 bg-purple-500/10 dark:bg-purple-500/5",
         hoverColor: "group-hover:text-purple-400 group-hover:bg-purple-500/20",
+      },
+      {
+        title: "Developer Roadmaps",
+        description: "Interactive timelines for Web Dev, AI/ML, and DevOps, mapping language relationships and technology stacks.",
+        href: "/student-hub/learning-roadmaps",
+        icon: Compass,
+        color: "text-rose-500 bg-rose-500/10 dark:bg-rose-500/5",
+        hoverColor: "group-hover:text-rose-400 group-hover:bg-rose-500/20",
       },
     ],
   },
