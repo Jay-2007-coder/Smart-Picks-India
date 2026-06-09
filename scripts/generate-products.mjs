@@ -133,8 +133,8 @@ async function run() {
     const imageUrl = record["Image URL"];
 
     // ── Read prices directly from the sheet (avoids AI hallucination) ──────
-    const sheetPrice    = parseFloat(record["Price"] || "");
-    const sheetOldPrice = parseFloat(record["Old Price"] || "");
+    const sheetPrice    = parseFloat(record["Price"] || record["price"] || "");
+    const sheetOldPrice = parseFloat(record["Old Price"] || record["old price"] || record["oldPrice"] || record["Old price"] || "");
     const hasPriceFromSheet = !isNaN(sheetPrice) && sheetPrice > 0;
 
     if (!productName || !affiliateLink) continue;

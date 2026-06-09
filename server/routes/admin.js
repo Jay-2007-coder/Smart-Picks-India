@@ -8,7 +8,7 @@ import DigitalProduct from "../models/DigitalProduct.js";
 import Purchase from "../models/Purchase.js";
 import DownloadHistory from "../models/DownloadHistory.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
-import { syncProductPrices, parseFullProducts, broadcastTopDeals } from "../utils/priceSync.js";
+import { syncProductPrices, parseFullProducts, broadcastTopDeals, syncProductsFromCatalog } from "../utils/priceSync.js";
 import { scrapeAmazonProduct } from "../utils/scraper.js";
 import { sendTelegramMessage, escapeHtml } from "../utils/telegram.js";
 import fs from "fs";
@@ -64,7 +64,7 @@ router.get("/stats", async (req, res, next) => {
     const priceHistoryPoints = await PriceHistory.countDocuments({});
 
     // Read static products metadata for analytics
-    const products = parseFullProducts();
+    const products = await Product.find({});
     
     // Category distribution from static catalog
     const categoriesMap = {};
@@ -141,13 +141,20 @@ router.get("/stats", async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────────────────────
 router.post("/sync", async (req, res, next) => {
   try {
-    console.log("🛠️ Manual Price Sync triggered by admin:", req.user.email);
-    const result = await syncProductPrices();
+    console.log("🛠️ Manual Catalog & Price Sync triggered by admin:", req.user.email);
+    
+    // 1. Sync catalog from products.ts to MongoDB
+    const catalogResult = await syncProductsFromCatalog();
+    
+    // 2. Sync prices to record history
+    const priceResult = await syncProductPrices();
     
     res.status(200).json({
       success: true,
-      message: `Price synchronization triggered successfully. ${result.updatedCount} new price points logged.`,
-      updatedCount: result.updatedCount,
+      message: `Catalog and price synchronization triggered successfully. Synced ${catalogResult.syncedCount || 0} products, deleted ${catalogResult.deletedCount || 0} fake/removed products. ${priceResult.updatedCount || 0} price updates logged.`,
+      syncedCount: catalogResult.syncedCount,
+      deletedCount: catalogResult.deletedCount,
+      updatedCount: priceResult.updatedCount,
     });
   } catch (err) {
     next(err);

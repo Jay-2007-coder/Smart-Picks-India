@@ -44,8 +44,8 @@ async function run() {
   const sheetPrices = new Map();
   for (const row of records) {
     const link     = (row["Amazon URL"] || "").trim();
-    const price    = parseFloat(row["Price"] || "");
-    const oldPrice = parseFloat(row["Old Price"] || "");
+    const price    = parseFloat(row["Price"] || row["price"] || "");
+    const oldPrice = parseFloat(row["Old Price"] || row["old price"] || row["oldPrice"] || row["Old price"] || "");
 
     if (link && !isNaN(price) && price > 0) {
       sheetPrices.set(link, {

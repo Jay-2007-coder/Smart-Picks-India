@@ -21,7 +21,7 @@ import affiliateRouter from "./routes/affiliate.js";
 import aiRouter from "./routes/ai.js";
 import blogRouter from "./routes/blog.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
-import { syncProductPrices } from "./utils/priceSync.js";
+import { syncProductPrices, syncProductsFromCatalog } from "./utils/priceSync.js";
 import { initPriceSyncCron } from "./jobs/priceSync.js";
 
 // Initialize environment variables from root first, then locally
@@ -165,10 +165,12 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB Connected successfully.");
-    // Run price synchronization on startup
-    syncProductPrices().catch((err) => {
-      console.error("❌ Initial price sync failed:", err.message);
-    });
+    // Run catalog and price synchronization on startup
+    syncProductsFromCatalog()
+      .then(() => syncProductPrices())
+      .catch((err) => {
+        console.error("❌ Initial catalog/price sync failed:", err.message);
+      });
     // Start price history cron logger daemon
     initPriceSyncCron();
 

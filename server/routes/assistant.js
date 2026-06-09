@@ -1,5 +1,5 @@
 import express from "express";
-import { parseFullProducts } from "../utils/priceSync.js";
+import Product from "../models/Product.js";
 
 const router = express.Router();
 
@@ -11,7 +11,16 @@ router.post("/chat", async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Message is required." });
     }
 
-    const products = parseFullProducts();
+    const dbProducts = await Product.find({});
+    const products = dbProducts.map((p) => ({
+      title: p.title,
+      slug: p.slug,
+      price: p.price,
+      oldPrice: p.originalPrice || p.price,
+      category: p.category,
+      description: p.description || "",
+      rating: p.rating || 4.5,
+    }));
     const systemPrompt = `You are the Gemini AI Shopping Assistant for SmartPicks India (a premium smart product deals website).
 You help users find the best deals, compare prices, and choose the right products.
 Here is the catalog of currently available products on our website:

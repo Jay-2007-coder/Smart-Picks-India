@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import PriceHistory from "../models/PriceHistory.js";
 import PriceAlert from "../models/PriceAlert.js";
 import User from "../models/User.js";
+import Product from "../models/Product.js";
 import { sendEmail } from "./email.js"; // Standard email utility
 import { sendTelegramMessage, escapeHtml } from "./telegram.js";
 
@@ -88,10 +89,88 @@ export function parseFullProducts() {
   }
 }
 
+// Catalog-to-Database Synchronization
+export async function syncProductsFromCatalog() {
+  console.log("📦 Starting Catalog-to-Database Synchronization...");
+  try {
+    const catalogProducts = parseFullProducts();
+    console.log(`   Found ${catalogProducts.length} products in local catalog (data/products.ts).`);
+
+    const syncedSlugs = [];
+
+    for (const p of catalogProducts) {
+      // Find duplicate or existing product by slug, title, or ASIN
+      let dbProduct = await Product.findOne({ slug: p.slug });
+      
+      const asinMatch = p.affiliateLink.match(/\/dp\/([A-Z0-9-]{10,20})/i) || p.affiliateLink.match(/\/gp\/product\/([A-Z0-9-]{10,20})/i);
+      const asin = asinMatch ? asinMatch[1].toUpperCase() : `MANUAL-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+      const discount = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) || 0;
+
+      const productFields = {
+        title: p.title,
+        asin,
+        category: p.category.toLowerCase(),
+        price: p.price,
+        originalPrice: p.oldPrice,
+        discount,
+        image: p.image,
+        rating: p.rating || 4.5,
+        reviewCount: p.reviewCount || 100,
+        affiliateLink: p.affiliateLink,
+        trending: true,
+        slug: p.slug,
+        description: p.description || "",
+        features: p.features || [],
+        pros: p.pros || [
+          "Great discount on premium performance.",
+          "Verified Amazon customer rating.",
+          "Fast shipping options in India."
+        ],
+        cons: p.cons || [
+          "Price fluctuations are common; grab it while discounted."
+        ],
+        tags: p.tags || [p.category, "Amazon Deals", "SmartPicks Choice"],
+        featured: p.featured || false,
+        dealOfTheDay: p.dealOfTheDay || false,
+      };
+
+      if (dbProduct) {
+        // Update existing product
+        Object.assign(dbProduct, productFields);
+        await dbProduct.save();
+        console.log(`   🔄 Updated existing Product in DB: "${p.title}" (Slug: ${p.slug})`);
+      } else {
+        // Create new product
+        dbProduct = new Product({
+          ...productFields,
+          flashDeal: true,
+          flashDealEndsAt: new Date(Date.now() + 3.75 * 60 * 60 * 1000) // active flash deals!
+        });
+        await dbProduct.save();
+        console.log(`   ✅ Created new Product in DB: "${p.title}" (Slug: ${p.slug})`);
+      }
+      syncedSlugs.push(p.slug);
+    }
+
+    // Delete any products from MongoDB that are no longer in catalog data/products.ts
+    const deleteResult = await Product.deleteMany({ slug: { $nin: syncedSlugs } });
+    if (deleteResult.deletedCount > 0) {
+      console.log(`   🧹 Deleted ${deleteResult.deletedCount} outdated/fake product(s) from database.`);
+    }
+
+    console.log("🎉 Catalog synchronization complete.");
+    return { success: true, syncedCount: syncedSlugs.length, deletedCount: deleteResult.deletedCount };
+  } catch (err) {
+    console.error("❌ Error syncing products from catalog:", err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // Core sync runner
 export async function syncProductPrices() {
   console.log("🔄 Starting Price Synchronization...");
-  const products = parseProducts();
+  const products = await Product.find({});
   console.log(`   Found ${products.length} products to check.`);
 
   let updatedCount = 0;
@@ -231,10 +310,17 @@ async function postDealToChannel(product, oldPrice) {
 
 // Broadcasts the top 3 biggest discount deals from catalog to the public Telegram channel
 export async function broadcastTopDeals() {
-  const products = parseFullProducts();
+  const products = await Product.find({});
   const deals = products
-    .filter(p => p.oldPrice > p.price)
-    .map(p => ({ ...p, discount: Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) }))
+    .filter(p => p.originalPrice > p.price)
+    .map(p => ({
+      slug: p.slug,
+      title: p.title,
+      price: p.price,
+      oldPrice: p.originalPrice || p.price,
+      affiliateLink: p.affiliateLink,
+      discount: Math.round((((p.originalPrice || p.price) - p.price) / (p.originalPrice || p.price)) * 100)
+    }))
     .sort((a, b) => b.discount - a.discount)
     .slice(0, 3);
 

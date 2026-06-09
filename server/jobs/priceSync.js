@@ -1,10 +1,10 @@
 import PriceHistory from "../models/PriceHistory.js";
-import { parseProducts } from "../utils/priceSync.js";
+import Product from "../models/Product.js";
 
 // Generates retro-active price history for the last 90 days if none exists
 export async function seedPriceHistoryIfEmpty() {
   console.log("📈 Checking if Price History needs initialization...");
-  const products = parseProducts();
+  const products = await Product.find({});
 
   for (const product of products) {
     try {
@@ -47,7 +47,7 @@ export async function seedPriceHistoryIfEmpty() {
 // Generate today's price log entry with a minor variation and purge > 90 days old records
 export async function runDailyPriceLog() {
   console.log("🔄 Running daily price variation logger...");
-  const products = parseProducts();
+  const products = await Product.find({});
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
