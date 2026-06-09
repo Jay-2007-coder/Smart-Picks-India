@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -17,6 +17,7 @@ import {
   GraduationCap,
   ArrowRight,
   Trophy,
+  Briefcase,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -76,6 +77,14 @@ const tools = [
         icon: HelpCircle,
         color: "text-sky-500 bg-sky-500/10 dark:bg-sky-500/5",
         hoverColor: "group-hover:text-sky-400 group-hover:bg-sky-500/20",
+      },
+      {
+        title: "Placement Tracker",
+        description: "An interactive Kanban board to track your company applications, OA rounds, and interview progress.",
+        href: "/student-hub/placement-tracker",
+        icon: Briefcase,
+        color: "text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/5",
+        hoverColor: "group-hover:text-indigo-400 group-hover:bg-indigo-500/20",
       },
     ],
   },
@@ -142,13 +151,30 @@ const toSentenceCase = (text: string) => {
 
 const getCardBorder = (title: string, category: string) => {
   if (category === "Academic Utilities") return "border-l-4 border-l-[#1D9E75]";
-  if (title === "Aptitude Quiz Practice") return "border-l-4 border-l-amber-500";
+  if (title === "Aptitude Quiz Practice" || title === "Placement Tracker") return "border-l-4 border-l-amber-500";
   if (category === "Career & Placements") return "border-l-4 border-l-blue-500";
   if (category === "AI & Productivity Assistants") return "border-l-4 border-l-purple-500";
   return "";
 };
 
 export default function StudentHub() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTools = useMemo(() => {
+    if (!searchQuery.trim()) return tools;
+    const query = searchQuery.toLowerCase().trim();
+    return tools.map(section => {
+      const items = section.items.filter(item => 
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query)
+      );
+      return {
+        ...section,
+        items
+      };
+    }).filter(section => section.items.length > 0);
+  }, [searchQuery]);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950/20 py-12">
       <div className="container-custom max-w-5xl">
@@ -157,7 +183,7 @@ export default function StudentHub() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0F6E56] via-neutral-900 to-[#042C53] px-8 py-14 text-white text-center shadow-xl border border-white/5 mb-12 select-none"
+          className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0F6E56] via-neutral-900 to-[#042C53] px-8 py-14 text-white text-center shadow-xl border border-white/5 mb-8 select-none"
         >
           <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-200 via-rose-500 to-red-600 pointer-events-none" />
           <div className="max-w-2xl mx-auto relative z-10">
@@ -201,67 +227,98 @@ export default function StudentHub() {
           </div>
         </motion.div>
 
+        {/* Live Search Input Bar */}
+        <div className="max-w-md mx-auto mb-10 select-none">
+          <div className="relative flex items-center p-1 rounded-2xl bg-white dark:bg-slate-900 border border-border shadow-md focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-300">
+            <div className="flex items-center gap-2.5 pl-3 w-full">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tools... e.g. Resume, CGPA, DSA"
+                className="w-full bg-transparent border-none outline-none py-2 text-xs text-foreground placeholder:text-muted-foreground/60 font-semibold"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="pr-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer text-xs font-bold"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Tools Cards Categories List */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="space-y-12"
-        >
-          {tools.map((section, secIdx) => (
-            <motion.div
-              variants={itemVariants}
-              key={section.category}
-              className="space-y-6"
-            >
-              <h2 className="text-sm font-black text-foreground border-l-4 border-[#1D9E75] pl-3">
-                {toSentenceCase(section.category)}
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {section.items.map((tool) => (
-                  <motion.div
-                    key={tool.title}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                    className="relative"
-                  >
-                    <Link
-                      href={tool.href}
-                      className={`group bg-card border border-border/80 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-brand-500/20 transition-all duration-300 flex items-start gap-4 h-full ${getCardBorder(tool.title, section.category)}`}
+        {filteredTools.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground rounded-3xl border border-dashed border-border/80 bg-card p-6 shadow-sm select-none">
+            <p className="text-sm font-bold text-foreground">No matching hub tools found</p>
+            <p className="text-xs text-muted-foreground mt-1">Try relaxing your search terms.</p>
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="space-y-12"
+          >
+            {filteredTools.map((section, secIdx) => (
+              <motion.div
+                variants={itemVariants}
+                key={section.category}
+                className="space-y-6"
+              >
+                <h2 className="text-sm font-black text-foreground border-l-4 border-[#1D9E75] pl-3">
+                  {toSentenceCase(section.category)}
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {section.items.map((tool) => (
+                    <motion.div
+                      key={tool.title}
+                      whileHover={{ y: -4, scale: 1.01 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      className="relative"
                     >
-                      <motion.div
-                        whileHover={{ rotate: [0, -8, 8, -4, 4, 0] }}
-                        transition={{ duration: 0.4 }}
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors duration-300 ${tool.color} ${tool.hoverColor}`}
+                      <Link
+                        href={tool.href}
+                        className={`group bg-card border border-border/80 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-brand-500/20 transition-all duration-300 flex items-start gap-4 h-full ${getCardBorder(tool.title, section.category)}`}
                       >
-                        <tool.icon className="h-5 w-5" />
-                      </motion.div>
-                      <div className="space-y-1 flex-1">
-                        <h4 className="font-extrabold text-foreground text-sm leading-snug group-hover:text-brand-600 transition-colors flex flex-wrap items-center gap-1.5">
-                          {tool.title}
-                          {["Resume Builder", "AI Study Buddy"].includes(tool.title) && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-teal-500/10 text-teal-600 border border-teal-500/20 uppercase tracking-wider">
-                              Most Used
-                            </span>
-                          )}
-                          {["DSA Coding Helper", "Portfolio Generator"].includes(tool.title) && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
-                              New
-                            </span>
-                          )}
-                          <ArrowRight className="h-3.5 w-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 text-brand-600" />
-                        </h4>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {tool.description}
-                        </p>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+                        <motion.div
+                          whileHover={{ rotate: [0, -8, 8, -4, 4, 0] }}
+                          transition={{ duration: 0.4 }}
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors duration-300 ${tool.color} ${tool.hoverColor}`}
+                        >
+                          <tool.icon className="h-5 w-5" />
+                        </motion.div>
+                        <div className="space-y-1 flex-1">
+                          <h4 className="font-extrabold text-foreground text-sm leading-snug group-hover:text-brand-600 transition-colors flex flex-wrap items-center gap-1.5">
+                            {tool.title}
+                            {["Resume Builder", "AI Study Buddy"].includes(tool.title) && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-teal-500/10 text-teal-600 border border-teal-500/20 uppercase tracking-wider">
+                                Most Used
+                              </span>
+                            )}
+                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker"].includes(tool.title) && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
+                                New
+                              </span>
+                            )}
+                            <ArrowRight className="h-3.5 w-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 text-brand-600" />
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {tool.description}
+                          </p>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </div>
   );
