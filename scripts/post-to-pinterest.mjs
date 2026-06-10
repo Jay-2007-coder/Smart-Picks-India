@@ -96,10 +96,12 @@ async function generatePinContent(productName, category, price, oldPrice) {
     const emoji = emojiMap[category] || "🛍️";
     const title = `${emoji} Deal: ${productName.substring(0, 40)}...`;
     let description = `Check out this amazing find on SmartPicks India: ${productName}. `;
-    if (hasDiscount) {
+    if (price && hasDiscount && oldPrice) {
       description += `Save ${discountPct}% off! Now only ₹${price.toLocaleString("en-IN")} (was ₹${oldPrice.toLocaleString("en-IN")}). `;
-    } else {
+    } else if (price) {
       description += `Get it now for just ₹${price.toLocaleString("en-IN")}. `;
+    } else {
+      description += `Check out the latest price and details today! `;
     }
     description += `Find the best handpicked deals, ratings, and recommendations in India. #AmazonIndia #SmartPicksIndia #Deals #${category}`;
     return {
@@ -240,7 +242,7 @@ async function generatePinImage(product) {
   const priceY = nameY + nameLines.slice(0, 3).length * 52 + 36;
 
   // Old price struck through
-  if (product.oldPrice && product.oldPrice > product.price) {
+  if (product.oldPrice && product.price && product.oldPrice > product.price) {
     ctx.fillStyle = BRAND.textGray;
     ctx.font = "28px sans-serif";
     const oldPriceText = `₹${product.oldPrice.toLocaleString("en-IN")}`;
@@ -255,10 +257,15 @@ async function generatePinImage(product) {
   }
 
   // Current price
-  const curPriceY = product.oldPrice && product.oldPrice > product.price ? priceY + 58 : priceY;
+  const hasOldPrice = product.oldPrice && product.price && product.oldPrice > product.price;
+  const curPriceY = hasOldPrice ? priceY + 58 : priceY;
   ctx.fillStyle = BRAND.gold;
   ctx.font = "bold 72px sans-serif";
-  ctx.fillText(`₹${product.price.toLocaleString("en-IN")}`, W / 2, curPriceY);
+  if (product.price) {
+    ctx.fillText(`₹${product.price.toLocaleString("en-IN")}`, W / 2, curPriceY);
+  } else {
+    ctx.fillText("Best Deal!", W / 2, curPriceY);
+  }
 
   // ── CTA button ────────────────────────────────────────────────────────────
   const ctaY = H - 175;
@@ -286,6 +293,13 @@ async function generatePinImage(product) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+function parsePrice(val) {
+  if (!val) return 0;
+  const clean = val.toString().replace(/[^0-9.]/g, "");
+  const num = parseFloat(clean);
+  return isNaN(num) ? 0 : num;
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -404,8 +418,8 @@ async function run() {
     const affiliateLink = record["Amazon URL"].trim();
     const category     = (record["Category"] || "tech").toLowerCase();
     const imageUrl     = record["Image URL"]?.trim() || "";
-    const priceRaw     = parseFloat(record["Price"] || "0");
-    const oldPriceRaw  = parseFloat(record["Old Price"] || "0");
+    const priceRaw     = parsePrice(record["Price"]);
+    const oldPriceRaw  = parsePrice(record["Old Price"]);
 
     // Derive board ID
     const boardId = BOARD_IDS[category] || process.env.PINTEREST_BOARD_ID;
