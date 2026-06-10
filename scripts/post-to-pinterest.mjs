@@ -532,14 +532,9 @@ async function run() {
       const hostedImageUrl = await uploadToImgBB(imgBuffer);
       console.log(`   ✅ Image URL: ${hostedImageUrl}`);
 
-      // 4. Build product page link (best-guess slug from existing products.ts)
-      //    Falls back to the affiliate link if no slug match
-      const slugGuess = productName
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .substring(0, 60);
-      const productPageUrl = `${SITE_URL}/product/${slugGuess}`;
+      // 4. Build product page link
+      //    Use the Amazon affiliate link directly — always valid, drives conversions
+      const productPageUrl = affiliateLink;
 
       // 5. Post to Pinterest
       console.log("   📌 Posting to Pinterest...");
