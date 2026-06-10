@@ -20,6 +20,7 @@ import newsletterRouter from "./routes/newsletter.js";
 import affiliateRouter from "./routes/affiliate.js";
 import aiRouter from "./routes/ai.js";
 import blogRouter from "./routes/blog.js";
+import roadmapProgressRouter from "./routes/roadmapProgress.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { syncProductPrices, syncProductsFromCatalog } from "./utils/priceSync.js";
 import { initPriceSyncCron } from "./jobs/priceSync.js";
@@ -129,6 +130,7 @@ app.use("/api/v1/newsletter", newsletterRouter);
 app.use("/api/v1/affiliate", affiliateRouter);
 app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/blog", blogRouter);
+app.use("/api/v1/roadmaps", roadmapProgressRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
