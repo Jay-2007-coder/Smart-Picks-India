@@ -4,7 +4,10 @@ import { categories } from "@/data/categories";
 import { blogPosts } from "@/data/blogPosts";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
+  let baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
+  if (baseUrl.includes("smartpicksindia.com")) {
+    baseUrl = "https://smart-picks-india.vercel.app";
+  }
 
   // Static Pages
   const routes = ["", "/deals", "/blog", "/about", "/contact", "/privacy-policy", "/disclaimer", "/terms"].map(

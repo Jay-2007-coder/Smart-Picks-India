@@ -14,6 +14,12 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
+const getSiteUrl = () => {
+  const url = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
+  return url.includes("smartpicksindia.com") ? "https://smart-picks-india.vercel.app" : url;
+};
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
   title: {
     default: "Smart Picks India — India's Smartest Budget Picks",
@@ -24,11 +30,11 @@ export const metadata: Metadata = {
   keywords: ["best products India", "budget picks India", "Amazon India deals", "smart shopping India"],
   authors: [{ name: "Smart Picks India" }],
   creator: "Smart Picks India",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app"),
+  metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app",
+    url: siteUrl,
     siteName: "Smart Picks India",
     images: [{ url: "/og/default.png", width: 1200, height: 630 }],
   },
