@@ -351,7 +351,7 @@ async function uploadToImgBB(imageBuffer) {
 }
 
 // ─── Pinterest: Post Pin ──────────────────────────────────────────────────────
-async function postToPinterest({ boardId, imageUrl, title, description, linkUrl }) {
+async function postToPinterest({ boardId, imageUrl, title, description, linkUrl, category }) {
   const body = {
     board_id:   boardId,
     media_source: { source_type: "image_url", url: imageUrl },
@@ -360,14 +360,14 @@ async function postToPinterest({ boardId, imageUrl, title, description, linkUrl 
     link:        linkUrl,
   };
 
-  const makeRequest = async (baseUrl) => {
+  const makeRequest = async (baseUrl, payload) => {
     const res = await fetch(`${baseUrl}/v5/pins`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${PINTEREST_TOKEN}`,
         "Content-Type":  "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     });
     const json = await res.json();
     if (!res.ok) {
@@ -376,8 +376,49 @@ async function postToPinterest({ boardId, imageUrl, title, description, linkUrl 
     return json;
   };
 
+  const getOrCreateSandboxBoard = async (categoryName) => {
+    const boardName = `SmartPicks ${categoryName.toUpperCase()}`;
+    console.log("     Checking existing sandbox boards...");
+    try {
+      const listRes = await fetch("https://api-sandbox.pinterest.com/v5/boards", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${PINTEREST_TOKEN}`,
+        }
+      });
+      const listJson = await listRes.json();
+      if (listRes.ok && listJson.items) {
+        const existing = listJson.items.find(b => b.name.toLowerCase() === boardName.toLowerCase());
+        if (existing) {
+          console.log(`     Found existing sandbox board "${boardName}" with ID: ${existing.id}`);
+          return existing.id;
+        }
+      }
+    } catch (e) {
+      console.warn("     ⚠️ Failed to query sandbox boards list:", e.message);
+    }
+
+    console.log(`     Creating sandbox board "${boardName}"...`);
+    const createRes = await fetch("https://api-sandbox.pinterest.com/v5/boards", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${PINTEREST_TOKEN}`,
+        "Content-Type":  "application/json",
+      },
+      body: JSON.stringify({
+        name: boardName,
+        description: `Deals for ${boardName} from SmartPicks India`,
+      }),
+    });
+    const createJson = await createRes.json();
+    if (!createRes.ok) {
+      throw new Error(`Failed to create sandbox board: ${JSON.stringify(createJson)}`);
+    }
+    return createJson.id;
+  };
+
   try {
-    return await makeRequest("https://api.pinterest.com");
+    return await makeRequest("https://api.pinterest.com", body);
   } catch (err) {
     // If it's a 403 trial error, retry using the API Sandbox
     const isTrialLimit = err.status === 403 && 
@@ -385,7 +426,26 @@ async function postToPinterest({ boardId, imageUrl, title, description, linkUrl 
                           JSON.stringify(err.data).includes("API Sandbox"));
     if (isTrialLimit) {
       console.warn("   ⚠️ App is in Trial mode. Retrying post using Pinterest API Sandbox...");
-      return await makeRequest("https://api-sandbox.pinterest.com");
+      try {
+        return await makeRequest("https://api-sandbox.pinterest.com", body);
+      } catch (sandboxErr) {
+        // If sandbox board doesn't exist, try to get or create a sandbox board
+        const isBoardErr = sandboxErr.status === 404 || 
+                           sandboxErr.status === 400 || 
+                           JSON.stringify(sandboxErr.data).toLowerCase().includes("board");
+        if (isBoardErr) {
+          console.warn("   ⚠️ Sandbox board not found. Attempting to auto-create sandbox board...");
+          try {
+            const sandboxBoardId = await getOrCreateSandboxBoard(category || "Deals");
+            console.log(`   ✅ Using Sandbox Board ID: ${sandboxBoardId}`);
+            const newBody = { ...body, board_id: sandboxBoardId };
+            return await makeRequest("https://api-sandbox.pinterest.com", newBody);
+          } catch (createErr) {
+            throw new Error(`Sandbox board fallback failed: ${createErr.message}`);
+          }
+        }
+        throw new Error(`Sandbox post failed: ${JSON.stringify(sandboxErr.data)}`);
+      }
     }
     throw new Error(`Pinterest API error ${err.status}: ${JSON.stringify(err.data)}`);
   }
@@ -491,6 +551,7 @@ async function run() {
         title:       pinContent.title,
         description: pinContent.description,
         linkUrl:     productPageUrl,
+        category:    category,
       });
       console.log(`   🎉 Pin created! ID: ${pin.id}`);
 
