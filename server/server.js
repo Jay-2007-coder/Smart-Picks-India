@@ -136,7 +136,7 @@ app.use("/api/v1/roadmaps", roadmapProgressRouter);
 app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Server is healthy and running",
+    message: "Server is healthy and running - version sync-now-v1",
     timestamp: new Date(),
     env: process.env.NODE_ENV || "development",
   });
