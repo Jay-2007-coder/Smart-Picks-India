@@ -298,7 +298,7 @@ export default function DigitalCheckout() {
                       <span className="block text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                         Choose Mock Payment Mode
                       </span>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <button
                           type="button"
                           onClick={() => setSandboxPaymentMethod("card")}

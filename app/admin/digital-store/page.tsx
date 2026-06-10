@@ -263,7 +263,7 @@ export default function AdminDigitalStore() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                       Category
@@ -296,7 +296,7 @@ export default function AdminDigitalStore() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                       Price (INR)

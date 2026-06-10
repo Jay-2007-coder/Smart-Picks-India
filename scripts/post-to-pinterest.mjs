@@ -35,6 +35,9 @@ const PINS_PER_RUN = 3;         // 2 runs × 3 pins = 6 pins/day
 const SITE_URL     = "https://smart-picks-india.vercel.app";
 const POSTED_FILE  = path.join(process.cwd(), "data", "pinterest-posted.json");
 
+// Helper to delay execution to avoid rate limits
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // ─── Brand Design Tokens ─────────────────────────────────────────────────────
 const BRAND = {
   red:        "#E53E3E",
@@ -76,11 +79,37 @@ function savePostedSlugs(slugSet) {
 
 // ─── Gemini: Generate Pin Title + Description ─────────────────────────────────
 async function generatePinContent(productName, category, price, oldPrice) {
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
   const hasDiscount = oldPrice && oldPrice > price;
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : null;
+
+  // Local fallback generator function to handle Gemini errors/quota limits
+  const getFallback = () => {
+    console.log("   ⚠️ Using programmatic fallback pin content due to Gemini API rate limit or error.");
+    const emojiMap = {
+      tech: "💻",
+      kitchen: "🍳",
+      home: "🏠",
+      gadgets: "🔌",
+      fashion: "👗",
+      study: "📚"
+    };
+    const emoji = emojiMap[category] || "🛍️";
+    const title = `${emoji} Deal: ${productName.substring(0, 40)}...`;
+    let description = `Check out this amazing find on SmartPicks India: ${productName}. `;
+    if (hasDiscount) {
+      description += `Save ${discountPct}% off! Now only ₹${price.toLocaleString("en-IN")} (was ₹${oldPrice.toLocaleString("en-IN")}). `;
+    } else {
+      description += `Get it now for just ₹${price.toLocaleString("en-IN")}. `;
+    }
+    description += `Find the best handpicked deals, ratings, and recommendations in India. #AmazonIndia #SmartPicksIndia #Deals #${category}`;
+    return {
+      title: title.substring(0, 100),
+      description: description.substring(0, 500)
+    };
+  };
+
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `You are a Pinterest marketing expert for SmartPicks India, an Amazon affiliate site.
 Write a viral Pinterest pin for: "${productName}" in category: ${category}.
@@ -92,10 +121,32 @@ Return ONLY a raw JSON object (no backticks, no markdown):
   "description": "150-200 char pin description. Mention the deal, benefits, India context. End with 5 relevant hashtags like #AmazonIndia #TechDeals #SmartPicksIndia"
 }`;
 
-  const result = await model.generateContent(prompt);
-  let raw = result.response.text().trim();
-  raw = raw.replace(/^```json\s*/m, "").replace(/^```\s*/m, "").replace(/\s*```$/m, "");
-  return JSON.parse(raw);
+  let attempts = 0;
+  const maxAttempts = 2;
+  while (attempts < maxAttempts) {
+    try {
+      const result = await model.generateContent(prompt);
+      let raw = result.response.text().trim();
+      raw = raw.replace(/^```json\s*/m, "").replace(/^```\s*/m, "").replace(/\s*```$/m, "");
+      const parsed = JSON.parse(raw);
+      if (parsed.title && parsed.description) {
+        return parsed;
+      }
+      throw new Error("Invalid response JSON structure");
+    } catch (err) {
+      attempts++;
+      console.warn(`   ⚠️ Gemini API attempt ${attempts} failed: ${err.message}`);
+      if (attempts < maxAttempts) {
+        const isQuota = err.message.includes("429") || err.message.toLowerCase().includes("quota") || err.message.toLowerCase().includes("rate limit");
+        const waitTime = isQuota ? 10000 : 3000;
+        console.log(`   ⏳ Waiting ${waitTime / 1000}s before retrying...`);
+        await sleep(waitTime);
+      }
+    }
+  }
+
+  // If all attempts fail, return the fallback
+  return getFallback();
 }
 
 // ─── Canvas: Draw 1000×1500 Pin Image ─────────────────────────────────────────
@@ -416,8 +467,16 @@ async function run() {
       postedSlugs.add(affiliateLink.trim());
       pinCount++;
 
+      // Wait 10 seconds between pins to avoid rate limits
+      if (pinCount < PINS_PER_RUN) {
+        console.log("   ⏳ Sleeping 10 seconds before processing the next product...");
+        await sleep(10000);
+      }
+
     } catch (err) {
       console.error(`   ❌ Failed for "${productName}":`, err.message);
+      // Wait 5 seconds after failure before trying the next product
+      await sleep(5000);
     }
   }
 

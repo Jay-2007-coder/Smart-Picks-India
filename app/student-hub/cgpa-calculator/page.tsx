@@ -310,8 +310,8 @@ export default function CGPACalculator() {
                     {/* Course rows */}
                     <div className="space-y-3">
                       {sem.courses.map((course, cIdx) => (
-                        <div key={cIdx} className="grid grid-cols-12 gap-3 items-center">
-                          <div className="col-span-5">
+                        <div key={cIdx} className="grid grid-cols-12 gap-3 items-center border-b border-border/20 pb-3 sm:pb-0 sm:border-none">
+                          <div className="col-span-12 sm:col-span-5">
                             <input
                               type="text"
                               value={course.name}
@@ -320,7 +320,7 @@ export default function CGPACalculator() {
                               className="h-9 w-full rounded-xl border border-input bg-background px-3 text-xs font-semibold focus-visible:outline-none"
                             />
                           </div>
-                          <div className="col-span-3">
+                          <div className="col-span-6 sm:col-span-3">
                             <input
                               type="number"
                               value={course.credits || ""}
@@ -330,7 +330,7 @@ export default function CGPACalculator() {
                               min="1"
                             />
                           </div>
-                          <div className="col-span-3">
+                          <div className="col-span-5 sm:col-span-3">
                             <select
                               value={course.gradePoint}
                               onChange={(e) => handleCourseChange(sem.id, cIdx, "gradePoint", parseInt(e.target.value))}
@@ -343,7 +343,7 @@ export default function CGPACalculator() {
                               ))}
                             </select>
                           </div>
-                          <div className="col-span-1 text-center">
+                          <div className="col-span-1 text-right sm:text-center">
                             {sem.courses.length > 1 && (
                               <button
                                 onClick={() => handleRemoveCourse(sem.id, cIdx)}

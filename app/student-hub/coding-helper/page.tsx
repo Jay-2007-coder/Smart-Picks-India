@@ -442,7 +442,7 @@ export default function CodingHelper() {
               
               <div className="grid grid-cols-3 gap-4">
                 {/* Question title */}
-                <div className="space-y-1.5 col-span-2">
+                <div className="space-y-1.5 col-span-3 sm:col-span-2">
                   <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Problem Title</label>
                   <input
                     type="text"
@@ -455,7 +455,7 @@ export default function CodingHelper() {
                 </div>
 
                 {/* Language selection */}
-                <div className="space-y-1.5 col-span-1">
+                <div className="space-y-1.5 col-span-3 sm:col-span-1">
                   <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Language</label>
                   <select
                     value={language}
@@ -618,7 +618,7 @@ export default function CodingHelper() {
                 )}
 
                 {/* Summary Badges Grid */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-gradient-to-br from-indigo-500/5 via-indigo-650/5 to-purple-500/5 dark:bg-slate-900/30 border border-indigo-500/20 rounded-3xl p-5 shadow-lg relative group overflow-hidden">
                     <div className="absolute -right-3 -bottom-3 text-indigo-500/5 group-hover:scale-110 transition-transform duration-300 pointer-events-none">
                       <Gauge className="w-16 h-16" />

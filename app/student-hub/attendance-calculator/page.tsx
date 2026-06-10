@@ -146,7 +146,7 @@ export default function AttendanceCalculator() {
               </div>
 
               {/* Grid for values */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                     Total Classes Conducted
@@ -212,7 +212,7 @@ export default function AttendanceCalculator() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Attend classes clickers */}
                   <div className="p-4 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 flex flex-col items-center justify-center text-center space-y-2">
                     <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Attend Future Classes</span>

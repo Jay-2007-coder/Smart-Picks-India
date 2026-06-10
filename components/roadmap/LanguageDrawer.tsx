@@ -99,7 +99,7 @@ export default function LanguageDrawer({ language, onClose }: LanguageDrawerProp
           </div>
 
           {/* Difficulty and Resource Pills */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3 bg-muted/30 border border-border/60 rounded-2xl space-y-1">
               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider block">Difficulty</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase border inline-block ${difficultyColors[language.difficulty]}`}>

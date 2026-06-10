@@ -197,8 +197,8 @@ export default function ResumeBuilder() {
             <h3 className="font-extrabold text-foreground text-sm border-b border-border/50 pb-2">
               Personal Information
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1 col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1 col-span-1 sm:col-span-2">
                 <label className="text-[10px] font-black uppercase text-muted-foreground">Full Name</label>
                 <input
                   type="text"
@@ -254,7 +254,7 @@ export default function ResumeBuilder() {
                   className="h-8.5 w-full rounded-lg border border-input bg-background px-3 text-xs font-semibold focus-visible:outline-none"
                 />
               </div>
-              <div className="space-y-1 col-span-2">
+              <div className="space-y-1 col-span-1 sm:col-span-2">
                 <label className="text-[10px] font-black uppercase text-muted-foreground">Professional Summary</label>
                 <textarea
                   value={personal.summary}
@@ -291,7 +291,7 @@ export default function ResumeBuilder() {
                     className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-xs font-semibold focus-visible:outline-none"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-muted-foreground">Degree / Major</label>
                     <input
@@ -310,7 +310,7 @@ export default function ResumeBuilder() {
                       className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-xs font-semibold focus-visible:outline-none"
                     />
                   </div>
-                  <div className="space-y-1 col-span-2">
+                  <div className="space-y-1 col-span-1 sm:col-span-2">
                     <label className="text-[9px] font-black uppercase text-muted-foreground">GPA / Percentage</label>
                     <input
                       type="text"
@@ -396,7 +396,7 @@ export default function ResumeBuilder() {
                     className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-xs font-semibold focus-visible:outline-none"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-muted-foreground">Job Title / Role</label>
                     <input

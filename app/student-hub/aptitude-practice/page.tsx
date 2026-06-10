@@ -634,7 +634,7 @@ export default function AptitudePractice() {
                     <label className="text-[11px] font-black uppercase text-muted-foreground tracking-wider block">
                       Category Topic
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {(["All", "Quantitative", "Logical", "Verbal"] as const).map((cat) => (
                         <button
                           key={cat}
@@ -684,7 +684,7 @@ export default function AptitudePractice() {
                     <label className="text-[11px] font-black uppercase text-muted-foreground tracking-wider block">
                       Quiz Timing Mode
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <button
                         onClick={() => {
                           playSound("click");
@@ -1097,7 +1097,7 @@ export default function AptitudePractice() {
                             className="overflow-hidden border-t border-border/40 bg-muted/20"
                           >
                             <div className="p-5 space-y-4">
-                              <div className="grid grid-cols-2 gap-3 text-xs font-bold text-muted-foreground">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-bold text-muted-foreground">
                                 <p>
                                   Your Choice:{" "}
                                   <span className={isCorrect ? "text-emerald-600" : "text-rose-600 font-extrabold"}>
