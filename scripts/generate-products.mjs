@@ -262,6 +262,8 @@ async function run() {
 
   if (newProductsAdded > 0) {
     fs.writeFileSync(productsFilePath, existingProductsContent);
+    const serverProductsPath = path.join(process.cwd(), "server", "data", "products.ts");
+    fs.writeFileSync(serverProductsPath, existingProductsContent);
     console.log(`\n🎉 Successfully added ${newProductsAdded} new products!`);
   } else {
     console.log("\nNo new products found to add.");

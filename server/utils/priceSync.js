@@ -9,7 +9,11 @@ import { sendEmail } from "./email.js"; // Standard email utility
 import { sendTelegramMessage, escapeHtml } from "./telegram.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PRODUCTS_FILE_PATH = path.join(__dirname, "..", "..", "data", "products.ts");
+let PRODUCTS_FILE_PATH = path.join(__dirname, "..", "..", "data", "products.ts");
+if (!fs.existsSync(PRODUCTS_FILE_PATH)) {
+  // Fallback for production deployments (e.g. Render) where root is the server folder
+  PRODUCTS_FILE_PATH = path.join(__dirname, "..", "data", "products.ts");
+}
 
 // Regex parser to read TypeScript products file without requiring TS transpiler
 export function parseProducts() {

@@ -120,7 +120,9 @@ async function run() {
 
   if (updatedCount > 0) {
     fs.writeFileSync(PRODUCTS_FILE, content, "utf8");
-    console.log(`\n🎉 ${updatedCount} product price(s) updated in data/products.ts`);
+    const serverProductsFile = path.join(process.cwd(), "server", "data", "products.ts");
+    fs.writeFileSync(serverProductsFile, content, "utf8");
+    console.log(`\n🎉 ${updatedCount} product price(s) updated in data/products.ts & server/data/products.ts`);
     console.log("   Vercel will auto-redeploy with the new prices.");
   } else {
     console.log("\n✨ All prices are already up to date — no changes needed.");

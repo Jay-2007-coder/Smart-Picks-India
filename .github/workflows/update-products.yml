@@ -37,7 +37,7 @@ jobs:
         with:
           commit_message: "chore: auto-add new products from google sheets"
           branch: main
-          file_pattern: "data/products.ts pinterest-captions.md"
+          file_pattern: "data/products.ts server/data/products.ts pinterest-captions.md"
 
   # ── Job 3: Sync prices from Google Sheet for existing products ─────────────────
   sync-prices:
@@ -70,4 +70,4 @@ jobs:
         with:
           commit_message: "chore: sync product prices from google sheet"
           branch: main
-          file_pattern: "data/products.ts"
+          file_pattern: "data/products.ts server/data/products.ts"
