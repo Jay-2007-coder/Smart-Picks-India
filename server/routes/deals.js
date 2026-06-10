@@ -2,6 +2,7 @@ import express from "express";
 import Deal from "../models/Deal.js";
 import Product from "../models/Product.js";
 import { protect } from "../middleware/auth.js";
+import { syncProductsFromCatalog } from "../utils/priceSync.js";
 
 const router = express.Router();
 
@@ -196,6 +197,16 @@ router.get("/flash", async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+});
+
+// PUBLIC: TRIGGER DYNAMIC CATALOG SYNC
+router.get("/sync-now", async (req, res, next) => {
+  try {
+    const result = await syncProductsFromCatalog();
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
