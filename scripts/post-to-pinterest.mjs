@@ -420,12 +420,10 @@ async function postToPinterest({ boardId, imageUrl, title, description, linkUrl,
   try {
     return await makeRequest("https://api.pinterest.com", body);
   } catch (err) {
-    // If it's a 403 trial error, retry using the API Sandbox
-    const isTrialLimit = err.status === 403 && 
-                         (JSON.stringify(err.data).includes("Trial access") || 
-                          JSON.stringify(err.data).includes("API Sandbox"));
-    if (isTrialLimit) {
-      console.warn("   ⚠️ App is in Trial mode. Retrying post using Pinterest API Sandbox...");
+    // Retry using the API Sandbox if the production API call fails with 403 (Trial limit) or 401 (e.g. when using a Sandbox token)
+    const shouldRetrySandbox = err.status === 403 || err.status === 401;
+    if (shouldRetrySandbox) {
+      console.warn(`   ⚠️ Production API failed (Status ${err.status}). Retrying post using Pinterest API Sandbox...`);
       try {
         return await makeRequest("https://api-sandbox.pinterest.com", body);
       } catch (sandboxErr) {
