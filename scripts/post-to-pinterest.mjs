@@ -65,6 +65,61 @@ function validateEnv() {
   }
 }
 
+// ─── Parse pinterest-captions.md for product URLs + captions ─────────────────
+function loadCaptionsMap() {
+  const captionsFile = path.join(process.cwd(), "pinterest-captions.md");
+  if (!fs.existsSync(captionsFile)) return {};
+  const text = fs.readFileSync(captionsFile, "utf8");
+
+  const map = {}; // key: normalised product name → { url, caption }
+  const sections = text.split(/^## /m).slice(1); // split on each h2 heading
+  for (const section of sections) {
+    const lines = section.split("\n");
+    // First line is the heading title
+    const heading = lines[0].trim();
+    // Find **URL:** line
+    const urlLine  = lines.find(l => l.startsWith("**URL:**"));
+    // Find **Caption:** line — caption is the NEXT non-empty line after it
+    const capIdx   = lines.findIndex(l => l.startsWith("**Caption:**"));
+    const caption  = capIdx >= 0
+      ? lines.slice(capIdx + 1).find(l => l.trim().length > 0) || ""
+      : "";
+
+    if (!urlLine) continue;
+    const url = urlLine.replace("**URL:**", "").trim();
+
+    // Normalise the heading for fuzzy matching (lowercase, only alphanum)
+    const key = heading.toLowerCase().replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+    map[key] = { url, caption: caption.trim() };
+  }
+  return map;
+}
+
+// Fuzzy match: find best caption entry for a given product name
+function findCaptionEntry(captionsMap, productName) {
+  const needle = productName.toLowerCase().replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+
+  let bestKey = null;
+  let bestScore = 0;
+
+  for (const key of Object.keys(captionsMap)) {
+    // Count how many words from needle appear in key
+    const needleWords = needle.split(" ").filter(w => w.length > 3);
+    const matches = needleWords.filter(w => key.includes(w)).length;
+    const score = needleWords.length > 0 ? matches / needleWords.length : 0;
+    if (score > bestScore) {
+      bestScore = score;
+      bestKey = key;
+    }
+  }
+
+  // Require at least 40% of words to match
+  if (bestScore >= 0.4 && bestKey) {
+    return captionsMap[bestKey];
+  }
+  return null;
+}
+
 // ─── Load / Save Posted Tracker ───────────────────────────────────────────────
 function loadPostedSlugs() {
   if (!fs.existsSync(POSTED_FILE)) return new Set();
@@ -462,6 +517,10 @@ async function run() {
   const postedSlugs = loadPostedSlugs();
   console.log(`Already posted: ${postedSlugs.size} products`);
 
+  // Load pinterest-captions.md to resolve product page URLs
+  const captionsMap = loadCaptionsMap();
+  console.log(`Loaded ${Object.keys(captionsMap).length} entries from pinterest-captions.md`);
+
   // Filter rows that haven't been posted yet
   // Supports both "pinterest_posted" column AND our JSON tracker
   const pending = records.filter((r) => {
@@ -533,8 +592,15 @@ async function run() {
       console.log(`   ✅ Image URL: ${hostedImageUrl}`);
 
       // 4. Build product page link
-      //    Use the Amazon affiliate link directly — always valid, drives conversions
-      const productPageUrl = affiliateLink;
+      //    First try to match in pinterest-captions.md for the real product page URL
+      //    Falls back to the Amazon affiliate link if no match found
+      const captionEntry = findCaptionEntry(captionsMap, productName);
+      const productPageUrl = captionEntry?.url || affiliateLink;
+      if (captionEntry?.url) {
+        console.log(`   🔗 Matched site URL: ${captionEntry.url}`);
+      } else {
+        console.log(`   🔗 No site URL found — linking to Amazon affiliate link`);
+      }
 
       // 5. Post to Pinterest
       console.log("   📌 Posting to Pinterest...");
