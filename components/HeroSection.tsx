@@ -4,15 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Star, Zap, TrendingUp, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
-import { Product } from "@/data/products";
-
-const STATS = [
-  { label: "Products Reviewed", value: "500+", icon: ShieldCheck },
-  { label: "Happy Shoppers", value: "50K+", icon: TrendingUp },
-  { label: "Daily Deals", value: "30+", icon: Zap },
-];
+import { Product, products } from "@/data/products";
+import { categories } from "@/data/categories";
 
 export default function HeroSection({ heroProducts }: { heroProducts: Product[] }) {
+  const productsCount = products.length;
+  const categoriesCount = categories.length;
+  const activeDealsCount = products.filter((p) => p.oldPrice > p.price).length;
+
+  const STATS = [
+    { label: "Products Reviewed", value: `${productsCount}+ Reviews`, icon: ShieldCheck },
+    { label: "Shopping Categories", value: `${categoriesCount} Categories`, icon: TrendingUp },
+    { label: "Hottest Deals Today", value: `${activeDealsCount}+ Active Deals`, icon: Zap },
+  ];
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);

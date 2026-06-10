@@ -174,7 +174,7 @@ export default async function BlogPostPage({ params }: Props) {
             {/* Newsletter CTA */}
             <div className="card p-5 bg-gradient-to-br from-brand-50 to-white dark:from-brand-950 dark:to-card border-brand-200 dark:border-brand-800">
               <h3 className="font-bold text-foreground mb-2">Get Deal Alerts</h3>
-              <p className="text-sm text-muted-foreground mb-4">Join 50K+ subscribers getting our weekly top Amazon picks.</p>
+              <p className="text-sm text-muted-foreground mb-4">Join our subscriber list to get our weekly top Amazon picks.</p>
               <Link href="/deals" className="btn-primary w-full py-2">View Today&apos;s Deals</Link>
             </div>
           </aside>
