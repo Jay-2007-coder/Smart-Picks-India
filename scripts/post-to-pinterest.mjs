@@ -360,18 +360,35 @@ async function postToPinterest({ boardId, imageUrl, title, description, linkUrl 
     link:        linkUrl,
   };
 
-  const res = await fetch("https://api.pinterest.com/v5/pins", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${PINTEREST_TOKEN}`,
-      "Content-Type":  "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  const makeRequest = async (baseUrl) => {
+    const res = await fetch(`${baseUrl}/v5/pins`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${PINTEREST_TOKEN}`,
+        "Content-Type":  "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      throw { status: res.status, data: json };
+    }
+    return json;
+  };
 
-  const json = await res.json();
-  if (!res.ok) throw new Error(`Pinterest API error ${res.status}: ${JSON.stringify(json)}`);
-  return json;
+  try {
+    return await makeRequest("https://api.pinterest.com");
+  } catch (err) {
+    // If it's a 403 trial error, retry using the API Sandbox
+    const isTrialLimit = err.status === 403 && 
+                         (JSON.stringify(err.data).includes("Trial access") || 
+                          JSON.stringify(err.data).includes("API Sandbox"));
+    if (isTrialLimit) {
+      console.warn("   ⚠️ App is in Trial mode. Retrying post using Pinterest API Sandbox...");
+      return await makeRequest("https://api-sandbox.pinterest.com");
+    }
+    throw new Error(`Pinterest API error ${err.status}: ${JSON.stringify(err.data)}`);
+  }
 }
 
 // ─── Main Runner ──────────────────────────────────────────────────────────────
