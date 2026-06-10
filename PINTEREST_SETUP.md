@@ -32,7 +32,7 @@ Pinterest API posts to the right board
 3. Fill in App Name (e.g. `SmartPicks Poster`) and any website URL
 4. After creation, go to **"Access tokens"** tab
 5. Click **"Generate access token"**
-6. Select scopes: `pins:read`, `pins:write`, `boards:read`
+6. Select scopes: `pins:read`, `pins:write`, `boards:read`, `boards:write`
 7. Copy the token — this is your `PINTEREST_TOKEN`
 
 ---
