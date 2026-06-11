@@ -3,7 +3,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import BlogClient from "@/components/BlogClient";
 import { blogPosts as staticPosts } from "@/data/blogPosts";
 
-export const revalidate = 0; // bypass static caching to get new posts instantly
+export const revalidate = 60; // fetch new posts and cache for 60 seconds
 
 export const metadata = generateSEOMetadata({
   title: "Blog & Buying Guides",
@@ -15,7 +15,7 @@ async function getDynamicBlogs() {
   try {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
     const res = await fetch(`${backendUrl}/api/v1/blog`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (res.ok) {
       const data = await res.json();

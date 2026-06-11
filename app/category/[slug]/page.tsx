@@ -5,8 +5,16 @@ import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 import ProductCard from "@/components/ProductCard";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
+export const revalidate = 300;
+
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  return categories.map((category) => ({
+    slug: category.slug,
+  }));
 }
 
 export async function generateMetadata({ params }: Props) {

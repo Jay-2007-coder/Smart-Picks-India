@@ -15,8 +15,16 @@ import PriceHistoryChart from "@/components/PriceHistoryChart";
 import PriceAlertTracker from "@/components/PriceAlertTracker";
 import RecentlyViewedTracker from "@/components/RecentlyViewedTracker";
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  return products.map((product) => ({
+    slug: product.slug,
+  }));
 }
 
 export async function generateMetadata({ params }: Props) {

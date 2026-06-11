@@ -18,7 +18,7 @@ import Image from "next/image";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { Zap, TrendingUp, ArrowRight, Clock } from "lucide-react";
 
-export const revalidate = 0; // fetch fresh deals and blog posts
+export const revalidate = 60; // fetch fresh deals and blog posts every 60 seconds
 
 const homeFAQs = [
   { question: "Is Smart Picks India affiliated with Amazon?", answer: "Yes, we are an Amazon Associates affiliate. We earn a small commission when you purchase through our links, at no extra cost to you." },
@@ -32,7 +32,7 @@ async function getDynamicBlogs() {
   try {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
     const res = await fetch(`${backendUrl}/api/v1/blog`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (res.ok) {
       const data = await res.json();

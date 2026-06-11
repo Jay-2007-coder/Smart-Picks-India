@@ -15,10 +15,16 @@ import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import RelatedProducts from "@/components/RelatedProducts";
 import { products } from "@/data/products";
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  return blogPosts.map((post) => ({
+    slug: post.slug,
+  }));
 }
 
 async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
@@ -30,7 +36,7 @@ async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
   try {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
     const res = await fetch(`${backendUrl}/api/v1/blog/${slug}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (res.ok) {
       const data = await res.json();
