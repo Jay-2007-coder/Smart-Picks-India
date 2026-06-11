@@ -82,7 +82,9 @@ export async function callGemini(systemPrompt, userPromptOrContents, responseJso
         throw new Error(errMsg); // non-quota error — bubble up
       }
 
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      const textParts = parts.filter(p => !p.thought).map(p => p.text || "");
+      const text = textParts.join("").trim();
       if (text) {
         if (model !== GEMINI_MODELS[0]) {
           console.info(`✅ Served by fallback model: ${model}`);
@@ -107,60 +109,57 @@ export async function callGemini(systemPrompt, userPromptOrContents, responseJso
 }
 
 export function cleanGeminiJson(rawText) {
+  if (!rawText) return null;
   let cleanText = rawText.trim();
   
   // 1. Try to extract from ```json ... ``` or ``` ... ```
   const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
   const match = cleanText.match(codeBlockRegex);
   if (match && match[1]) {
-    try {
-      return JSON.parse(match[1].trim());
-    } catch (e) {
-      // If code block contents don't parse, fall back to bracket extraction on the match content
-      cleanText = match[1].trim();
-    }
+    cleanText = match[1].trim();
   }
   
-  // 2. Try to find the outermost JSON object {} or array []
+  // 2. Locate boundaries of the JSON block (outermost curly {} or square [])
   const firstCurly = cleanText.indexOf("{");
   const lastCurly = cleanText.lastIndexOf("}");
   const firstSquare = cleanText.indexOf("[");
   const lastSquare = cleanText.lastIndexOf("]");
   
-  // Try parsing the curly brace matching block first if it exists
-  if (firstCurly !== -1 && lastCurly !== -1 && lastCurly > firstCurly) {
-    const curlyCandidate = cleanText.substring(firstCurly, lastCurly + 1);
-    try {
-      return JSON.parse(curlyCandidate.trim());
-    } catch (e) {
-      // Continue to other methods if it fails
+  let jsonCandidate = cleanText;
+  
+  if (firstCurly !== -1 && lastCurly !== -1 && (firstSquare === -1 || firstCurly < firstSquare)) {
+    if (lastCurly > firstCurly) {
+      jsonCandidate = cleanText.substring(firstCurly, lastCurly + 1);
+    }
+  } else if (firstSquare !== -1 && lastSquare !== -1) {
+    if (lastSquare > firstSquare) {
+      jsonCandidate = cleanText.substring(firstSquare, lastSquare + 1);
     }
   }
   
-  // Try parsing the square brace matching block if it exists
-  if (firstSquare !== -1 && lastSquare !== -1 && lastSquare > firstSquare) {
-    const squareCandidate = cleanText.substring(firstSquare, lastSquare + 1);
-    try {
-      return JSON.parse(squareCandidate.trim());
-    } catch (e) {
-      // Continue to other methods if it fails
+  // 3. Pre-process the JSON candidate to make it valid JSON
+  let processed = jsonCandidate.trim();
+  
+  // Robust String & Comment parser to remove comments and escape literal newlines in strings
+  processed = processed.replace(/("(?:[^"\\]|\\.)*")|(\/\/.*)|(\/\*[\s\S]*?\*\/)/g, (match, stringGroup) => {
+    if (stringGroup) {
+      // Escape literal newlines and carriage returns within string values
+      return stringGroup.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
     }
+    // Discard comments
+    return "";
+  });
+
+  // Remove trailing commas before closing brackets/braces
+  processed = processed.replace(/,\s*(?=[\]}])/g, "");
+
+  try {
+    return JSON.parse(processed);
+  } catch (err) {
+    console.error("JSON parse failed. Error:", err.message);
+    console.error("Processed output was:", processed);
+    // Fallback to original cleanText substring parsing in case processing broke something
+    return JSON.parse(cleanText.trim());
   }
-  
-  // 3. Fallback to the original index-based extraction logic
-  const firstBracket = Math.min(
-    cleanText.indexOf("[") === -1 ? Infinity : cleanText.indexOf("["),
-    cleanText.indexOf("{") === -1 ? Infinity : cleanText.indexOf("{")
-  );
-  
-  const lastBracket = Math.max(
-    cleanText.lastIndexOf("]"),
-    cleanText.lastIndexOf("}")
-  );
-  
-  if (firstBracket !== Infinity && lastBracket !== -1 && lastBracket > firstBracket) {
-    cleanText = cleanText.substring(firstBracket, lastBracket + 1);
-  }
-  
-  return JSON.parse(cleanText.trim());
+}
 }

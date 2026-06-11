@@ -135,8 +135,8 @@ Analyze the user's resume text against the target job description.
 Output MUST be raw JSON format with NO markdown formatting (no backticks, no code block delimiters).
 JSON schema to return:
 {
-  "matchScore": 75, // integer percentage
-  "missingKeywords": ["Docker", "Redis", "System Design"], // keywords in JD but missing in Resume
+  "matchScore": 75,
+  "missingKeywords": ["Docker", "Redis", "System Design"],
   "bulletImprovements": [
     {
       "original": "Worked on the frontend team building React code",

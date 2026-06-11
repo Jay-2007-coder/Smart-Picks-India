@@ -105,7 +105,9 @@ Guidelines:
       throw new Error(data.error?.message || `HTTP status ${response.status}`);
     }
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't formulate a reply. Please try again.";
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const textParts = parts.filter(p => !p.thought).map(p => p.text || "");
+    const reply = textParts.join("").trim() || "I'm sorry, I couldn't formulate a reply. Please try again.";
     
     res.status(200).json({ success: true, reply });
   } catch (err) {
