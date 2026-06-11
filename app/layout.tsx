@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AIChatbot from "@/components/AIChatbot";
 import StickyCompareBar from "@/components/StickyCompareBar";
+import ScrollToTop from "@/components/ScrollToTop";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { Suspense } from "react";
 import "./globals.css";
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Footer />
                 <AIChatbot />
                 <StickyCompareBar />
+                <ScrollToTop />
               </div>
             </CompareProvider>
           </AuthProvider>

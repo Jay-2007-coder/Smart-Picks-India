@@ -175,7 +175,7 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
             href={product.affiliateLink}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-brand-500/20 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-brand-500/20 transition-all duration-300 btn-shiny"
             id={`buy-${product.slug}`}
             whileHover={{ scale: 1.02, boxShadow: "0 8px 20px -4px rgba(212, 63, 54, 0.3)" }}
             whileTap={{ scale: 0.97 }}

@@ -106,13 +106,13 @@ export default function HeroSection({ heroProducts }: { heroProducts: Product[] 
               className="mt-9 flex flex-wrap gap-4"
             >
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Link href="/deals" className="inline-flex items-center gap-2 rounded-xl bg-[#d43f36] hover:bg-[#b8332c] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#d43f36]/20 transition-all">
+                <Link href="/deals" className="inline-flex items-center gap-2 rounded-xl bg-[#d43f36] hover:bg-[#b8332c] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#d43f36]/20 transition-all btn-shiny">
                   <Zap className="h-4 w-4" />
                   Today&apos;s Best Deals
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl border border-white bg-transparent hover:bg-white/10 px-6 py-3 text-sm font-bold text-white transition-all">
+                <Link href="/blog" className="inline-flex items-center gap-2 rounded-xl border border-white bg-transparent hover:bg-white/10 px-6 py-3 text-sm font-bold text-white transition-all btn-shiny">
                   Browse Reviews
                   <ArrowRight className="h-4 w-4" />
                 </Link>

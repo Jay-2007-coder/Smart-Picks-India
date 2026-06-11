@@ -1,5 +1,6 @@
 import HeroSection from "@/components/HeroSection";
 import AIProductFinder from "@/components/AIProductFinder";
+import AmbientBackground from "@/components/AmbientBackground";
 import FlashDealsSection from "@/components/FlashDealsSection";
 import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
@@ -79,7 +80,8 @@ export default async function HomePage() {
   }));
 
   return (
-    <div>
+    <div className="relative overflow-hidden">
+      <AmbientBackground />
       {/* Hero */}
       <HeroSection heroProducts={[...products].reverse().slice(0, 4)} />
 
@@ -112,7 +114,7 @@ export default async function HomePage() {
                     href={deal.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="card group overflow-hidden flex flex-col hover:shadow-lg hover:shadow-black/8 hover:-translate-y-1 transition-all duration-300"
+                    className="card group overflow-hidden flex flex-col glow-card-hover hover:-translate-y-1.5 transition-all duration-300 border border-border/80"
                   >
                     <div className="relative aspect-square overflow-hidden">
                       <Image

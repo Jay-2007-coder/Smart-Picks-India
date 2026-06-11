@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { useSearch } from "@/hooks/useSearch";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
@@ -28,6 +28,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const { scrollYProgress } = useScroll();
 
   // Scroll tracking
   useEffect(() => {
@@ -85,6 +86,12 @@ export default function Navbar() {
     >
       {/* Top brand-gradient line border */}
       <div className="h-[2px] w-full bg-gradient-to-r from-brand-600 via-indigo-500 to-rose-500" />
+      
+      {/* Reading progress indicator line */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-500 via-accent-400 to-rose-500 origin-left"
+        style={{ scaleX: scrollYProgress }}
+      />
       
       <div className="container-custom">
         <nav className="flex h-16 items-center justify-between gap-3">
@@ -370,7 +377,7 @@ export default function Navbar() {
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="shrink-0">
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-600 to-rose-600 px-4.5 py-1.5 text-xs font-black text-white shadow shadow-brand-500/10 hover:shadow-lg hover:shadow-brand-500/15 hover:from-brand-700 hover:to-rose-700 transition-all shrink-0 cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-600 to-rose-600 px-4.5 py-1.5 text-xs font-black text-white shadow shadow-brand-500/10 hover:shadow-lg hover:shadow-brand-500/15 hover:from-brand-700 hover:to-rose-700 transition-all shrink-0 cursor-pointer btn-shiny"
                 >
                   Sign In
                 </Link>

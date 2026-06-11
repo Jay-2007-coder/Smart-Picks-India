@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles } from "lucide-react";
 import { CommunityDealSkeleton, SkeletonGrid } from "@/components/Skeletons";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface CommunityDeal {
   id: string;
@@ -184,26 +185,40 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
     <div className="mt-8 select-none">
       {/* Premium Tab Navigation & Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-4 mb-8">
-        <div className="flex p-1 bg-muted rounded-2xl border border-border/50 max-w-max">
+        <div className="flex p-1 bg-muted rounded-2xl border border-border/50 max-w-max relative z-0">
           <button
             onClick={() => setTabAndUrl("verified")}
-            className={`px-5 py-2 text-xs font-black rounded-xl transition-all duration-300 flex items-center gap-1.5 ${
+            className={`relative px-5 py-2 text-xs font-black rounded-xl transition-all duration-300 flex items-center gap-1.5 z-10 ${
               activeTab === "verified"
-                ? "bg-card text-foreground shadow-md"
+                ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
+            {activeTab === "verified" && (
+              <motion.span
+                layoutId="activeTabUnderline"
+                className="absolute inset-0 rounded-xl bg-card shadow-md z-[-1]"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
             <Sparkles className={`h-3.5 w-3.5 ${activeTab === "verified" ? "text-red-500 fill-red-500/20" : ""}`} />
             Verified Handpicked
           </button>
           <button
             onClick={() => setTabAndUrl("community")}
-            className={`px-5 py-2 text-xs font-black rounded-xl transition-all duration-300 flex items-center gap-2 ${
+            className={`relative px-5 py-2 text-xs font-black rounded-xl transition-all duration-300 flex items-center gap-2 z-10 ${
               activeTab === "community"
-                ? "bg-card text-foreground shadow-md"
+                ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
+            {activeTab === "community" && (
+              <motion.span
+                layoutId="activeTabUnderline"
+                className="absolute inset-0 rounded-xl bg-card shadow-md z-[-1]"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
             Community Shared
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           </button>
@@ -299,7 +314,19 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
               {filteredCuratedDeals.map((deal) => {
                 const discount = deal.discount;
                 return (
-                  <div key={deal.slug} className="card overflow-hidden flex flex-col group border border-border/80 bg-card rounded-3xl shadow-sm hover:shadow-md hover:border-border transition-all duration-300">
+                  <motion.div
+                    key={deal.slug}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4 }}
+                    whileHover={{
+                      y: -6,
+                      boxShadow: "0 20px 40px -15px rgba(0,0,0,0.15), 0 0 25px 2px rgba(212,63,54,0.06)",
+                      borderColor: "rgba(212,63,54,0.25)"
+                    }}
+                    className="card overflow-hidden flex flex-col group border border-border/80 bg-card rounded-3xl shadow-sm transition-all duration-300"
+                  >
                     <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                       <Image
                         src={deal.image}
@@ -347,12 +374,12 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                         href={deal.affiliateLink}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
-                        className="btn-primary w-full text-xs py-3 rounded-2xl text-center font-bold"
+                        className="btn-primary w-full text-xs py-3 rounded-2xl text-center font-bold btn-shiny cursor-pointer"
                       >
                         Buy on Amazon
                       </a>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -381,7 +408,19 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
               const hasDownvoted = userId ? deal.downvotes.includes(userId) : false;
 
               return (
-                <div key={deal.id} className="relative overflow-hidden flex border border-border/80 bg-card rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-border transition-all duration-300 group">
+                <motion.div
+                  key={deal.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35 }}
+                  whileHover={{
+                    y: -4,
+                    boxShadow: "0 15px 30px -10px rgba(0,0,0,0.1), 0 0 20px 2px rgba(212,63,54,0.04)",
+                    borderColor: "rgba(212,63,54,0.2)"
+                  }}
+                  className="relative overflow-hidden flex border border-border/80 bg-card rounded-3xl p-5 shadow-sm transition-all duration-300 group"
+                >
                   <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl pointer-events-none" />
 
                   {/* Upvote Downvote Side Column */}
@@ -471,7 +510,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                       </a>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })
           )}

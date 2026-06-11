@@ -19,8 +19,8 @@ export default function BlogCard({ post, priority = false, index = 0 }: BlogCard
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.45, delay: index * 0.08 }}
-      whileHover={{ y: -5 }}
-      className="card group flex flex-col overflow-hidden transition-shadow hover:shadow-xl hover:shadow-black/8"
+      whileHover={{ y: -6 }}
+      className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80 bg-card rounded-3xl shadow-sm glow-card-hover"
     >
       {/* Image */}
       <Link href={`/blog/${post.slug}`} className="relative block overflow-hidden">
@@ -78,7 +78,7 @@ export default function BlogCard({ post, priority = false, index = 0 }: BlogCard
         </div>
 
         <motion.div whileHover={{ x: 4 }}>
-          <Link href={`/blog/${post.slug}`} className="btn-secondary text-sm mt-2 text-center inline-flex items-center gap-1.5 justify-center w-full">
+          <Link href={`/blog/${post.slug}`} className="btn-secondary text-sm mt-2 text-center inline-flex items-center gap-1.5 justify-center w-full btn-shiny cursor-pointer">
             Read Article <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </motion.div>
