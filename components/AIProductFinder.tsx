@@ -72,8 +72,12 @@ export default function AIProductFinder() {
   const skeletonCards = [1, 2, 3];
 
   return (
-    <section className="py-12 bg-gradient-to-b from-muted/20 to-background border-y border-border/40">
-      <div className="container-custom max-w-5xl">
+    <section className="py-16 relative overflow-hidden bg-gradient-to-b from-muted/20 to-background border-y border-border/40">
+      <div className="container-custom max-w-5xl relative z-10">
+        <div className="glass-premium rounded-3xl p-6 md:p-10 border border-white/20 dark:border-white/5 shadow-2xl relative overflow-hidden">
+          {/* Inner neon decor */}
+          <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-teal-500/10 dark:bg-teal-500/15 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-brand-500/10 dark:bg-brand-500/10 blur-3xl pointer-events-none" />
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-8">
           <motion.div
@@ -95,7 +99,7 @@ export default function AIProductFinder() {
 
         {/* Search Bar Form */}
         <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
-          <div className="relative flex items-center p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-border shadow-lg shadow-black/5 focus-within:border-teal-500/50 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-300">
+        <div className="relative flex items-center p-1.5 rounded-2xl bg-white/90 dark:bg-slate-950/80 border border-border shadow-xl shadow-teal-500/2 dark:shadow-teal-500/5 focus-within:border-teal-500 focus-within:shadow-teal-500/10 focus-within:ring-4 focus-within:ring-teal-500/5 transition-all duration-300">
             <div className="flex items-center gap-2 pl-3 flex-1">
               <Search className="h-5 w-5 text-muted-foreground" />
               <input
@@ -109,7 +113,7 @@ export default function AIProductFinder() {
             <button
               type="submit"
               disabled={loading || !query.trim()}
-              className="btn-primary bg-teal-600 hover:bg-teal-700 text-white rounded-xl py-2 px-5 text-sm flex items-center gap-1.5 disabled:opacity-50 disabled:hover:bg-teal-600"
+              className="btn-primary bg-teal-600 hover:bg-teal-750 hover:shadow-lg hover:shadow-teal-500/20 text-white rounded-xl py-2 px-5 text-sm flex items-center gap-1.5 disabled:opacity-50 disabled:hover:bg-teal-600 transition-all btn-shiny cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -212,6 +216,7 @@ export default function AIProductFinder() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
     </section>
   );

@@ -143,19 +143,26 @@ export default function ResumeBuilder() {
       {/* CSS overrides for print style */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: A4;
+            margin: 0mm !important; /* Removes browser-injected headers and footers (date, title, URL) */
+          }
           header, footer, nav, button, .no-print {
             display: none !important;
           }
           body {
             background-color: white !important;
             color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
           .resume-preview-container {
             margin: 0 !important;
             border: none !important;
             box-shadow: none !important;
-            padding: 0 !important;
+            padding: 18mm 20mm 18mm 20mm !important; /* Perfect standard margins on A4 paper */
             width: 100% !important;
+            box-sizing: border-box !important;
           }
         }
       `}</style>
@@ -591,7 +598,7 @@ export default function ResumeBuilder() {
             </div>
 
             {/* Resume Footer */}
-            <div className="text-center pt-8 border-t border-slate-200 mt-8 text-[9px] font-bold text-slate-400">
+            <div className="text-center pt-8 border-t border-slate-200 mt-8 text-[9px] font-bold text-slate-400 print:hidden">
               Generated via SmartPicks Student Placement Hub
             </div>
           </div>
