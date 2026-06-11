@@ -51,25 +51,25 @@ export default function FlashDealTimer({ endsAt }: FlashDealTimerProps) {
 
   const pad = (num: number) => String(num).padStart(2, "0");
 
-  const formattedTime = `${pad(timeLeft.hours)}h : ${pad(timeLeft.minutes)}m : ${pad(timeLeft.seconds)}s`;
+  const formattedTime = `${pad(timeLeft.hours)}h ${pad(timeLeft.minutes)}m ${pad(timeLeft.seconds)}s`;
 
   if (isImminent) {
     return (
       <motion.span
-        animate={{ scale: [1, 1.05, 1] }}
+        animate={{ scale: [1, 1.02, 1] }}
         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-        className="inline-flex items-center gap-1.5 text-[11px] font-black text-white bg-red-600 px-3 py-1 rounded-full shadow-md shadow-red-600/20 uppercase tracking-wider"
+        className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-black text-white bg-red-600 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg shadow-md shadow-red-600/10 uppercase tracking-wider"
       >
-        <Clock className="h-3.5 w-3.5 animate-pulse" />
-        Hurry! {formattedTime} left
+        <Clock className="h-2.5 w-2.5 sm:h-3 w-3 animate-pulse text-white shrink-0" />
+        {formattedTime}
       </motion.span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-accent-500 bg-accent-500/10 px-3 py-1 rounded-full uppercase tracking-wider border border-accent-500/10">
-      <Clock className="h-3.5 w-3.5" />
-      Ends in: {formattedTime}
+    <span className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-black text-accent-500 bg-accent-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg uppercase tracking-wider border border-accent-500/10">
+      <Clock className="h-2.5 w-2.5 sm:h-3 w-3 text-accent-500 shrink-0" />
+      {formattedTime}
     </span>
   );
 }

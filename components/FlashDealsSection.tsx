@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Zap, ArrowRight, ShoppingCart } from "lucide-react";
+import { Zap, ArrowRight, ShoppingCart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedSectionHeader from "@/components/AnimatedSectionHeader";
 import FlashDealTimer from "@/components/FlashDealTimer";
@@ -118,8 +118,8 @@ export default function FlashDealsSection() {
                 </div>
 
                 {/* Card Details */}
-                <div className="p-4 flex flex-col gap-2 flex-1">
-                  <div className="mb-1">
+                <div className="p-3 sm:p-4 flex flex-col gap-1.5 sm:gap-2 flex-1">
+                  <div className="mb-0.5">
                     <FlashDealTimer endsAt={deal.flashDealEndsAt} />
                   </div>
 
@@ -129,6 +129,25 @@ export default function FlashDealsSection() {
                     </h4>
                   </Link>
 
+                  {/* Rating & Review Count */}
+                  {deal.rating !== undefined && (
+                    <div className="flex items-center gap-1 mt-0.5 text-[10px] sm:text-xs text-muted-foreground">
+                      <div className="flex items-center text-amber-400 shrink-0">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-2.5 w-2.5 sm:h-3 w-3 ${
+                              i < Math.round(deal.rating) ? "fill-current" : "text-muted-foreground/20"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-semibold">
+                        {deal.rating} <span className="text-muted-foreground/60">({deal.reviewCount})</span>
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex items-baseline gap-2 mt-auto">
                     <span className="text-base font-black text-foreground">{formatPrice(deal.price)}</span>
                     <span className="text-xs text-muted-foreground line-through">
@@ -136,14 +155,16 @@ export default function FlashDealsSection() {
                     </span>
                   </div>
 
-                  <a
+                  <motion.a
                     href={deal.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="btn-primary bg-gradient-to-r from-accent-500 to-rose-500 hover:from-accent-600 hover:to-rose-600 text-white border border-accent-500/20 text-xs py-1.5 w-full justify-center mt-2 flex items-center gap-1 shadow-md hover:shadow-[0_8px_16px_rgba(249,115,22,0.2)] transition-all duration-200"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-accent-500 via-orange-500 to-rose-500 hover:from-accent-600 hover:to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-accent-400/20 transition-all duration-300"
+                    whileHover={{ scale: 1.02, boxShadow: "0 8px 20px -4px rgba(249,115,22,0.3)" }}
+                    whileTap={{ scale: 0.97 }}
                   >
-                    <ShoppingCart className="h-3.5 w-3.5" /> Buy Amazon
-                  </a>
+                    <ShoppingCart className="h-3.5 w-3.5" /> Buy on Amazon
+                  </motion.a>
                 </div>
               </motion.article>
             );

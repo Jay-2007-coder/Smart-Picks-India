@@ -134,7 +134,7 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
         </div>
 
         {/* Content */}
-        <div className="flex flex-col flex-1 p-4 gap-2">
+        <div className="flex flex-col flex-1 p-3.5 sm:p-4 gap-1.5 sm:gap-2">
           {/* Category */}
           <span className="text-xs font-semibold text-brand-600 capitalize">{product.category}</span>
 
@@ -151,7 +151,7 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-3.5 w-3.5 ${i < Math.round(product.rating) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                  className={`h-3 w-3 sm:h-3.5 w-3.5 ${i < Math.round(product.rating) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
                 />
               ))}
             </div>
@@ -175,12 +175,12 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
             href={product.affiliateLink}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="btn-primary w-full mt-2 text-center justify-center bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 border border-brand-500/20 shadow-md font-bold text-xs py-2.5"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-brand-500/20 transition-all duration-300"
             id={`buy-${product.slug}`}
-            whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgba(212, 63, 54, 0.2)" }}
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 20px -4px rgba(212, 63, 54, 0.3)" }}
             whileTap={{ scale: 0.97 }}
           >
-            <ShoppingCart className="h-4 w-4" />
+            <ShoppingCart className="h-3.5 w-3.5" />
             Buy on Amazon
           </motion.a>
         </div>
