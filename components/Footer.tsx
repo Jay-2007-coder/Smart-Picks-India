@@ -7,8 +7,9 @@ const footerLinks = {
   "Quick Links": [
     { href: "/", label: "Home" },
     { href: "/deals", label: "Today's Deals" },
+    { href: "/digital-store", label: "Digital Store" },
+    { href: "/student-hub", label: "Student Hub" },
     { href: "/blog", label: "Blog" },
-    { href: "/affiliate", label: "Affiliate" },
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
   ],
@@ -20,6 +21,14 @@ const footerLinks = {
     { href: "/category/fashion", label: "Fashion" },
     { href: "/category/study", label: "Study & Office" },
   ],
+  "Student Hub": [
+    { href: "/student-hub/resume-builder", label: "Resume Builder" },
+    { href: "/student-hub/resume-analyzer", label: "ATS Analyzer" },
+    { href: "/student-hub/portfolio-generator", label: "Portfolio Builder" },
+    { href: "/student-hub/coding-helper", label: "DSA Coding Helper" },
+    { href: "/student-hub/roadmaps", label: "Roadmaps" },
+    { href: "/student-hub/interview-generator", label: "Interview Prep" },
+  ],
   Legal: [
     { href: "/privacy-policy", label: "Privacy Policy" },
     { href: "/disclaimer", label: "Disclaimer" },
@@ -29,7 +38,7 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { href: "https://instagram.com", icon: Camera, label: "Instagram" },
+  { href: "https://www.instagram.com/indiasmartpicks/", icon: Camera, label: "Instagram" },
   { href: "https://twitter.com", icon: MessageCircle, label: "Twitter" },
   { href: "https://youtube.com", icon: Video, label: "YouTube" },
 ];
@@ -42,7 +51,7 @@ export default function Footer() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-32 w-96 bg-brand-600/5 blur-3xl pointer-events-none" />
 
       <div className="container-custom py-14 relative z-10">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {/* Brand */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -59,7 +68,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              India&apos;s trusted source for budget product reviews and Amazon deals. We help smart shoppers make better buying decisions.
+              India&apos;s trusted platform for handpicked Amazon deals, premium digital products, and student career resources.
             </p>
 
             {/* Social Icons */}
