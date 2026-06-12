@@ -26,8 +26,10 @@ import {
   Trash2,
   Copy,
   Check,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Stats {
   totalUsers: number;
@@ -64,6 +66,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
   const [usersList, setUsersList] = useState<UserInfo[]>([]);
+  const [userSearch, setUserSearch] = useState<string>("");
   const [syncing, setSyncing] = useState<boolean>(false);
   const [broadcasting, setBroadcasting] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
@@ -461,6 +464,17 @@ export default function AdminDashboard() {
 
   const categoryColors = ["bg-blue-500", "bg-purple-500", "bg-amber-500", "bg-emerald-500", "bg-rose-500"];
 
+  const filteredUsers = usersList.filter((u) => {
+    const q = userSearch.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      u.name?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.role?.toLowerCase().includes(q) ||
+      (u.telegramChatId && String(u.telegramChatId).includes(q))
+    );
+  });
+
   return (
     <div className="min-h-screen bg-slate-500/[0.03] py-10">
       <div className="container-custom max-w-6xl">
@@ -476,7 +490,7 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap gap-2.5 items-center">
             <Link
               href="/admin/digital-store"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10"
+              className="btn-shiny inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 px-5 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 border border-white/10"
             >
               <ShoppingCart className="h-4 w-4" />
               Manage Digital Store
@@ -485,7 +499,7 @@ export default function AdminDashboard() {
             <button
               onClick={handleSyncPrices}
               disabled={syncing || broadcasting}
-              className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10 ${
+              className={`btn-shiny inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-red-600 to-rose-600 px-5 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 border border-white/10 cursor-pointer ${
                 syncing ? "animate-pulse" : ""
               }`}
             >
@@ -496,7 +510,7 @@ export default function AdminDashboard() {
             <button
               onClick={handleBroadcastDeals}
               disabled={syncing || broadcasting}
-              className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 border border-white/10 ${
+              className={`btn-shiny inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 px-5 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 border border-white/10 cursor-pointer ${
                 broadcasting ? "animate-pulse" : ""
               }`}
             >
@@ -518,156 +532,187 @@ export default function AdminDashboard() {
         )}
 
         {/* Navigation Tab Pills */}
-        <div className="bg-card border border-border/80 p-1.5 rounded-2xl flex gap-1 mb-8 overflow-x-auto scrollbar-none max-w-max shadow-sm">
+        <div className="bg-card border border-border/80 p-1.5 rounded-2xl flex gap-1.5 mb-8 overflow-x-auto scrollbar-none max-w-max shadow-sm relative">
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+            className={`relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer select-none ${
               activeTab === "analytics"
-                ? "bg-red-500/10 text-red-500 shadow-sm border border-red-500/15"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+                ? "text-red-500 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <LineChart className="h-4 w-4" />
-            Overview & Analytics
+            {activeTab === "analytics" && (
+              <motion.div
+                layoutId="activeTabBg"
+                className="absolute inset-0 bg-red-500/10 border border-red-500/15 rounded-xl"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <LineChart className="relative z-10 h-4 w-4" />
+            <span className="relative z-10">Overview & Analytics</span>
           </button>
 
           <button
             onClick={() => setActiveTab("products")}
-            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+            className={`relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer select-none ${
               activeTab === "products"
-                ? "bg-emerald-500/10 text-emerald-500 shadow-sm border border-emerald-500/15"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+                ? "text-emerald-500 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Layers className="h-4 w-4" />
-            Manage Products
+            {activeTab === "products" && (
+              <motion.div
+                layoutId="activeTabBg"
+                className="absolute inset-0 bg-emerald-500/10 border border-emerald-500/15 rounded-xl"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <Layers className="relative z-10 h-4 w-4" />
+            <span className="relative z-10">Manage Products</span>
           </button>
 
           <button
             onClick={() => setActiveTab("blogs")}
-            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+            className={`relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer select-none ${
               activeTab === "blogs"
-                ? "bg-indigo-500/10 text-indigo-500 shadow-sm border border-indigo-500/15"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+                ? "text-indigo-500 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <FileText className="h-4 w-4" />
-            Manage Blogs
+            {activeTab === "blogs" && (
+              <motion.div
+                layoutId="activeTabBg"
+                className="absolute inset-0 bg-indigo-500/10 border border-indigo-500/15 rounded-xl"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <FileText className="relative z-10 h-4 w-4" />
+            <span className="relative z-10">Manage Blogs</span>
           </button>
         </div>
 
         {/* Tab Contents */}
-        {activeTab === "products" && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Quick Publish ASIN Scraper Form */}
-            <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
-          <div className="absolute -right-16 -bottom-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl" />
-          <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
-            <Layers className="h-5 w-5 text-red-500" /> Scrape & Publish Amazon Product
-          </h3>
-          <p className="text-xs text-muted-foreground mb-5">
-            Enter an Amazon ASIN to automatically fetch its details, create an affiliate link, save to MongoDB, append it to the products.ts catalog, and publish to the Telegram channel.
-          </p>
-
-          <form onSubmit={handleScrapeProduct} className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="w-full sm:w-1/2">
-              <label htmlFor="asin" className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                Amazon ASIN
-              </label>
-              <input
-                id="asin"
-                type="text"
-                value={asin}
-                onChange={(e) => setAsin(e.target.value)}
-                placeholder="e.g. B0CHX1W1XY, B0CXF4D189, B0CY5N681Z"
-                className="w-full h-11 px-4 text-xs bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-red-500 text-foreground"
-                required
-              />
-            </div>
-            
-            <div className="w-full sm:w-1/3">
-              <label htmlFor="category" className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                Product Category
-              </label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-11 px-4 text-xs bg-muted/50 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-red-500 text-foreground appearance-none capitalize"
-              >
-                <option value="tech">tech</option>
-                <option value="kitchen">kitchen</option>
-                <option value="home">home</option>
-                <option value="gadgets">gadgets</option>
-                <option value="fashion">fashion</option>
-                <option value="study">study</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={scraping || !asin}
-              className="w-full sm:w-auto h-11 px-6 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 whitespace-nowrap"
+        <AnimatePresence mode="wait">
+          {activeTab === "products" && (
+            <motion.div
+              key="products"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="space-y-8"
             >
-              {scraping ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Scraping & Publishing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4" />
-                  Fetch & Publish Product
-                </>
-              )}
-            </button>
-          </form>
+              <div className="glass-premium p-6 border border-border/60 dark:border-white/[0.06] rounded-3xl shadow-sm relative overflow-hidden mb-8">
+                <div className="absolute -right-16 -bottom-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl" />
+                <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
+                  <Layers className="h-5 w-5 text-red-500" /> Scrape &amp; Publish Amazon Product
+                </h3>
+                <p className="text-xs text-muted-foreground mb-5">
+                  Enter an Amazon ASIN to automatically fetch its details, create an affiliate link, save to MongoDB, append it to the products.ts catalog, and publish to the Telegram channel.
+                </p>
 
-          {/* Scraper Status Alerts */}
-          {scrapeError && (
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
-              <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
-              <span>{scrapeError}</span>
-            </div>
-          )}
-
-          {scrapeSuccess && (
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
-              <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
-              <div className="flex-1">
-                <span>{scrapeSuccess}</span>
-                {scrapedProduct && (
-                  <div className="mt-2.5 flex flex-col sm:flex-row gap-4 p-3.5 bg-background border border-border/80 rounded-2xl">
-                    {scrapedProduct.image && (
-                      <img
-                        src={scrapedProduct.image}
-                        alt={scrapedProduct.title}
-                        className="h-16 w-16 rounded-xl object-contain bg-white p-1 border border-border shrink-0"
-                      />
-                    )}
-                    <div>
-                      <h4 className="text-xs font-black text-foreground line-clamp-1">{scrapedProduct.title}</h4>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        Price: <span className="text-emerald-500 font-bold">₹{scrapedProduct.price?.toLocaleString("en-IN")}</span> | Slug: <span className="font-semibold">{scrapedProduct.slug}</span>
-                      </p>
-                      <a
-                        href={scrapedProduct.affiliateLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[10px] text-red-500 hover:underline font-bold mt-1.5 inline-block"
+                <form onSubmit={handleScrapeProduct} className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="w-full sm:w-1/2">
+                    <label htmlFor="asin" className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                      Amazon ASIN
+                    </label>
+                    <input
+                      id="asin"
+                      type="text"
+                      value={asin}
+                      onChange={(e) => setAsin(e.target.value)}
+                      placeholder="e.g. B0CHX1W1XY, B0CXF4D189, B0CY5N681Z"
+                      className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="w-full sm:w-1/3">
+                    <label htmlFor="category" className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                      Product Category
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="category"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full h-10.5 px-4 pr-10 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-foreground appearance-none capitalize transition-all duration-200"
                       >
-                        Generated Affiliate Link ↗
-                      </a>
+                        <option value="tech">tech</option>
+                        <option value="kitchen">kitchen</option>
+                        <option value="home">home</option>
+                        <option value="gadgets">gadgets</option>
+                        <option value="fashion">fashion</option>
+                        <option value="study">study</option>
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-[10px]">▼</div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={scraping || !asin}
+                    className="w-full sm:w-auto h-10.5 px-6 rounded-xl bg-gradient-to-tr from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer border border-white/10"
+                  >
+                    {scraping ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Scraping &amp; Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4" />
+                        Fetch &amp; Publish Product
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Scraper Status Alerts */}
+                {scrapeError && (
+                  <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
+                    <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
+                    <span>{scrapeError}</span>
+                  </div>
+                )}
+
+                {scrapeSuccess && (
+                  <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
+                    <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                    <div className="flex-1">
+                      <span>{scrapeSuccess}</span>
+                      {scrapedProduct && (
+                        <div className="mt-2.5 flex flex-col sm:flex-row gap-4 p-3.5 bg-background border border-border/80 rounded-2xl">
+                          {scrapedProduct.image && (
+                            <img
+                              src={scrapedProduct.image}
+                              alt={scrapedProduct.title}
+                              className="h-16 w-16 rounded-xl object-contain bg-white p-1 border border-border shrink-0"
+                            />
+                          )}
+                          <div>
+                            <h4 className="text-xs font-black text-foreground line-clamp-1">{scrapedProduct.title}</h4>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              Price: <span className="text-emerald-500 font-bold">₹{scrapedProduct.price?.toLocaleString("en-IN")}</span> | Slug: <span className="font-semibold">{scrapedProduct.slug}</span>
+                            </p>
+                            <a
+                              href={scrapedProduct.affiliateLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[10px] text-red-500 hover:underline font-bold mt-1.5 inline-block"
+                            >
+                              Generated Affiliate Link ↗
+                            </a>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
-            </div>
-          )}
-        </div>
 
-        {/* Manual Product Publish Form */}
-        <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
+              {/* Manual Product Publish Form */}
+              <div className="glass-premium p-6 border border-border/60 dark:border-white/[0.06] rounded-3xl shadow-sm relative overflow-hidden mb-8">
           <div className="absolute -left-16 -bottom-16 h-36 w-36 rounded-full bg-emerald-500/5 blur-2xl" />
           <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
             <Plus className="h-5 w-5 text-emerald-500" /> Manually Publish Product
@@ -676,165 +721,189 @@ export default function AdminDashboard() {
             Add a product to the affiliate store manually. This will save it to MongoDB, write to the static products.ts catalog, and optionally broadcast it on the Telegram channel.
           </p>
 
-          <form onSubmit={handlePublishProduct} className="space-y-4">
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Product Title *
-                </label>
-                <input
-                  type="text"
-                  value={manualTitle}
-                  onChange={(e) => setManualTitle(e.target.value)}
-                  placeholder="e.g. boAt Airdopes 141 Bluetooth Earbuds"
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground"
-                  required
-                />
+          <form onSubmit={handlePublishProduct} className="space-y-6">
+            {/* Step 1: Basic Information */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-black text-emerald-500 border border-emerald-500/20">01</span>
+                <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Basic Information</h4>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Product Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={manualTitle}
+                    onChange={(e) => setManualTitle(e.target.value)}
+                    placeholder="e.g. boAt Airdopes 141 Bluetooth Earbuds"
+                    className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Category *
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={manualCategory}
+                      onChange={(e) => setManualCategory(e.target.value)}
+                      className="w-full h-10.5 px-4 pr-10 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground appearance-none capitalize transition-all duration-200"
+                      required
+                    >
+                      <option value="tech">tech</option>
+                      <option value="kitchen">kitchen</option>
+                      <option value="home">home</option>
+                      <option value="gadgets">gadgets</option>
+                      <option value="fashion">fashion</option>
+                      <option value="study">study</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-[10px]">▼</div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Category *
-                </label>
-                <select
-                  value={manualCategory}
-                  onChange={(e) => setManualCategory(e.target.value)}
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground appearance-none capitalize"
-                  required
-                >
-                  <option value="tech">tech</option>
-                  <option value="kitchen">kitchen</option>
-                  <option value="home">home</option>
-                  <option value="gadgets">gadgets</option>
-                  <option value="fashion">fashion</option>
-                  <option value="study">study</option>
-                </select>
-              </div>
-            </div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    ASIN (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={manualAsin}
+                    onChange={(e) => setManualAsin(e.target.value)}
+                    placeholder="e.g. B0CHX1W1XY"
+                    className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                  />
+                </div>
 
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  ASIN (Optional, generated if empty)
-                </label>
-                <input
-                  type="text"
-                  value={manualAsin}
-                  onChange={(e) => setManualAsin(e.target.value)}
-                  placeholder="e.g. B0CHX1W1XY"
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground"
-                />
-              </div>
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Deal Price (INR) *
+                  </label>
+                  <input
+                    type="number"
+                    value={manualPrice}
+                    onChange={(e) => setManualPrice(e.target.value)}
+                    placeholder="e.g. 1299"
+                    className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Deal Price (INR) *
-                </label>
-                <input
-                  type="number"
-                  value={manualPrice}
-                  onChange={(e) => setManualPrice(e.target.value)}
-                  placeholder="e.g. 1299"
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Original Price (INR) *
-                </label>
-                <input
-                  type="number"
-                  value={manualOriginalPrice}
-                  onChange={(e) => setManualOriginalPrice(e.target.value)}
-                  placeholder="e.g. 2999"
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Image URL *
-                </label>
-                <input
-                  type="text"
-                  value={manualImage}
-                  onChange={(e) => setManualImage(e.target.value)}
-                  placeholder="https://images-na.ssl-images-amazon.com/images/..."
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Affiliate Link (Optional, auto-generated from ASIN if empty)
-                </label>
-                <input
-                  type="text"
-                  value={manualAffiliateLink}
-                  onChange={(e) => setManualAffiliateLink(e.target.value)}
-                  placeholder="https://www.amazon.in/dp/..."
-                  className="w-full h-11 px-4 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground"
-                />
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Original Price (INR) *
+                  </label>
+                  <input
+                    type="number"
+                    value={manualOriginalPrice}
+                    onChange={(e) => setManualOriginalPrice(e.target.value)}
+                    placeholder="e.g. 2999"
+                    className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                Product Description Summary (Optional)
-              </label>
-              <textarea
-                value={manualDescription}
-                onChange={(e) => setManualDescription(e.target.value)}
-                placeholder="Brief description of the product features, specs or target audience..."
-                rows={2}
-                className="w-full p-3.5 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground leading-relaxed"
-              />
+            {/* Step 2: Media & Affiliate Link */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-black text-emerald-500 border border-emerald-500/20">02</span>
+                <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Media & Affiliate Link</h4>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Image URL *
+                  </label>
+                  <input
+                    type="text"
+                    value={manualImage}
+                    onChange={(e) => setManualImage(e.target.value)}
+                    placeholder="https://images-na.ssl-images-amazon.com/images/..."
+                    className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Affiliate Link (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={manualAffiliateLink}
+                    onChange={(e) => setManualAffiliateLink(e.target.value)}
+                    placeholder="https://www.amazon.in/dp/..."
+                    className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-4">
+            {/* Step 3: Review Details */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-black text-emerald-500 border border-emerald-500/20">03</span>
+                <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Specifications & Review Details</h4>
+              </div>
               <div>
                 <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Features (one per line)
+                  Product Description Summary (Optional)
                 </label>
                 <textarea
-                  value={manualFeatures}
-                  onChange={(e) => setManualFeatures(e.target.value)}
-                  placeholder="8mm Dynamic Drivers&#10;IPX4 Water Resistant&#10;42h Playtime"
-                  rows={3}
-                  className="w-full p-3.5 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground leading-relaxed"
+                  value={manualDescription}
+                  onChange={(e) => setManualDescription(e.target.value)}
+                  placeholder="Brief description of the product features, specs or target audience..."
+                  rows={2}
+                  className="w-full p-3 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50 leading-relaxed font-sans"
                 />
               </div>
 
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Pros (one per line)
-                </label>
-                <textarea
-                  value={manualPros}
-                  onChange={(e) => setManualPros(e.target.value)}
-                  placeholder="Excellent battery life&#10;Very fast charging&#10;Clear voice calls"
-                  rows={3}
-                  className="w-full p-3.5 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground leading-relaxed"
-                />
-              </div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Features (one per line)
+                  </label>
+                  <textarea
+                    value={manualFeatures}
+                    onChange={(e) => setManualFeatures(e.target.value)}
+                    placeholder="8mm Dynamic Drivers&#10;IPX4 Water Resistant&#10;42h Playtime"
+                    rows={3}
+                    className="w-full p-3 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50 leading-relaxed font-sans"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
-                  Cons (one per line)
-                </label>
-                <textarea
-                  value={manualCons}
-                  onChange={(e) => setManualCons(e.target.value)}
-                  placeholder="Micro-USB port instead of Type-C&#10;Somewhat bulky charging case"
-                  rows={3}
-                  className="w-full p-3.5 text-xs bg-muted/40 border border-border rounded-2xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-foreground leading-relaxed"
-                />
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Pros (one per line)
+                  </label>
+                  <textarea
+                    value={manualPros}
+                    onChange={(e) => setManualPros(e.target.value)}
+                    placeholder="Excellent battery life&#10;Very fast charging&#10;Clear voice calls"
+                    rows={3}
+                    className="w-full p-3 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50 leading-relaxed font-sans"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                    Cons (one per line)
+                  </label>
+                  <textarea
+                    value={manualCons}
+                    onChange={(e) => setManualCons(e.target.value)}
+                    placeholder="Micro-USB port instead of Type-C&#10;Somewhat bulky charging case"
+                    rows={3}
+                    className="w-full p-3 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50 leading-relaxed font-sans"
+                  />
+                </div>
               </div>
             </div>
 
@@ -851,11 +920,11 @@ export default function AdminDashboard() {
               </label>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <button
                 type="submit"
                 disabled={publishingProduct || !manualTitle || !manualPrice || !manualOriginalPrice || !manualImage}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:scale-100 cursor-pointer border border-white/10"
+                className="inline-flex h-10.5 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 px-6 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 disabled:opacity-50 disabled:scale-100 cursor-pointer border border-white/10"
               >
                 {publishingProduct ? (
                   <>
@@ -873,527 +942,637 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={handleResetProductForm}
-                className="inline-flex h-11 items-center justify-center rounded-2xl bg-muted hover:bg-muted/80 text-muted-foreground font-bold text-xs px-6 cursor-pointer"
+                className="inline-flex h-10.5 items-center justify-center rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground font-bold text-xs px-6 cursor-pointer transition-colors duration-200"
               >
                 Reset Form
               </button>
             </div>
           </form>
 
-          {/* Status Alerts */}
-          {publishError && (
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
-              <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
-              <span>{publishError}</span>
-            </div>
-          )}
+              {/* Status Alerts */}
+              {publishError && (
+                <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
+                  <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
+                  <span>{publishError}</span>
+                </div>
+              )}
 
-          {publishSuccess && (
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
-              <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
-              <div className="flex-1">
-                <span>{publishSuccess}</span>
-                {publishedProduct && (
-                  <div className="mt-2.5 flex flex-col sm:flex-row gap-4 p-3.5 bg-background border border-border/80 rounded-2xl">
-                    {publishedProduct.image && (
-                      <img
-                        src={publishedProduct.image}
-                        alt={publishedProduct.title}
-                        className="h-16 w-16 rounded-xl object-contain bg-white p-1 border border-border shrink-0"
-                      />
+              {publishSuccess && (
+                <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
+                  <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                  <div className="flex-1">
+                    <span>{publishSuccess}</span>
+                    {publishedProduct && (
+                      <div className="mt-2.5 flex flex-col sm:flex-row gap-4 p-3.5 bg-background border border-border/80 rounded-2xl">
+                        {publishedProduct.image && (
+                          <img
+                            src={publishedProduct.image}
+                            alt={publishedProduct.title}
+                            className="h-16 w-16 rounded-xl object-contain bg-white p-1 border border-border shrink-0"
+                          />
+                        )}
+                        <div>
+                          <h4 className="text-xs font-black text-foreground line-clamp-1">{publishedProduct.title}</h4>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            Price: <span className="text-emerald-500 font-bold">₹{publishedProduct.price?.toLocaleString("en-IN")}</span> | Slug: <span className="font-semibold">{publishedProduct.slug}</span>
+                          </p>
+                          <a
+                            href={publishedProduct.affiliateLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[10px] text-emerald-500 hover:underline font-bold mt-1.5 inline-block"
+                          >
+                            Affiliate Link ↗
+                          </a>
+                        </div>
+                      </div>
                     )}
-                    <div>
-                      <h4 className="text-xs font-black text-foreground line-clamp-1">{publishedProduct.title}</h4>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        Price: <span className="text-emerald-500 font-bold">₹{publishedProduct.price?.toLocaleString("en-IN")}</span> | Slug: <span className="font-semibold">{publishedProduct.slug}</span>
-                      </p>
-                      <a
-                        href={publishedProduct.affiliateLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[10px] text-emerald-500 hover:underline font-bold mt-1.5 inline-block"
-                      >
-                        Affiliate Link ↗
-                      </a>
-                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
-    )}
+          </motion.div>
+        )}
 
         {activeTab === "blogs" && (
-          <div className="space-y-8 animate-fade-in">
+          <motion.div
+            key="blogs"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="space-y-8"
+          >
             {/* Blog Post Helper & Code Template Generator */}
-            <div id="blog-generator" className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden mb-8">
-          <div className="absolute -left-16 -top-16 h-36 w-36 rounded-full bg-brand-500/5 blur-2xl" />
-          <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
-            <FileText className="h-5 w-5 text-indigo-500" /> Publish & Manage Blog Posts
-          </h3>
-          <p className="text-xs text-muted-foreground mb-5">
-            Create and publish a blog post directly to the database or generate a static JSON block template for local development. Includes auto-slugging and table of contents compilation.
-          </p>
+            <div id="blog-generator" className="glass-premium p-6 border border-border/60 dark:border-white/[0.06] rounded-3xl shadow-sm relative overflow-hidden mb-8">
+              <div className="absolute -left-16 -top-16 h-36 w-36 rounded-full bg-brand-500/5 blur-2xl" />
+              <h3 className="text-lg font-black mb-1 flex items-center gap-2 text-foreground">
+                <FileText className="h-5 w-5 text-indigo-500" /> Publish & Manage Blog Posts
+              </h3>
+              <p className="text-xs text-muted-foreground mb-5">
+                Create and publish a blog post directly to the database or generate a static JSON block template for local development. Includes auto-slugging and table of contents compilation.
+              </p>
 
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                  Blog Title
-                </label>
-                <input
-                  type="text"
-                  value={blogTitle}
-                  onChange={(e) => setBlogTitle(e.target.value)}
-                  placeholder="e.g. 10 Best Kitchen Gadgets in India"
-                  className="w-full h-10 px-3.5 text-xs bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                  Category
-                </label>
-                <select
-                  value={blogCategory}
-                  onChange={(e) => setBlogCategory(e.target.value)}
-                  className="w-full h-10 px-3 bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground capitalize"
-                >
-                  <option value="tech">tech</option>
-                  <option value="kitchen">kitchen</option>
-                  <option value="home">home</option>
-                  <option value="fashion">fashion</option>
-                  <option value="study">study</option>
-                  <option value="gadgets">gadgets</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                  Excerpt Summary
-                </label>
-                <input
-                  type="text"
-                  value={blogExcerpt}
-                  onChange={(e) => setBlogExcerpt(e.target.value)}
-                  placeholder="e.g. Discover the top 10 kitchen helpers to speed up cooking..."
-                  className="w-full h-10 px-3.5 text-xs bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                  Cover Image URL
-                </label>
-                <input
-                  type="text"
-                  value={blogImage}
-                  onChange={(e) => setBlogImage(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full h-10 px-3.5 text-xs bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground"
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                  Tags (Comma separated)
-                </label>
-                <input
-                  type="text"
-                  value={blogTags}
-                  onChange={(e) => setBlogTags(e.target.value)}
-                  placeholder="kitchen, gadgets, tools, best budget"
-                  className="w-full h-10 px-3.5 text-xs bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                  Read Time
-                </label>
-                <input
-                  type="text"
-                  value={blogReadTime}
-                  onChange={(e) => setBlogReadTime(e.target.value)}
-                  placeholder="e.g. 5 min read"
-                  className="w-full h-10 px-3.5 text-xs bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1">
-                Markdown Body Content (Use standard Markdown, prefix headings with `## ` to auto-generate ToC links)
-              </label>
-              <textarea
-                value={blogContent}
-                onChange={(e) => setBlogContent(e.target.value)}
-                placeholder="## Introduction&#10;Write content here...&#10;&#10;## #1 Product Name&#10;Details here..."
-                rows={6}
-                className="w-full p-3.5 text-xs bg-muted/40 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground font-mono leading-relaxed"
-                required
-              />
-            </div>
-
-            {/* Dynamic FAQs Section */}
-            <div className="space-y-2.5 bg-muted/15 border border-border/60 p-4 rounded-2xl">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Dynamic Blog FAQs</span>
-                <button
-                  type="button"
-                  onClick={handleAddFaq}
-                  className="inline-flex items-center gap-1 text-[10px] font-black text-indigo-500 hover:text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-lg cursor-pointer"
-                >
-                  <Plus className="h-3 w-3" /> Add FAQ Item
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                {blogFaqs.map((faq, index) => (
-                  <div key={index} className="flex gap-3 items-start border-b border-border/20 pb-3 last:border-b-0 last:pb-0">
-                    <div className="flex-1 space-y-1.5">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                {/* Step 1: Blog Metadata */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/10 text-[10px] font-black text-indigo-500 border border-indigo-500/20">01</span>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Blog Metadata</h4>
+                  </div>
+                  
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                        Blog Title
+                      </label>
                       <input
                         type="text"
-                        value={faq.question}
-                        onChange={(e) => handleFaqChange(index, "question", e.target.value)}
-                        placeholder="FAQ Question"
-                        className="w-full h-9 px-3 text-xs bg-card border border-border rounded-xl focus:outline-none text-foreground font-semibold"
-                      />
-                      <input
-                        type="text"
-                        value={faq.answer}
-                        onChange={(e) => handleFaqChange(index, "answer", e.target.value)}
-                        placeholder="FAQ Answer"
-                        className="w-full h-9 px-3 text-xs bg-card border border-border rounded-xl focus:outline-none text-muted-foreground"
+                        value={blogTitle}
+                        onChange={(e) => setBlogTitle(e.target.value)}
+                        placeholder="e.g. 10 Best Kitchen Gadgets in India"
+                        className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                        required
                       />
                     </div>
-                    {blogFaqs.length > 1 && (
+                    
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                        Category
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={blogCategory}
+                          onChange={(e) => setBlogCategory(e.target.value)}
+                          className="w-full h-10.5 px-4 pr-10 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground appearance-none capitalize transition-all duration-200"
+                        >
+                          <option value="tech">tech</option>
+                          <option value="kitchen">kitchen</option>
+                          <option value="home">home</option>
+                          <option value="fashion">fashion</option>
+                          <option value="study">study</option>
+                          <option value="gadgets">gadgets</option>
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-[10px]">▼</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                        Excerpt Summary
+                      </label>
+                      <input
+                        type="text"
+                        value={blogExcerpt}
+                        onChange={(e) => setBlogExcerpt(e.target.value)}
+                        placeholder="e.g. Discover the top 10 kitchen helpers to speed up cooking..."
+                        className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                        Cover Image URL
+                      </label>
+                      <input
+                        type="text"
+                        value={blogImage}
+                        onChange={(e) => setBlogImage(e.target.value)}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                        Tags (Comma separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={blogTags}
+                        onChange={(e) => setBlogTags(e.target.value)}
+                        placeholder="kitchen, gadgets, tools, best budget"
+                        className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                        Read Time
+                      </label>
+                      <input
+                        type="text"
+                        value={blogReadTime}
+                        onChange={(e) => setBlogReadTime(e.target.value)}
+                        placeholder="e.g. 5 min read"
+                        className="w-full h-10.5 px-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2: Content Body */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/10 text-[10px] font-black text-indigo-500 border border-indigo-500/20">02</span>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Markdown Body Content</h4>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-muted-foreground font-black uppercase tracking-wider mb-1.5">
+                      Prefix headings with `## ` to auto-generate ToC links
+                    </label>
+                    <textarea
+                      value={blogContent}
+                      onChange={(e) => setBlogContent(e.target.value)}
+                      placeholder="## Introduction&#10;Write content here...&#10;&#10;## #1 Product Name&#10;Details here..."
+                      rows={6}
+                      className="w-full p-4 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-foreground font-mono leading-relaxed placeholder:text-muted-foreground/50 transition-all duration-200"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Step 3: Interactive Sections (FAQs) */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/10 text-[10px] font-black text-indigo-500 border border-indigo-500/20">03</span>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-foreground">Dynamic Blog FAQs</h4>
+                  </div>
+                  
+                  <div className="space-y-2.5 bg-muted/10 dark:bg-muted/5 border border-border/40 p-4 rounded-2xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Dynamic Blog FAQs</span>
                       <button
                         type="button"
-                        onClick={() => handleRemoveFaq(index)}
-                        className="p-1.5 text-rose-500 hover:bg-rose-500/5 rounded-lg mt-0.5 cursor-pointer"
+                        onClick={handleAddFaq}
+                        className="inline-flex items-center gap-1 text-[10px] font-black text-indigo-500 hover:text-indigo-600 bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 px-3 py-1 rounded-lg cursor-pointer transition-colors duration-200"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Plus className="h-3 w-3" /> Add FAQ Item
                       </button>
-                    )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {blogFaqs.map((faq, index) => (
+                        <div key={index} className="flex gap-3 items-start border-b border-border/20 pb-3 last:border-b-0 last:pb-0">
+                          <div className="flex-1 space-y-1.5">
+                            <input
+                              type="text"
+                              value={faq.question}
+                              onChange={(e) => handleFaqChange(index, "question", e.target.value)}
+                              placeholder="FAQ Question"
+                              className="w-full h-9 px-3.5 text-xs bg-card border border-border/80 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-foreground font-semibold"
+                            />
+                            <input
+                              type="text"
+                              value={faq.answer}
+                              onChange={(e) => handleFaqChange(index, "answer", e.target.value)}
+                              placeholder="FAQ Answer"
+                              className="w-full h-9 px-3.5 text-xs bg-card border border-border/80 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-muted-foreground"
+                            />
+                          </div>
+                          {blogFaqs.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFaq(index)}
+                              className="p-2 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 rounded-xl mt-0.5 cursor-pointer transition-colors duration-200"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Publish Blog Status Alerts */}
-            {blogPublishError && (
-              <div className="flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
-                <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
-                <span>{blogPublishError}</span>
-              </div>
-            )}
-
-            {blogPublishSuccess && (
-              <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
-                <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
-                <span>{blogPublishSuccess}</span>
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2.5">
-              <button
-                type="button"
-                onClick={handlePublishBlog}
-                disabled={publishingBlog || !blogTitle || !blogContent}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs px-6 shadow-md hover:scale-102 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:scale-100 cursor-pointer border border-white/10"
-              >
-                {publishingBlog ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Publishing...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    Publish to Website
-                  </>
+                {/* Publish Blog Status Alerts */}
+                {blogPublishError && (
+                  <div className="flex items-center gap-3 rounded-2xl border border-red-500/10 bg-red-500/5 p-4 text-xs font-bold text-red-500 animate-fade-in shadow-sm">
+                    <ShieldAlert className="h-5 w-5 shrink-0 text-red-500" />
+                    <span>{blogPublishError}</span>
+                  </div>
                 )}
-              </button>
 
-              <button
-                type="button"
-                onClick={handleGenerateBlog}
-                disabled={!blogTitle || !blogContent}
-                className="inline-flex h-10 items-center justify-center rounded-2xl bg-indigo-650 hover:bg-indigo-700 text-white font-bold text-xs px-6 shadow disabled:opacity-50 cursor-pointer"
-              >
-                Generate Code Template
-              </button>
-              
-              <button
-                type="button"
-                onClick={handleResetBlogForm}
-                className="inline-flex h-10 items-center justify-center rounded-2xl bg-muted hover:bg-muted/80 text-muted-foreground font-bold text-xs px-6 cursor-pointer"
-              >
-                Reset Form
-              </button>
+                {blogPublishSuccess && (
+                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4 text-xs font-bold text-emerald-500 animate-fade-in shadow-sm">
+                    <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                    <span>{blogPublishSuccess}</span>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handlePublishBlog}
+                    disabled={publishingBlog || !blogTitle || !blogContent}
+                    className="inline-flex h-10.5 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold text-xs px-6 shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 disabled:opacity-50 disabled:scale-100 cursor-pointer border border-white/10"
+                  >
+                    {publishingBlog ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Publish to Website
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleGenerateBlog}
+                    disabled={!blogTitle || !blogContent}
+                    className="inline-flex h-10.5 items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-6 shadow active:scale-98 transition-all duration-205 disabled:opacity-50 cursor-pointer"
+                  >
+                    Generate Code Template
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={handleResetBlogForm}
+                    className="inline-flex h-10.5 items-center justify-center rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground font-bold text-xs px-6 cursor-pointer transition-colors duration-200"
+                  >
+                    Reset Form
+                  </button>
+                </div>
+              </form>
+
+              {/* Generated Code Display block */}
+              {generatedBlogCode && (
+                <div className="mt-5 space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-emerald-500 font-black uppercase tracking-wider flex items-center gap-1.5 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1 rounded-full">
+                      <CheckCircle className="h-3.5 w-3.5" /> Template generated successfully!
+                    </span>
+                    
+                    <button
+                      type="button"
+                      onClick={handleCopyBlogCode}
+                      className="inline-flex items-center gap-1 text-[10px] font-black text-indigo-500 hover:text-indigo-600 bg-indigo-500/10 px-2.5 py-1 rounded-lg cursor-pointer"
+                    >
+                      {copiedBlogCode ? (
+                        <>
+                          <Check className="h-3 w-3 text-emerald-500" /> Copied Code
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" /> Copy Template
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Quick instructions */}
+                  <div className="text-[11px] text-muted-foreground leading-relaxed bg-[#1b1c24]/5 border border-border/40 p-4 rounded-2xl space-y-1.5">
+                    <p className="font-bold text-foreground">💡 How to publish this article:</p>
+                    <ol className="list-decimal pl-4.5 space-y-1">
+                      <li>Click <strong>Copy Template</strong> in the top-right of the box.</li>
+                      <li>Open the file: <span className="font-mono text-indigo-500 font-bold select-all">data/blogPosts.ts</span>.</li>
+                      <li>Scroll to the end of the array, paste this block as a new item inside the array.</li>
+                      <li>Save the file and push the changes to GitHub. The article will deploy automatically!</li>
+                    </ol>
+                  </div>
+
+                  <pre className="p-4 bg-[#121318] text-[#a9b2c3] rounded-2xl overflow-x-auto text-[10px] font-mono leading-relaxed border border-border/60 max-h-80 overflow-y-auto select-all">
+                    <code>{generatedBlogCode}</code>
+                  </pre>
+                </div>
+              )}
             </div>
-          </form>
-
-          {/* Generated Code Display block */}
-          {generatedBlogCode && (
-            <div className="mt-5 space-y-3 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-emerald-500 font-black uppercase tracking-wider flex items-center gap-1.5 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1 rounded-full">
-                  <CheckCircle className="h-3.5 w-3.5" /> Template generated successfully!
-                </span>
-                
-                <button
-                  type="button"
-                  onClick={handleCopyBlogCode}
-                  className="inline-flex items-center gap-1 text-[10px] font-black text-indigo-500 hover:text-indigo-600 bg-indigo-500/10 px-2.5 py-1 rounded-lg cursor-pointer"
-                >
-                  {copiedBlogCode ? (
-                    <>
-                      <Check className="h-3 w-3 text-emerald-500" /> Copied Code
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3 w-3" /> Copy Template
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Quick instructions */}
-              <div className="text-[11px] text-muted-foreground leading-relaxed bg-[#1b1c24]/5 border border-border/40 p-4 rounded-2xl space-y-1.5">
-                <p className="font-bold text-foreground">💡 How to publish this article:</p>
-                <ol className="list-decimal pl-4.5 space-y-1">
-                  <li>Click <strong>Copy Template</strong> in the top-right of the box.</li>
-                  <li>Open the file: <span className="font-mono text-indigo-500 font-bold select-all">data/blogPosts.ts</span>.</li>
-                  <li>Scroll to the end of the array, paste this block as a new item inside the array.</li>
-                  <li>Save the file and push the changes to GitHub. The article will deploy automatically!</li>
-                </ol>
-              </div>
-
-              <pre className="p-4 bg-[#121318] text-[#a9b2c3] rounded-2xl overflow-x-auto text-[10px] font-mono leading-relaxed border border-border/60 max-h-80 overflow-y-auto select-all">
-                <code>{generatedBlogCode}</code>
-              </pre>
-            </div>
-          )}
-        </div>
-      </div>
-    )}
+          </motion.div>
+        )}
 
         {activeTab === "analytics" && (
-          <div className="space-y-8 animate-fade-in">
+          <motion.div
+            key="analytics"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="space-y-8"
+          >
             {/* Analytics Card Metrics */}
             {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-blue-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Total Users</span>
-                <Users className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.totalUsers}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Registered accounts</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-purple-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-purple-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Catalog Size</span>
-                <Layers className="h-5 w-5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.totalProductsCatalog}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Tracked smart items</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-amber-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-amber-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Shared Deals</span>
-                <Tag className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.totalDeals}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Community posts</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-emerald-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-emerald-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Watchlists</span>
-                <Bell className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.activeAlerts}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Active price monitors</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-rose-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-rose-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Price Points</span>
-                <LineChart className="h-5 w-5 text-rose-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.priceHistoryPoints}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Audited price updates</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Digital Products Stats */}
-        {stats && stats.totalDigitalSales !== undefined && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-emerald-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-emerald-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Digital Revenue</span>
-                <DollarSign className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">₹{stats.totalRevenue?.toLocaleString("en-IN")}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Net marketplace earnings</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-blue-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-blue-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Total Sales</span>
-                <ShoppingCart className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.totalDigitalSales}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Completed transactions</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-purple-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-purple-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Downloads</span>
-                <Download className="h-5 w-5 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.totalDownloads}</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">Total file downloads</p>
-              </div>
-            </div>
-
-            <div className="card relative overflow-hidden p-5 border border-border bg-card shadow-sm rounded-3xl flex flex-col justify-between group hover:border-rose-500/30 transition-all duration-200">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-rose-500/5 blur-xl group-hover:scale-150 transition-transform" />
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Conversion Rate</span>
-                <Activity className="h-5 w-5 text-rose-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground leading-none">{stats.conversionRate}%</p>
-                <p className="text-[9px] text-muted-foreground mt-1.5 font-semibold">User purchase ratio</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Section Layout grids */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Distribution chart card */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm relative overflow-hidden">
-              <div className="absolute -right-16 -bottom-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl" />
-              <h3 className="text-lg font-bold mb-5 flex items-center gap-2 text-foreground">
-                <Database className="h-5 w-5 text-red-500" /> Category Breakdown
-              </h3>
-              
-              <div className="space-y-4">
-                {categories.map((cat, index) => {
-                  const percent = Math.round((cat.value / (stats?.totalProductsCatalog || 1)) * 100);
-                  const color = categoryColors[index % categoryColors.length];
-                  
-                  return (
-                    <div key={cat.name} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-foreground capitalize">{cat.name}</span>
-                        <span className="text-muted-foreground">{cat.value} items ({percent}%)</span>
-                      </div>
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{ width: `${percent}%` }} />
-                      </div>
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-blue-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-blue-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Total Users</span>
+                    <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                      <Users className="h-4 w-4" />
                     </div>
-                  );
-                })}
-                {categories.length === 0 && (
-                  <p className="text-xs text-muted-foreground py-4 text-center">No categories found in catalog.</p>
-                )}
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.totalUsers}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Registered accounts</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-purple-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-purple-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Catalog Size</span>
+                    <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                      <Layers className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.totalProductsCatalog}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Tracked smart items</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-amber-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-amber-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Shared Deals</span>
+                    <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+                      <Tag className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.totalDeals}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Community posts</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-emerald-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-emerald-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Watchlists</span>
+                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+                      <Bell className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.activeAlerts}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Active price monitors</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-rose-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-rose-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Price Points</span>
+                    <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300">
+                      <LineChart className="h-4.5 w-4.5" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.priceHistoryPoints}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Audited price updates</p>
+                  </div>
+                </motion.div>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* User management list card */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card p-6 border border-border bg-card rounded-3xl shadow-sm">
-              <h3 className="text-lg font-bold mb-5 flex items-center gap-2 text-foreground">
-                <Activity className="h-5 w-5 text-red-500" /> System Users
-              </h3>
+            {/* Digital Products Stats */}
+            {stats && stats.totalDigitalSales !== undefined && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-emerald-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-emerald-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Digital Revenue</span>
+                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+                      <DollarSign className="h-4.5 w-4.5" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">₹{stats.totalRevenue?.toLocaleString("en-IN")}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Net marketplace earnings</p>
+                  </div>
+                </motion.div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border/80 text-muted-foreground uppercase font-black tracking-wider text-[10px]">
-                      <th className="py-3 px-3">Display Name</th>
-                      <th className="py-3 px-3">Email Address</th>
-                      <th className="py-3 px-3">Access Level</th>
-                      <th className="py-3 px-3">Telegram ID</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
-                    {usersList.map((userItem) => (
-                      <tr key={userItem._id} className="hover:bg-muted/30 transition-colors">
-                        <td className="py-3.5 px-3 font-bold text-foreground">{userItem.name}</td>
-                        <td className="py-3.5 px-3 text-muted-foreground font-semibold">{userItem.email}</td>
-                        <td className="py-3.5 px-3">
-                          <span className={`badge font-black text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-md ${
-                            userItem.role === "admin"
-                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/15"
-                              : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/15"
-                          }`}>
-                            {userItem.role}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-3 text-muted-foreground font-mono text-[10px]">
-                          {userItem.telegramChatId || <span className="text-slate-400">&mdash;</span>}
-                        </td>
-                      </tr>
-                    ))}
-                    {usersList.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="py-6 text-center text-muted-foreground font-medium">
-                          No users registered in system.
-                        </td>
-                      </tr>
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-blue-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-blue-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Total Sales</span>
+                    <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                      <ShoppingCart className="h-4.5 w-4.5" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.totalDigitalSales}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Completed transactions</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-purple-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-purple-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Downloads</span>
+                    <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                      <Download className="h-4.5 w-4.5" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.totalDownloads}</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">Total file downloads</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="glass-premium relative overflow-hidden p-5 border border-border/60 dark:border-white/[0.06] rounded-3xl flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-rose-500/40"
+                >
+                  <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-rose-500/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">Conversion Rate</span>
+                    <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300">
+                      <Activity className="h-4.5 w-4.5" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground leading-none">{stats.conversionRate}%</p>
+                    <p className="text-[9px] text-muted-foreground mt-2 font-semibold">User purchase ratio</p>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Section Layout grids */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Distribution chart card */}
+              <div className="lg:col-span-1 space-y-6">
+                <div className="glass-premium p-6 border border-border/60 dark:border-white/[0.06] rounded-3xl shadow-sm relative overflow-hidden">
+                  <div className="absolute -right-16 -bottom-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl" />
+                  <h3 className="text-lg font-bold mb-5 flex items-center gap-2 text-foreground border-b border-border/40 pb-4">
+                    <Database className="h-5 w-5 text-red-500" /> Category Breakdown
+                  </h3>
+                  
+                  <div className="space-y-4 pt-2">
+                    {categories.map((cat, index) => {
+                      const percent = Math.round((cat.value / (stats?.totalProductsCatalog || 1)) * 100);
+                      const color = categoryColors[index % categoryColors.length];
+                      
+                      return (
+                        <div key={cat.name} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs font-bold">
+                            <span className="text-foreground capitalize">{cat.name}</span>
+                            <span className="text-muted-foreground">{cat.value} items ({percent}%)</span>
+                          </div>
+                          <div className="h-2.5 w-full bg-muted/60 dark:bg-muted/30 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${percent}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className={`h-full ${color} rounded-full`}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {categories.length === 0 && (
+                      <p className="text-xs text-muted-foreground py-4 text-center">No categories found in catalog.</p>
                     )}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* User management list card */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="glass-premium p-6 border border-border/60 dark:border-white/[0.06] rounded-3xl shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border/40">
+                    <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                      <Users className="h-5 w-5 text-red-500" /> System Users
+                    </h3>
+                    
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                        placeholder="Search name, email, role..."
+                        className="w-full h-8.5 pl-9 pr-8 text-xs bg-muted/20 hover:bg-muted/30 border border-border/80 dark:border-white/[0.08] rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-foreground transition-all duration-200 placeholder:text-muted-foreground/50"
+                      />
+                      {userSearch && (
+                        <button
+                          onClick={() => setUserSearch("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-[10px] font-bold"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-border/80 text-muted-foreground uppercase font-black tracking-wider text-[10px]">
+                          <th className="py-3 px-3">Display Name</th>
+                          <th className="py-3 px-3">Email Address</th>
+                          <th className="py-3 px-3">Access Level</th>
+                          <th className="py-3 px-3">Telegram ID</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {filteredUsers.map((userItem) => (
+                          <tr key={userItem._id} className="hover:bg-muted/30 transition-colors">
+                            <td className="py-3.5 px-3 font-bold text-foreground">{userItem.name}</td>
+                            <td className="py-3.5 px-3 text-muted-foreground font-semibold">{userItem.email}</td>
+                            <td className="py-3.5 px-3">
+                              <span className={`badge font-black text-[9px] uppercase tracking-wider px-2.5 py-0.5 rounded-md ${
+                                userItem.role === "admin"
+                                  ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/15"
+                                  : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/15"
+                              }`}>
+                                {userItem.role}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-3 text-muted-foreground font-mono text-[10px]">
+                              {userItem.telegramChatId || <span className="text-slate-400">&mdash;</span>}
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredUsers.length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="py-8 text-center text-muted-foreground font-medium">
+                              No users found matching the search criteria.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
+        </AnimatePresence>
       </div>
-    )}
-  </div>
-</div>
-);
+    </div>
+  );
 }
