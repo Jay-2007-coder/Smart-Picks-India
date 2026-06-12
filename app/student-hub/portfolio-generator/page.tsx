@@ -204,15 +204,15 @@ export default function PortfolioGenerator() {
   
   <style>
     :root {
-      --bg: #020617;
-      --card-bg: rgba(15, 23, 42, 0.45);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg: #030712;
+      --card-bg: rgba(17, 24, 39, 0.45);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
       --brand: ${activeColor.primary};
       --brand-gradient: ${activeColor.gradient};
       --brand-badge: ${activeColor.badge};
       --brand-glow: ${activeColor.glow};
-      --border: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.08);
       --font-display: 'Outfit', sans-serif;
       --font-body: 'Plus Jakarta Sans', sans-serif;
     }
@@ -250,12 +250,12 @@ export default function PortfolioGenerator() {
     /* Ambient Glow Blobs */
     .blob {
       position: fixed;
-      width: 450px;
-      height: 450px;
+      width: 400px;
+      height: 400px;
       border-radius: 50%;
-      filter: blur(140px);
+      filter: blur(120px);
       z-index: -8;
-      opacity: 0.18;
+      opacity: 0.15;
       pointer-events: none;
     }
     .blob-1 {
@@ -280,8 +280,8 @@ export default function PortfolioGenerator() {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(2, 6, 23, 0.65);
-      backdrop-filter: blur(20px);
+      background: rgba(3, 7, 18, 0.6);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
     }
     .nav-container {
@@ -322,7 +322,7 @@ export default function PortfolioGenerator() {
 
     /* Hero Section */
     #hero {
-      min-height: 85vh;
+      min-height: 80vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -331,34 +331,33 @@ export default function PortfolioGenerator() {
       border-bottom: 1px solid var(--border);
     }
     .hero-greeting {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--brand);
       text-transform: uppercase;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.15em;
       margin-bottom: 1rem;
     }
     h1 {
       font-family: var(--font-display);
-      font-size: 4.25rem;
+      font-size: 4rem;
       font-weight: 900;
-      line-height: 1.05;
-      letter-spacing: -0.04em;
-      margin-bottom: 1.25rem;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
     }
     .role-headline {
-      font-size: 1.6rem;
+      font-size: 1.75rem;
       font-weight: 600;
       color: var(--text);
-      margin-bottom: 1.75rem;
+      margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
       gap: 0.25rem;
-      font-family: monospace;
     }
     .typewriter-cursor {
       display: inline-block;
-      width: 4px;
+      width: 3px;
       height: 1.6rem;
       background-color: var(--brand);
       animation: blink 0.75s step-end infinite;
@@ -368,7 +367,7 @@ export default function PortfolioGenerator() {
       max-width: 600px;
       font-size: 1.05rem;
       line-height: 1.7;
-      margin-bottom: 2.75rem;
+      margin-bottom: 2.5rem;
     }
     .hero-buttons {
       display: flex;
@@ -377,8 +376,8 @@ export default function PortfolioGenerator() {
     .btn {
       display: inline-flex;
       align-items: center;
-      padding: 0.75rem 1.6rem;
-      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
       font-size: 0.85rem;
       font-weight: 700;
       text-decoration: none;
@@ -388,57 +387,40 @@ export default function PortfolioGenerator() {
     .btn-primary {
       background: var(--brand-gradient);
       color: #fff;
-      box-shadow: 0 4px 24px var(--brand-glow);
+      box-shadow: 0 4px 20px var(--brand-glow);
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 30px var(--brand-glow);
+      box-shadow: 0 6px 24px var(--brand-glow);
     }
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       color: var(--text);
       border: 1px solid var(--border);
     }
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.08);
       transform: translateY(-2px);
     }
 
     /* Global Card styling (Glassmorphism) */
     .glass-card {
       background: var(--card-bg);
-      backdrop-filter: blur(14px) saturate(180%);
+      backdrop-filter: blur(12px) saturate(180%);
       border: 1px solid var(--border);
-      border-radius: 0.5rem; /* Sharp technical edges */
+      border-radius: 1.25rem;
       padding: 2rem;
       transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-    .glass-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--brand-gradient);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-    }
-    .glass-card:hover::before {
-      transform: scaleX(1);
     }
     .glass-card:hover {
-      border-color: rgba(255, 255, 255, 0.12);
-      transform: translateY(-4px);
-      box-shadow: 0 10px 30px -5px var(--brand-glow);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     }
 
     /* Section Styling */
     section {
-      padding: 6.5rem 0;
+      padding: 6rem 0;
       border-bottom: 1px solid var(--border);
     }
     .section-header {
@@ -449,18 +431,9 @@ export default function PortfolioGenerator() {
       font-size: 2.25rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      position: relative;
-      display: inline-block;
     }
-    .section-header h2::before {
-      content: '[ ';
+    .section-header h2 span {
       color: var(--brand);
-      font-weight: 300;
-    }
-    .section-header h2::after {
-      content: ' ]';
-      color: var(--brand);
-      font-weight: 300;
     }
 
     /* About Section */
@@ -486,7 +459,7 @@ export default function PortfolioGenerator() {
       padding: 0.75rem 1.25rem;
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border);
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       color: var(--text-muted);
       text-decoration: none;
       font-size: 0.85rem;
@@ -507,7 +480,7 @@ export default function PortfolioGenerator() {
       gap: 0.75rem;
     }
     .skill-badge {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
       padding: 0.6rem 1.25rem;
       border-radius: 9999px;
@@ -658,7 +631,7 @@ export default function PortfolioGenerator() {
     .tech-badge {
       font-size: 0.7rem;
       font-weight: 700;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
       padding: 0.15rem 0.5rem;
       border-radius: 4px;
@@ -706,7 +679,7 @@ export default function PortfolioGenerator() {
     .contact-icon {
       width: 44px;
       height: 44px;
-      border-radius: 8px;
+      border-radius: 10px;
       background: var(--brand-badge);
       border: 1px solid var(--border);
       display: flex;
@@ -742,7 +715,7 @@ export default function PortfolioGenerator() {
     .form-control {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border);
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       padding: 0.75rem 1rem;
       color: var(--text);
       font-family: var(--font-body);
@@ -759,7 +732,7 @@ export default function PortfolioGenerator() {
       padding: 1rem;
       background: rgba(16, 185, 129, 0.1);
       border: 1px solid #10b981;
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       color: #10b981;
       font-size: 0.85rem;
       font-weight: 600;
@@ -777,7 +750,7 @@ export default function PortfolioGenerator() {
     /* Scroll reveal transitions */
     .scroll-reveal {
       opacity: 0;
-      transform: translateY(25px);
+      transform: translateY(20px);
       transition: opacity 0.8s ease-out, transform 0.8s ease-out;
     }
     .scroll-reveal.visible {
@@ -817,10 +790,10 @@ export default function PortfolioGenerator() {
   <div class="container">
     <!-- Hero Section -->
     <header id="hero">
-      <span class="hero-greeting">System Initialize</span>
+      <span class="hero-greeting">Hi, my name is</span>
       <h1>${name}</h1>
       <div class="role-headline">
-        <span>&gt; </span><span id="typewriter"></span><span class="typewriter-cursor">|</span>
+        <span id="typewriter"></span><span class="typewriter-cursor">|</span>
       </div>
       <p class="hero-bio">${bio}</p>
       <div class="hero-buttons">
@@ -832,7 +805,7 @@ export default function PortfolioGenerator() {
     <!-- About Section -->
     <section id="about">
       <div class="section-header">
-        <h2>About Me</h2>
+        <h2>About <span>Me</span></h2>
       </div>
       <div class="about-grid">
         <div class="glass-card">
@@ -858,7 +831,7 @@ export default function PortfolioGenerator() {
     <!-- Skills Section -->
     <section id="skills">
       <div class="section-header">
-        <h2>Technical Skills</h2>
+        <h2>Technical <span>Skills</span></h2>
       </div>
       <div class="glass-card">
         <div class="skills-flex">
@@ -871,7 +844,7 @@ export default function PortfolioGenerator() {
     ${experience.length > 0 ? `
     <section id="experience">
       <div class="section-header">
-        <h2>Work Experience</h2>
+        <h2>Work <span>Experience</span></h2>
       </div>
       <div class="timeline">
         ${experienceHtml}
@@ -882,7 +855,7 @@ export default function PortfolioGenerator() {
     ${education.length > 0 ? `
     <section id="education">
       <div class="section-header">
-        <h2>My Education</h2>
+        <h2>My <span>Education</span></h2>
       </div>
       <div class="education-grid">
         ${educationHtml}
@@ -893,7 +866,7 @@ export default function PortfolioGenerator() {
     ${projects.length > 0 ? `
     <section id="projects">
       <div class="section-header">
-        <h2>Featured Projects</h2>
+        <h2>Featured <span>Projects</span></h2>
       </div>
       <div class="projects-grid">
         ${projectsHtml}
@@ -903,7 +876,7 @@ export default function PortfolioGenerator() {
     <!-- Contact Section -->
     <section id="contact">
       <div class="section-header">
-        <h2>Contact Me</h2>
+        <h2>Contact <span>Me</span></h2>
       </div>
       <div class="contact-grid">
         <div class="contact-details">
@@ -970,10 +943,7 @@ export default function PortfolioGenerator() {
 
     // Particle Background
     const canvasContainer = document.getElementById('canvas-container');
-    let scene, camera, renderer, globeMesh, pointsMesh, starsMesh;
-    let mouseX = 0, mouseY = 0;
-    let targetX = 0, targetY = 0;
-    let scrollY = 0;
+    let scene, camera, renderer, particlesMesh;
 
     function initThree() {
       try {
@@ -987,85 +957,41 @@ export default function PortfolioGenerator() {
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         canvasContainer.appendChild(renderer.domElement);
 
-        // 1. Futuristic Holographic Wireframe Globe
-        const globeGeom = new THREE.SphereGeometry(1.5, 20, 20);
-        const globeMat = new THREE.MeshBasicMaterial({
-          color: themeColor,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.15
-        });
-        globeMesh = new THREE.Mesh(globeGeom, globeMat);
-        scene.add(globeMesh);
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 200;
+        const posArray = new Float32Array(particlesCount * 3);
 
-        // 2. Vertices Nodes (glowing intersections)
-        const pointsMat = new THREE.PointsMaterial({
-          size: 0.035,
-          color: themeColor,
-          transparent: true,
-          opacity: 0.8,
-          blending: THREE.AdditiveBlending
-        });
-        pointsMesh = new THREE.Points(globeGeom, pointsMat);
-        scene.add(pointsMesh);
-
-        // 3. Ambient Floating Cyber Stars
-        const starsGeom = new THREE.BufferGeometry();
-        const starsCount = 180;
-        const posArray = new Float32Array(starsCount * 3);
-        for (let i = 0; i < starsCount * 3; i++) {
-          posArray[i] = (Math.random() - 0.5) * 12;
+        for (let i = 0; i < particlesCount * 3; i++) {
+          posArray[i] = (Math.random() - 0.5) * 8;
         }
-        starsGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        
-        const starsMat = new THREE.PointsMaterial({
-          size: 0.015,
-          color: '#ffffff',
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+          size: 0.025,
+          color: themeColor,
           transparent: true,
-          opacity: 0.35,
+          opacity: 0.7,
           blending: THREE.AdditiveBlending
         });
-        starsMesh = new THREE.Points(starsGeom, starsMat);
-        scene.add(starsMesh);
 
-        camera.position.z = 3.5;
+        particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        camera.position.z = 3;
 
-        // Listeners
+        let mouseX = 0, mouseY = 0;
         window.addEventListener('mousemove', (e) => {
           mouseX = (e.clientX / window.innerWidth) - 0.5;
           mouseY = (e.clientY / window.innerHeight) - 0.5;
         });
 
-        window.addEventListener('scroll', () => {
-          scrollY = window.scrollY;
-        });
-
-        // Animation Loop
         function animate() {
           requestAnimationFrame(animate);
+          particlesMesh.rotation.y += 0.0006;
+          particlesMesh.rotation.x += 0.0003;
 
-          // Slow continuous rotation
-          globeMesh.rotation.y += 0.0015;
-          globeMesh.rotation.x += 0.0006;
-          pointsMesh.rotation.y += 0.0015;
-          pointsMesh.rotation.x += 0.0006;
-          starsMesh.rotation.y += 0.0002;
-
-          // Mouse tilt interpolation (smooth easing)
-          targetX += (mouseX - targetX) * 0.05;
-          targetY += (mouseY - targetY) * 0.05;
-
-          globeMesh.rotation.y += targetX * 0.4;
-          globeMesh.rotation.x += targetY * 0.4;
-          pointsMesh.rotation.y += targetX * 0.4;
-          pointsMesh.rotation.x += targetY * 0.4;
-
-          // Scroll depth zoom & parallax
-          const targetZ = 3.5 - (scrollY * 0.0015);
-          camera.position.z += (targetZ - camera.position.z) * 0.1;
-          
-          globeMesh.position.y = -(scrollY * 0.0008);
-          pointsMesh.position.y = -(scrollY * 0.0008);
+          particlesMesh.position.x += (mouseX * 0.4 - particlesMesh.position.x) * 0.05;
+          particlesMesh.position.y += (-mouseY * 0.4 - particlesMesh.position.y) * 0.05;
 
           renderer.render(scene, camera);
         }
@@ -1097,16 +1023,13 @@ export default function PortfolioGenerator() {
       let height = (canvas.height = window.innerHeight);
 
       const particles = [];
-      const labels = ["[SYS_ONLINE]", "[DB_CONN_1]", "[NET_SEC_OK]", "[NODE_A7]"];
-      
-      for (let i = 0; i < 60; i++) {
+      for (let i = 0; i < 70; i++) {
         particles.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          r: Math.random() * 2 + 1,
-          label: Math.random() > 0.9 ? labels[Math.floor(Math.random() * labels.length)] : null
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 2 + 1
         });
       }
 
@@ -1119,8 +1042,7 @@ export default function PortfolioGenerator() {
       function draw() {
         ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = themeColor;
-        ctx.strokeStyle = themeColor;
-        ctx.font = '8px monospace';
+        ctx.globalAlpha = 0.4;
 
         particles.forEach((p) => {
           p.x += p.vx;
@@ -1129,39 +1051,18 @@ export default function PortfolioGenerator() {
           if (p.x < 0 || p.x > width) p.vx *= -1;
           if (p.y < 0 || p.y > height) p.vy *= -1;
 
-          ctx.globalAlpha = 0.4;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
           ctx.fill();
 
-          if (p.label) {
-            ctx.globalAlpha = 0.25;
-            ctx.fillText(p.label, p.x + 6, p.y + 3);
-          }
-
-          // Connect near particles
-          particles.forEach((p2) => {
-            const dx = p.x - p2.x;
-            const dy = p.y - p2.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 100) {
-              ctx.globalAlpha = (1 - (dist / 100)) * 0.15;
-              ctx.lineWidth = 0.4;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.stroke();
-            }
-          });
-
-          // Connect to mouse
           if (mouse.x && mouse.y) {
             const dx = p.x - mouse.x;
             const dy = p.y - mouse.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 140) {
-              ctx.globalAlpha = (1 - (dist / 140)) * 0.35;
-              ctx.lineWidth = 0.6;
+            if (dist < 120) {
+              ctx.strokeStyle = themeColor;
+              ctx.globalAlpha = 1 - (dist / 120);
+              ctx.lineWidth = 0.5;
               ctx.beginPath();
               ctx.moveTo(p.x, p.y);
               ctx.lineTo(mouse.x, mouse.y);
@@ -1179,52 +1080,39 @@ export default function PortfolioGenerator() {
       });
     }
 
-    // Decrypting Typewriter effect
+    // Typewriter effect
     const roles = ${JSON.stringify(rolesArray)};
     let currentRoleIdx = 0;
     let currentCharIdx = 0;
     let isDeleting = false;
-    const typingSpeed = 70;
-    const deletingSpeed = 30;
-    const delayBetweenRoles = 2500;
+    const typingSpeed = 100;
+    const deletingSpeed = 40;
+    const delayBetweenRoles = 2000;
     const typewriterEl = document.getElementById('typewriter');
 
     function type() {
       if (!typewriterEl) return;
       const currentRole = roles[currentRoleIdx];
-      let display = "";
-      
       if (isDeleting) {
-        display = currentRole.substring(0, currentCharIdx - 1);
+        typewriterEl.textContent = currentRole.substring(0, currentCharIdx - 1);
         currentCharIdx--;
       } else {
-        display = currentRole.substring(0, currentCharIdx + 1);
+        typewriterEl.textContent = currentRole.substring(0, currentCharIdx + 1);
         currentCharIdx++;
       }
 
-      // Add decryption visual noise at the end of typing
-      if (!isDeleting && currentCharIdx < currentRole.length) {
-        const noiseChars = "01$#@%&?_[]{}<>/\\\\";
-        const noiseCount = Math.min(3, currentRole.length - currentCharIdx);
-        for (let i = 0; i < noiseCount; i++) {
-          display += noiseChars[Math.floor(Math.random() * noiseChars.length)];
-        }
-      }
-
-      typewriterEl.textContent = display;
-
-      let speed = isDeleting ? deletingSpeed : typingSpeed;
+      let timeoutSpeed = isDeleting ? deletingSpeed : typingSpeed;
 
       if (!isDeleting && currentCharIdx === currentRole.length) {
-        speed = delayBetweenRoles;
+        timeoutSpeed = delayBetweenRoles;
         isDeleting = true;
       } else if (isDeleting && currentCharIdx === 0) {
         isDeleting = false;
         currentRoleIdx = (currentRoleIdx + 1) % roles.length;
-        speed = 500;
+        timeoutSpeed = 500;
       }
 
-      setTimeout(type, speed);
+      setTimeout(type, timeoutSpeed);
     }
 
     // Scroll reveal intersections
@@ -1264,6 +1152,8 @@ export default function PortfolioGenerator() {
   </script>
 </body>
 </html>`;
+
+    
 
     setGeneratedHtml(html.trim());
   };
