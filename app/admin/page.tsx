@@ -598,9 +598,9 @@ export default function AdminDashboard() {
                 <option value="tech">tech</option>
                 <option value="kitchen">kitchen</option>
                 <option value="home">home</option>
-                <option value="clothing">clothing</option>
-                <option value="sports">sports</option>
-                <option value="books">books</option>
+                <option value="gadgets">gadgets</option>
+                <option value="fashion">fashion</option>
+                <option value="study">study</option>
               </select>
             </div>
 
@@ -705,9 +705,9 @@ export default function AdminDashboard() {
                   <option value="tech">tech</option>
                   <option value="kitchen">kitchen</option>
                   <option value="home">home</option>
-                  <option value="clothing">clothing</option>
-                  <option value="sports">sports</option>
-                  <option value="books">books</option>
+                  <option value="gadgets">gadgets</option>
+                  <option value="fashion">fashion</option>
+                  <option value="study">study</option>
                 </select>
               </div>
             </div>
