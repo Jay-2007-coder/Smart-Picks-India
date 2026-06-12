@@ -197,40 +197,70 @@ export default function RoadmapDetailPage({ params }: PageProps) {
         </AnimatePresence>
 
         {/* Hero Header panel */}
-        <div className="p-6 sm:p-8 rounded-3xl border border-border bg-card shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-4 text-left flex-1">
-            <span
-              className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border"
-              style={{ color: roadmap.color, borderColor: `${roadmap.color}35`, backgroundColor: `${roadmap.color}08` }}
-            >
-              {roadmap.phases.length} Learning Steps
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground leading-tight">
-              {roadmap.title} Roadmap
+        <div className="relative overflow-hidden p-6 sm:p-8 rounded-3xl border-2 bg-card shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+          style={{ borderColor: `${roadmap.color}30`, boxShadow: `0 8px 40px -12px ${roadmap.color}20` }}
+        >
+          {/* Ambient glow */}
+          <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: roadmap.color }} />
+
+          <div className="relative z-10 space-y-4 text-left flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border"
+                style={{ color: roadmap.color, borderColor: `${roadmap.color}40`, backgroundColor: `${roadmap.color}10` }}
+              >
+                {roadmap.phases.length} Phases
+              </span>
+              {percentage >= 100 ? (
+                <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border bg-emerald-500/10 border-emerald-500/30 text-emerald-500">🏆 Completed!</span>
+              ) : percentage > 0 ? (
+                <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border bg-amber-500/10 border-amber-500/30 text-amber-500">⚡ In Progress</span>
+              ) : null}
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight">
+              {roadmap.title}<br />
+              <span className="text-lg font-bold text-muted-foreground">Career Roadmap</span>
             </h1>
-            <div className="flex items-center gap-3.5 text-xs text-muted-foreground font-bold flex-wrap">
-              <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {slug === "aiml" ? "40+ Weeks" : slug === "webdev" ? "42 Weeks" : "46 Weeks"}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1"><Award className="h-4 w-4 text-brand-500" /> 10 XP per Phase</span>
-              <span>•</span>
-              <span className="flex items-center gap-1"><CheckSquare className="h-4 w-4" /> {completedCount}/{totalTopics} Completed</span>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+              {[
+                { icon: Calendar, label: "Duration", value: slug === "aiml" ? "40+ Weeks" : slug === "webdev" ? "42 Weeks" : "46 Weeks" },
+                { icon: Award, label: "Reward", value: "10 XP / Phase" },
+                { icon: CheckSquare, label: "Progress", value: `${completedCount}/${totalTopics} Topics` },
+              ].map((stat, i) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/40">
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <div>
+                      <p className="text-[8px] font-black uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                      <p className="text-[11px] font-black text-foreground">{stat.value}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <ProgressRing
-            percentage={percentage}
-            color={roadmap.color}
-            size={72}
-            strokeWidth={6}
-          />
+
+          <div className="relative z-10 flex flex-col items-center gap-2 p-4 rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm shrink-0">
+            <ProgressRing percentage={percentage} color={roadmap.color} size={80} strokeWidth={7} />
+            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Your Progress</p>
+          </div>
         </div>
 
         {/* Roadmap Stepper */}
         <div className="space-y-4">
-          <div className="text-left">
-            <h2 className="text-lg font-extrabold text-foreground">Timeline Stepper</h2>
-            <p className="text-xs text-muted-foreground font-semibold leading-relaxed mt-0.5">
-              Click on each phase node to review checklists, resources, and project ideas.
-            </p>
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-black text-foreground">Phase Timeline</h2>
+              <p className="text-xs text-muted-foreground font-semibold leading-relaxed mt-0.5">
+                Click any phase to expand checklists, resources, and project ideas.
+              </p>
+            </div>
+            <span className="text-[10px] font-black text-muted-foreground hidden sm:block">
+              {Math.round(percentage)}% Complete
+            </span>
           </div>
           <RoadmapTimeline
             roadmap={roadmap}
@@ -239,14 +269,15 @@ export default function RoadmapDetailPage({ params }: PageProps) {
           />
         </div>
 
-        {/* Overlap reminder box */}
-        <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 text-left space-y-1.5 select-none">
-          <h4 className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-            Pipeline Connections Reminder
-          </h4>
-          <p className="text-xs font-bold leading-relaxed text-foreground/80">
-            {roadmap.interconnectionNote}
-          </p>
+        {/* Interconnection note */}
+        <div className="flex gap-3 p-5 rounded-2xl border border-brand-500/15 bg-brand-500/[0.03] text-left">
+          <div className="p-2 rounded-xl bg-brand-500/10 text-brand-500 shrink-0 h-fit">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-[10px] font-black uppercase tracking-wider text-brand-500">Pipeline Cross-Link</h4>
+            <p className="text-xs font-bold leading-relaxed text-foreground/80">{roadmap.interconnectionNote}</p>
+          </div>
         </div>
       </div>
     </div>
