@@ -930,7 +930,7 @@ export default function PortfolioGenerator() {
 
     <!-- Footer -->
     <footer>
-      <p>&copy; ${new Date().getFullYear()} ${name}. Generated via SmartPicks India.</p>
+      <p>&copy; ${new Date().getFullYear()} ${name}. All rights reserved.</p>
     </footer>
   </div>
 
