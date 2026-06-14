@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { Check, ShieldCheck, Zap, Sparkles, Award, Heart, HelpCircle, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, ShieldCheck, Zap, Sparkles, Award, Heart, HelpCircle, Loader2, QrCode, CreditCard, Smartphone, Lock, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function StudentHubUpgrade() {
   const { user, checkSession } = useAuth() as any;
@@ -12,6 +12,14 @@ export default function StudentHubUpgrade() {
   
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"upi_qr" | "upi_id" | "card">("upi_qr");
+  
+  // Checkout mock states
+  const [upiId, setUpiId] = useState("student@paytm");
+  const [cardNumber, setCardNumber] = useState("4111 1111 1111 1111");
+  const [cardExpiry, setCardExpiry] = useState("12/28");
+  const [cardCvv, setCardCvv] = useState("123");
 
   // If already pro, we show success state
   useEffect(() => {
@@ -20,12 +28,15 @@ export default function StudentHubUpgrade() {
     }
   }, [user]);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = () => {
     if (!user) {
       router.push("/login?redirect=/student-hub/upgrade");
       return;
     }
+    setShowPaymentModal(true);
+  };
 
+  const executeUpgrade = async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/v1/user/upgrade-pro", {
@@ -49,6 +60,7 @@ export default function StudentHubUpgrade() {
         }
 
         setSuccess(true);
+        setShowPaymentModal(false);
         // Refresh session to update user.hubPlan in state
         await checkSession();
       }
@@ -195,6 +207,221 @@ export default function StudentHubUpgrade() {
           </div>
         )}
       </div>
+
+      {/* Payment Checkout Modal Overlay */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in select-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-card border border-border/80 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 overflow-hidden"
+            >
+              {/* Modal Close Button */}
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="absolute top-4 right-4 p-1 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+
+              {/* Header */}
+              <div className="flex items-center gap-3 border-b border-border/60 pb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-600 border border-brand-500/20">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-foreground leading-snug">Secure Pro Checkout</h3>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                    smart picks payment portal
+                  </p>
+                </div>
+              </div>
+
+              {/* Amount Display */}
+              <div className="bg-muted/40 border border-border/50 rounded-2xl p-4 flex justify-between items-center">
+                <span className="text-xs font-bold text-muted-foreground">Premium Subscription:</span>
+                <div className="text-right">
+                  <span className="text-xl font-black text-foreground">₹99</span>
+                  <span className="text-[10px] text-muted-foreground block font-bold">GST Included</span>
+                </div>
+              </div>
+
+              {/* Tabs for Payment Method */}
+              <div className="space-y-3">
+                <span className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  Choose Payment Method
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("upi_qr")}
+                    className={`flex flex-col items-center justify-center gap-1.5 h-16 rounded-xl border text-[10px] font-extrabold transition-all cursor-pointer ${
+                      paymentMethod === "upi_qr"
+                        ? "border-brand-500 bg-brand-500/5 text-brand-600"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    <QrCode className="h-4 w-4" />
+                    <span>UPI QR Code</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("upi_id")}
+                    className={`flex flex-col items-center justify-center gap-1.5 h-16 rounded-xl border text-[10px] font-extrabold transition-all cursor-pointer ${
+                      paymentMethod === "upi_id"
+                        ? "border-brand-500 bg-brand-500/5 text-brand-600"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    <span>UPI VPA ID</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={`flex flex-col items-center justify-center gap-1.5 h-16 rounded-xl border text-[10px] font-extrabold transition-all cursor-pointer ${
+                      paymentMethod === "card"
+                        ? "border-brand-500 bg-brand-500/5 text-brand-600"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    <span>Credit Card</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Payment Method Details */}
+              <div className="min-h-[160px] flex flex-col justify-center">
+                {paymentMethod === "upi_qr" && (
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="relative p-2 bg-white rounded-xl border border-slate-200 shadow-md">
+                      <div className="animate-qr-scan pointer-events-none" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 100 100"
+                        className="h-28 w-28 text-slate-900 fill-current"
+                      >
+                        <path d="M5 5h30v30H5zm6 6v18h18V11zm4 4h10v10H15zm50-15h30v30H65zm6 6v18h18V11zm4 4h10v10H75zM5 65h30v30H5zm6 6v18h18V71zm4 4h10v10H15zm35-25h10v10H50zm10 10h10v10H60zm-10 10h10v10H50zm20-10h10v10H70zm10 10h10v10H80zm-10 10h10v10H70zm20 0h10v10H90zm-10 10h10v10H80zm10-30h10v10H90zm-40-10h10v10H50zm10-10h10v10H60zm10 0h10v10H70zm10-10h10v10H80z" />
+                      </svg>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-extrabold text-foreground">Scan QR to Complete Payment</p>
+                      <p className="text-[10px] text-muted-foreground leading-snug max-w-[280px]">
+                        Scan this QR with BHIM, GPay, PhonePe, or Paytm on your phone to initiate secure UPI payment.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === "upi_id" && (
+                  <div className="space-y-3.5">
+                    <div className="space-y-1.5">
+                      <label className="block text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        Enter UPI VPA ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. smartpicks@okaxis"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        className="h-10 w-full rounded-xl border border-input bg-background px-3.5 text-xs font-semibold focus-visible:outline-none"
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-normal">
+                      A payment request will be sent to your UPI app. Open the app to authorize the ₹99 debit.
+                    </p>
+                  </div>
+                )}
+
+                {paymentMethod === "card" && (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="block text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="4111 1111 1111 1111"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        className="h-10 w-full rounded-xl border border-input bg-background px-3.5 text-xs font-semibold focus-visible:outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          Expiry
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="MM/YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          className="h-10 w-full rounded-xl border border-input bg-background px-3.5 text-xs font-semibold focus-visible:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          CVV
+                        </label>
+                        <input
+                          type="password"
+                          placeholder="123"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          className="h-10 w-full rounded-xl border border-input bg-background px-3.5 text-xs font-semibold focus-visible:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={executeUpgrade}
+                disabled={loading}
+                className="btn-primary w-full py-3.5 rounded-2xl text-xs uppercase font-extrabold tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-brand-500/20"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Upgrading...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="h-4 w-4" />
+                    {paymentMethod === "upi_qr" ? "Simulate QR Payment Success" : "Simulate Payment Checkout"}
+                  </>
+                )}
+              </button>
+
+              {/* Footer */}
+              <div className="text-center text-[9px] text-muted-foreground font-semibold flex items-center justify-center gap-1">
+                <span>🔒 Secured with 256-bit SSL encryption</span>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <style jsx global>{`
+        @keyframes scan {
+          0%, 100% { top: 0%; opacity: 0.3; }
+          50% { top: 100%; opacity: 0.9; }
+        }
+        .animate-qr-scan {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background-color: var(--brand-500, #e11d48);
+          animation: scan 2s linear infinite;
+          box-shadow: 0 0 8px var(--brand-500, #e11d48);
+        }
+      `}</style>
     </div>
   );
 }
