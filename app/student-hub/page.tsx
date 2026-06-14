@@ -19,6 +19,7 @@ import {
   Trophy,
   Briefcase,
   Compass,
+  Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -224,13 +225,19 @@ export default function StudentHub() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 flex justify-center"
+              className="mt-6 flex justify-center gap-3"
             >
               <Link 
                 href="/student-hub/leaderboard" 
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-xs font-black shadow-lg shadow-teal-500/20 transition-all uppercase tracking-wider"
               >
                 <Trophy className="h-4 w-4" /> View Leaderboard
+              </Link>
+              <Link 
+                href="/student-hub/upgrade" 
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all uppercase tracking-wider"
+              >
+                <Zap className="h-4 w-4 fill-current text-white animate-pulse" /> Upgrade to Pro
               </Link>
             </motion.div>
           </div>

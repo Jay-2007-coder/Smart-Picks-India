@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle, Lock, Check, Copy, Settings, Laptop } from "lucide-react";
+import { ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle, Lock, Check, Copy, Settings, Laptop, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -465,9 +465,16 @@ export default function AIStudyAssistant() {
             )}
 
             {error && (
-              <div className="flex gap-2.5 p-3.5 bg-rose-500/5 border border-rose-500/10 text-xs text-rose-600 dark:text-rose-500 font-bold rounded-2xl max-w-md mx-auto">
-                <AlertTriangle className="h-4.5 w-4.5 shrink-0" />
-                <span>{error}</span>
+              <div className="flex flex-col gap-2.5 p-3.5 bg-rose-500/5 border border-rose-500/10 text-xs text-rose-600 dark:text-rose-500 font-bold rounded-2xl max-w-md mx-auto">
+                <div className="flex gap-2">
+                  <AlertTriangle className="h-4.5 w-4.5 shrink-0" />
+                  <span>{error}</span>
+                </div>
+                {error.includes("limit of 3 AI assistance runs") && (
+                  <Link href="/student-hub/upgrade" className="mt-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-[9px] uppercase tracking-wider font-black transition-colors self-start shadow-sm shadow-rose-500/10">
+                    <Zap className="h-3 w-3 fill-current text-white animate-pulse" /> Upgrade to Pro
+                  </Link>
+                )}
               </div>
             )}
 

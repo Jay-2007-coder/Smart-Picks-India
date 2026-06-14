@@ -800,8 +800,16 @@ export default function ProjectReportGenerator() {
               <AnimatePresence>
                 {error && (
                   <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="flex gap-2 p-3 bg-rose-500/5 border border-rose-500/15 text-[11px] text-rose-500 font-bold rounded-xl">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />{error}
+                    className="flex flex-col gap-2.5 p-3 bg-rose-500/5 border border-rose-500/15 text-[11px] text-rose-500 font-bold rounded-xl">
+                    <div className="flex gap-2">
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                    {error.includes("limit of 3 AI assistance runs") && (
+                      <Link href="/student-hub/upgrade" className="mt-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-[9px] uppercase tracking-wider font-black transition-colors self-start shadow-sm shadow-rose-500/10">
+                        <Zap className="h-3 w-3 fill-current text-white animate-pulse" /> Upgrade to Pro
+                      </Link>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

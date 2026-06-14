@@ -5,7 +5,7 @@ import Link from "next/link";
 import { 
   ArrowLeft, Laptop, Play, RefreshCw, AlertTriangle, Copy, Check, 
   Lock, Settings, Code, Sparkles, Terminal, FileCode, CheckCircle,
-  Bug, Cpu, Gauge, Layers, Info, HelpCircle
+  Bug, Cpu, Gauge, Layers, Info, HelpCircle, Zap
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -518,9 +518,16 @@ export default function CodingHelper() {
               </div>
 
               {error && (
-                <div className="flex gap-2.5 p-3.5 bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 font-bold rounded-xl animate-fade-in">
-                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>{error}</span>
+                <div className="flex flex-col gap-2.5 p-3.5 bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 font-bold rounded-xl animate-fade-in">
+                  <div className="flex gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                  {error.includes("limit of 3 AI assistance runs") && (
+                    <Link href="/student-hub/upgrade" className="mt-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-[9px] uppercase tracking-wider font-black transition-colors self-start shadow-sm shadow-rose-500/10">
+                      <Zap className="h-3 w-3 fill-current text-white animate-pulse" /> Upgrade to Pro
+                    </Link>
+                  )}
                 </div>
               )}
 
