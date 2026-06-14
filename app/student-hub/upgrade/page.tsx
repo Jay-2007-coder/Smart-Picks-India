@@ -21,9 +21,9 @@ export default function StudentHubUpgrade() {
   const [cardExpiry, setCardExpiry] = useState("12/28");
   const [cardCvv, setCardCvv] = useState("123");
 
-  // If already pro, we show success state
+  // If already pro or admin, we show success state
   useEffect(() => {
-    if (user && user.hubPlan === "pro") {
+    if (user && (user.hubPlan === "pro" || user.role === "admin")) {
       setSuccess(true);
     }
   }, [user]);
@@ -104,9 +104,13 @@ export default function StudentHubUpgrade() {
             <div className="h-16 w-16 bg-brand-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-brand-600 border border-brand-500/20">
               <Award className="h-8 w-8" />
             </div>
-            <h2 className="text-2xl font-black text-foreground mb-2">You are a Pro Member!</h2>
+            <h2 className="text-2xl font-black text-foreground mb-2">
+              {user && user.role === "admin" ? "Admin Access Active!" : "You are a Pro Member!"}
+            </h2>
             <p className="text-sm text-muted-foreground mb-8">
-              Thank you for supporting Smart Picks India. You have unlimited daily access to all placement helper utilities.
+              {user && user.role === "admin"
+                ? "You have full administrator privileges. You have unlimited daily access to all placement helper utilities."
+                : "Thank you for supporting Smart Picks India. You have unlimited daily access to all placement helper utilities."}
             </p>
             <button
               onClick={() => router.push("/student-hub")}

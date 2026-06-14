@@ -333,9 +333,15 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  <div className={`badge ${user.hubPlan === "pro" ? "bg-brand-500/10 text-brand-600 border border-brand-500/20 dark:bg-brand-500/25 dark:text-brand-400" : "bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-400"}`}>
+                  <div className={`badge ${
+                    user.role === "admin"
+                      ? "bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/25 dark:text-rose-400"
+                      : user.hubPlan === "pro"
+                      ? "bg-brand-500/10 text-brand-600 border border-brand-500/20 dark:bg-brand-500/25 dark:text-brand-400"
+                      : "bg-slate-100 text-slate-700 dark:bg-neutral-900 dark:text-neutral-400"
+                  }`}>
                     <span className="flex items-center gap-1">
-                      {user.hubPlan === "pro" ? "⚡ Pro Member" : "Free Plan Tier"}
+                      {user.role === "admin" ? "⚡ Admin Access" : user.hubPlan === "pro" ? "⚡ Pro Member" : "Free Plan Tier"}
                     </span>
                   </div>
                 </div>
@@ -353,24 +359,26 @@ export default function DashboardPage() {
               {/* Subscription Plan Card */}
               <div className={cn(
                 "mt-4 rounded-xl p-4 border text-xs flex flex-col justify-between gap-3 shadow-sm",
-                user.hubPlan === "pro"
+                user.role === "admin" || user.hubPlan === "pro"
                   ? "bg-brand-500/5 border-brand-500/20 text-brand-800 dark:text-brand-300"
                   : "bg-muted/40 border-border/50 text-muted-foreground"
               )}>
                 <div className="flex gap-3">
-                  <Zap className={cn("h-5 w-5 shrink-0", user.hubPlan === "pro" ? "text-brand-500 fill-brand-500/20" : "text-muted-foreground")} />
+                  <Zap className={cn("h-5 w-5 shrink-0", user.role === "admin" || user.hubPlan === "pro" ? "text-brand-500 fill-brand-500/20" : "text-muted-foreground")} />
                   <div>
                     <p className="font-extrabold text-foreground mb-0.5">
-                      {user.hubPlan === "pro" ? "⚡ Student Hub Pro Active" : "Smart Picks Student Free"}
+                      {user.role === "admin" ? "⚡ Administrator Access Active" : user.hubPlan === "pro" ? "⚡ Student Hub Pro Active" : "Smart Picks Student Free"}
                     </p>
                     <p className="leading-relaxed">
-                      {user.hubPlan === "pro"
+                      {user.role === "admin"
+                        ? "You have full administrator privileges with unlimited access to mock interviews, resume analyzer, and coding helper tools."
+                        : user.hubPlan === "pro"
                         ? "You have unlimited daily access to mock interviews, resume analyzer, report builder, and coding helper tools."
                         : "Upgrade to Student Pro to remove the 3 daily limits on AI placement preparation helper tools."}
                     </p>
                   </div>
                 </div>
-                {user.hubPlan !== "pro" && (
+                {user.role !== "admin" && user.hubPlan !== "pro" && (
                   <Link
                     href="/student-hub/upgrade"
                     className="btn-primary w-full text-center py-2.5 text-[10px] uppercase font-extrabold tracking-wider leading-none shrink-0"

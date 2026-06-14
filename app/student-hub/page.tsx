@@ -235,9 +235,9 @@ export default function StudentHub() {
               >
                 <Trophy className="h-4 w-4" /> View Leaderboard
               </Link>
-              {user && user.hubPlan === "pro" ? (
+              {user && (user.role === "admin" || user.hubPlan === "pro") ? (
                 <div className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-rose-600 text-white text-xs font-black shadow-lg shadow-brand-500/20 uppercase tracking-wider border border-white/10 select-none">
-                  <ShieldCheck className="h-4 w-4 text-white" /> ⚡ Pro Active
+                  <ShieldCheck className="h-4 w-4 text-white" /> {user.role === "admin" ? "⚡ Admin Active" : "⚡ Pro Active"}
                 </div>
               ) : (
                 <Link 
