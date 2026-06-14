@@ -2,13 +2,11 @@ import express from "express";
 import { protect } from "../middleware/auth.js";
 import User from "../models/User.js";
 import { awardXp } from "../middleware/xp.js";
-import { checkHubLimits } from "../middleware/hubLimits.js";
 
 const router = express.Router();
 
 // Apply protect middleware to secure student helper utilities
 router.use(protect);
-router.use(checkHubLimits);
 
 // GET student leaderboard rankings
 router.get("/leaderboard", async (req, res, next) => {
