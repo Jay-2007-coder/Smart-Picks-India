@@ -238,150 +238,193 @@ export default function ProjectReportGenerator() {
   const handleDownload = () => {
     if (!report) return;
 
-    // Convert markdown to clean HTML for print
+    // Light markdown → HTML converter
     const lines = report.split("\n");
-    const htmlLines = lines.map(line => {
-      if (/^# (.+)/.test(line))        return `<h1>${line.replace(/^# /, "")}</h1>`;
-      if (/^## (.+)/.test(line))       return `<h2>${line.replace(/^## /, "")}</h2>`;
-      if (/^### (.+)/.test(line))      return `<h3>${line.replace(/^### /, "")}</h3>`;
-      if (/^#### (.+)/.test(line))     return `<h4>${line.replace(/^#### /, "")}</h4>`;
-      if (/^\*\*(.+)\*\*$/.test(line)) return `<p><strong>${line.replace(/\*\*/g, "")}</strong></p>`;
-      if (/^- (.+)/.test(line))        return `<li>${line.replace(/^- /, "")}</li>`;
-      if (/^\d+\. (.+)/.test(line))    return `<li>${line.replace(/^\d+\. /, "")}</li>`;
-      if (/^---/.test(line))           return `<hr/>`;
-      if (/^```/.test(line))           return line.includes("```") && line.length > 3 ? `<pre><code>` : `</code></pre>`;
-      if (line.trim() === "")          return `<br/>`;
-      // inline bold/italic/code
+    const htmlLines: string[] = [];
+    let inCode = false;
+
+    lines.forEach(line => {
+      if (/^```/.test(line)) {
+        inCode = !inCode;
+        htmlLines.push(inCode ? `<pre><code>` : `</code></pre>`);
+        return;
+      }
+      if (inCode) { htmlLines.push(line); return; }
+
+      if (/^# (.+)/.test(line))        { htmlLines.push(`<h1>${line.replace(/^# /, "")}</h1>`); return; }
+      if (/^## (.+)/.test(line))       { htmlLines.push(`<h2>${line.replace(/^## /, "")}</h2>`); return; }
+      if (/^### (.+)/.test(line))      { htmlLines.push(`<h3>${line.replace(/^### /, "")}</h3>`); return; }
+      if (/^#### (.+)/.test(line))     { htmlLines.push(`<h4>${line.replace(/^#### /, "")}</h4>`); return; }
+      if (/^- (.+)/.test(line))        { htmlLines.push(`<li>${line.replace(/^- /, "")}</li>`); return; }
+      if (/^\d+\. (.+)/.test(line))    { htmlLines.push(`<li>${line.replace(/^\d+\. /, "")}</li>`); return; }
+      if (/^---/.test(line))           { htmlLines.push(`<hr/>`); return; }
+      if (line.trim() === "")          { htmlLines.push(`<br/>`); return; }
+
       const formatted = line
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
         .replace(/\*(.+?)\*/g, "<em>$1</em>")
         .replace(/`(.+?)`/g, "<code>$1</code>");
-      return `<p>${formatted}</p>`;
+      htmlLines.push(`<p>${formatted}</p>`);
     });
 
     const cleanTitle = title || "Project Report";
+    const dateStr    = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>${cleanTitle} — Project Report</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <!-- Empty title removes browser's "title" header from print -->
+  <title></title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Fira+Code:wght@400;500&display=swap');
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      font-size: 12pt;
+    /* ── KEY FIX: zero @page margins removes browser date/title/page-number headers ── */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    html, body {
+      width: 210mm;
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: 11.5pt;
       color: #1a1a2e;
       line-height: 1.75;
       background: #fff;
-      padding: 0;
     }
 
-    /* Cover page */
+    /* ── Screen-only tip banner ── */
+    .print-tip {
+      display: block;
+      background: #1a1a2e;
+      color: #fff;
+      text-align: center;
+      padding: 14px 20px;
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .print-tip span { color: #7F77DD; font-weight: 900; }
+    @media print { .print-tip { display: none !important; } }
+
+    /* ── Cover Page ── */
     .cover {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 60px 50px;
       text-align: center;
-      padding: 60px 40px;
-      border-bottom: 4px solid #7F77DD;
+      background: linear-gradient(160deg, #f8f7ff 0%, #eef4ff 60%, #f0fff8 100%);
       page-break-after: always;
-      background: linear-gradient(135deg, #f8f7ff 0%, #eff6ff 100%);
     }
-    .cover-logo {
-      width: 72px; height: 72px;
+    .cover-icon {
+      width: 80px; height: 80px;
       background: linear-gradient(135deg, #7F77DD, #378ADD);
-      border-radius: 18px;
+      border-radius: 22px;
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px;
-      font-size: 32px;
+      font-size: 36px;
+      margin: 0 auto 28px;
+      box-shadow: 0 8px 32px rgba(127,119,221,0.3);
     }
     .cover h1 {
-      font-size: 28pt;
+      font-size: 26pt;
       font-weight: 900;
       color: #1a1a2e;
-      margin-bottom: 10px;
       line-height: 1.2;
+      margin-bottom: 10px;
+      border: none;
+      padding: 0;
     }
-    .cover .subtitle {
+    .cover-subtitle {
       font-size: 11pt;
       color: #6b7280;
       font-weight: 600;
-      margin-bottom: 40px;
+      margin-bottom: 42px;
     }
-    .cover-meta {
+    .cover-divider {
+      width: 60px; height: 4px;
+      background: linear-gradient(90deg, #7F77DD, #378ADD);
+      border-radius: 2px;
+      margin: 0 auto 42px;
+    }
+    .meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 14px;
       width: 100%;
-      max-width: 440px;
-      margin: 0 auto;
+      max-width: 460px;
+      margin: 0 auto 48px;
     }
-    .cover-meta-item {
+    .meta-card {
       background: #fff;
       border: 1.5px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 12px 16px;
+      border-radius: 14px;
+      padding: 14px 18px;
       text-align: left;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
-    .cover-meta-item .label {
-      font-size: 8pt;
+    .meta-card .label {
+      font-size: 7.5pt;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: #9ca3af;
-      font-weight: 700;
+      font-weight: 800;
       display: block;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
-    .cover-meta-item .value {
+    .meta-card .value {
       font-size: 10pt;
       font-weight: 700;
       color: #1a1a2e;
+      line-height: 1.3;
     }
-    .generated-by {
-      margin-top: 48px;
+    .cover-footer {
       font-size: 9pt;
-      color: #9ca3af;
+      color: #b0b8cc;
       border-top: 1px solid #e5e7eb;
-      padding-top: 16px;
+      padding-top: 18px;
       width: 100%;
-    }
-
-    /* Body content */
-    .content {
-      padding: 48px 56px;
-      max-width: 820px;
+      max-width: 460px;
       margin: 0 auto;
     }
 
+    /* ── Content Pages ── */
+    .content {
+      padding: 18mm 20mm;
+      width: 210mm;
+      min-height: 297mm;
+    }
+
     h1 {
-      font-size: 17pt;
+      font-size: 16pt;
       font-weight: 900;
       color: #1a1a2e;
-      margin: 28px 0 10px;
+      margin: 30px 0 10px;
       padding-bottom: 8px;
-      border-bottom: 2.5px solid #7F77DD;
+      border-bottom: 3px solid #7F77DD;
     }
     h1:first-child { margin-top: 0; }
 
     h2 {
-      font-size: 14pt;
+      font-size: 13pt;
       font-weight: 800;
       color: #2d2b55;
       margin: 22px 0 8px;
     }
-
     h3 {
-      font-size: 12pt;
+      font-size: 11.5pt;
       font-weight: 700;
       color: #374151;
       margin: 16px 0 6px;
     }
-
     h4 {
       font-size: 11pt;
       font-weight: 700;
@@ -389,29 +432,19 @@ export default function ProjectReportGenerator() {
       margin: 12px 0 4px;
     }
 
-    p {
-      margin-bottom: 10px;
-      color: #374151;
-    }
+    p { margin-bottom: 10px; color: #374151; }
 
-    ul, ol {
-      padding-left: 22px;
-      margin-bottom: 12px;
-    }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 5px; color: #374151; line-height: 1.7; }
 
-    li {
-      margin-bottom: 5px;
-      color: #374151;
-    }
-
-    strong { font-weight: 800; color: #1a1a2e; }
+    strong { font-weight: 900; color: #1a1a2e; }
     em     { color: #7F77DD; font-style: italic; }
 
     code {
       background: #f1f0ff;
       color: #7F77DD;
-      padding: 1px 6px;
-      border-radius: 5px;
+      padding: 1px 5px;
+      border-radius: 4px;
       font-family: 'Fira Code', monospace;
       font-size: 10pt;
     }
@@ -419,21 +452,18 @@ export default function ProjectReportGenerator() {
     pre {
       background: #1a1a2e;
       color: #a9b2c3;
-      padding: 18px 22px;
-      border-radius: 12px;
-      overflow: hidden;
+      padding: 16px 20px;
+      border-radius: 10px;
       margin: 14px 0;
       font-family: 'Fira Code', monospace;
-      font-size: 9.5pt;
-      line-height: 1.6;
+      font-size: 9pt;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
-    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    pre code { background: none; color: inherit; padding: 0; }
 
-    hr {
-      border: none;
-      border-top: 1.5px solid #e5e7eb;
-      margin: 22px 0;
-    }
+    hr { border: none; border-top: 1.5px solid #e5e7eb; margin: 22px 0; }
 
     blockquote {
       border-left: 4px solid #7F77DD;
@@ -447,54 +477,53 @@ export default function ProjectReportGenerator() {
       width: 100%;
       border-collapse: collapse;
       margin: 14px 0;
-      font-size: 10.5pt;
+      font-size: 10pt;
     }
     th {
       background: #f1f0ff;
       color: #1a1a2e;
       font-weight: 800;
-      padding: 10px 14px;
+      padding: 10px 12px;
       text-align: left;
       border: 1px solid #d1d5db;
-      font-size: 9pt;
+      font-size: 8.5pt;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
-    td {
-      padding: 9px 14px;
-      border: 1px solid #e5e7eb;
-      color: #374151;
-    }
+    td { padding: 9px 12px; border: 1px solid #e5e7eb; color: #374151; }
     tr:nth-child(even) td { background: #f9f9ff; }
-
-    /* Page footer */
-    @page {
-      margin: 16mm 18mm;
-    }
 
     @media print {
       .cover { page-break-after: always; }
-      h1, h2 { page-break-after: avoid; }
+      h1, h2, h3 { page-break-after: avoid; }
       pre, table { page-break-inside: avoid; }
+      li { page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Screen-only tip: hidden during print -->
+  <div class="print-tip">
+    ⚠️ In the print dialog, <span>uncheck "Headers and footers"</span> then choose <span>Save as PDF</span> for a clean document.
+  </div>
+
   <!-- Cover Page -->
   <div class="cover">
-    <div class="cover-logo">📄</div>
+    <div class="cover-icon">📄</div>
     <h1>${cleanTitle}</h1>
-    <p class="subtitle">Project Documentation Report</p>
-    <div class="cover-meta">
-      ${collegeName ? `<div class="cover-meta-item"><span class="label">Institution</span><span class="value">${collegeName}</span></div>` : ""}
-      <div class="cover-meta-item"><span class="label">Tech Stack</span><span class="value">${techStack}</span></div>
-      <div class="cover-meta-item"><span class="label">Report Type</span><span class="value">${selectedRType.label}</span></div>
-      <div class="cover-meta-item"><span class="label">Domain</span><span class="value">${selectedDomain.label}</span></div>
-      ${teamSize ? `<div class="cover-meta-item"><span class="label">Team Size</span><span class="value">${teamSize} member(s)</span></div>` : ""}
-      ${duration ? `<div class="cover-meta-item"><span class="label">Duration</span><span class="value">${duration}</span></div>` : ""}
+    <p class="cover-subtitle">Project Documentation Report</p>
+    <div class="cover-divider"></div>
+    <div class="meta-grid">
+      ${collegeName ? `<div class="meta-card"><span class="label">Institution</span><span class="value">${collegeName}</span></div>` : ""}
+      <div class="meta-card"><span class="label">Report Type</span><span class="value">${selectedRType.label}</span></div>
+      <div class="meta-card"><span class="label">Tech Stack</span><span class="value">${techStack}</span></div>
+      <div class="meta-card"><span class="label">Domain</span><span class="value">${selectedDomain.label}</span></div>
+      ${teamSize ? `<div class="meta-card"><span class="label">Team Size</span><span class="value">${teamSize} Member(s)</span></div>` : ""}
+      ${duration ? `<div class="meta-card"><span class="label">Duration</span><span class="value">${duration}</span></div>` : ""}
+      <div class="meta-card"><span class="label">Date</span><span class="value">${dateStr}</span></div>
     </div>
-    <div class="generated-by">Generated by Smart Picks India — AI Project Report Writer · ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</div>
+    <div class="cover-footer">Smart Picks India — AI Project Report Writer</div>
   </div>
 
   <!-- Report Content -->
@@ -505,19 +534,21 @@ export default function ProjectReportGenerator() {
 </body>
 </html>`;
 
-    const printWindow = window.open("", "_blank", "width=900,height=700");
+    const printWindow = window.open("", "_blank", "width=960,height=800");
     if (!printWindow) {
       alert("Please allow pop-ups for this site to download the PDF.");
       return;
     }
+    // Write HTML — empty title prevents browser from adding "Title" header in print
+    printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
-    // Wait for fonts to load then trigger print
+    // Trigger print after fonts settle
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.focus();
         printWindow.print();
-      }, 800);
+      }, 900);
     };
   };
 
