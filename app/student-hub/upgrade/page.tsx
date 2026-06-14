@@ -21,6 +21,14 @@ export default function StudentHubUpgrade() {
   const [cardExpiry, setCardExpiry] = useState("12/28");
   const [cardCvv, setCardCvv] = useState("123");
 
+  const getDaysRemaining = () => {
+    if (!user || !user.hubPlanExpiresAt) return null;
+    const expiresAt = new Date(user.hubPlanExpiresAt);
+    const diffTime = expiresAt.getTime() - Date.now();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
   // If already pro or admin, we show success state
   useEffect(() => {
     if (user && (user.hubPlan === "pro" || user.role === "admin")) {
@@ -107,11 +115,24 @@ export default function StudentHubUpgrade() {
             <h2 className="text-2xl font-black text-foreground mb-2">
               {user && user.role === "admin" ? "Admin Access Active!" : "You are a Pro Member!"}
             </h2>
-            <p className="text-sm text-muted-foreground mb-8">
+            <p className="text-sm text-muted-foreground mb-6">
               {user && user.role === "admin"
                 ? "You have full administrator privileges. You have unlimited daily access to all placement helper utilities."
                 : "Thank you for supporting Smart Picks India. You have unlimited daily access to all placement helper utilities."}
             </p>
+            {user && user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && (
+              <div className="mb-8 p-3 rounded-2xl bg-brand-500/5 border border-brand-500/20 text-xs font-semibold text-brand-700 dark:text-brand-300">
+                Plan Expiration: <span className="text-foreground dark:text-white font-extrabold">{new Date(user.hubPlanExpiresAt).toLocaleDateString("en-IN")}</span>
+                <span className="mx-1.5">•</span>
+                <span className="bg-brand-500/10 px-2 py-0.5 rounded text-[10px] text-brand-600 dark:text-brand-350 font-extrabold">
+                  {(() => {
+                    const days = getDaysRemaining();
+                    if (days === null) return "Unknown";
+                    return `${days} ${days === 1 ? "day" : "days"} remaining`;
+                  })()}
+                </span>
+              </div>
+            )}
             <button
               onClick={() => router.push("/student-hub")}
               className="btn-primary w-full py-3.5 rounded-2xl text-xs uppercase font-extrabold tracking-wider"

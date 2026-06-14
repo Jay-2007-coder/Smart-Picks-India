@@ -106,6 +106,14 @@ export default function DashboardPage() {
     );
   }
 
+  const getDaysRemaining = () => {
+    if (!user.hubPlanExpiresAt) return null;
+    const expiresAt = new Date(user.hubPlanExpiresAt);
+    const diffTime = expiresAt.getTime() - Date.now();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
   // ─── 1. Profile Update ─────────────────────────────────────────────────────
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -376,6 +384,23 @@ export default function DashboardPage() {
                         ? "You have unlimited daily access to mock interviews, resume analyzer, report builder, and coding helper tools."
                         : "Upgrade to Student Pro to remove the 3 daily limits on AI placement preparation helper tools."}
                     </p>
+                    {user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && (
+                      <p className="mt-2.5 text-brand-700 dark:text-brand-300 font-semibold flex flex-wrap items-center gap-1.5">
+                        <span>Plan Expiration:</span>
+                        <strong className="text-foreground dark:text-white bg-brand-500/10 px-2 py-0.5 rounded-md text-[10px] tracking-wide border border-brand-500/10">
+                          {(() => {
+                            const days = getDaysRemaining();
+                            const dateStr = new Date(user.hubPlanExpiresAt).toLocaleDateString("en-IN", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            });
+                            if (days === null) return `Expires on ${dateStr}`;
+                            return `${dateStr} (${days} ${days === 1 ? "day" : "days"} remaining)`;
+                          })()}
+                        </strong>
+                      </p>
+                    )}
                   </div>
                 </div>
                 {user.role !== "admin" && user.hubPlan !== "pro" && (

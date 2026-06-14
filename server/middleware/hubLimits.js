@@ -7,6 +7,12 @@ export async function checkHubLimits(req, res, next) {
       return res.status(401).json({ success: false, message: "Authentication required" });
     }
 
+    if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
+      user.hubPlan = "free";
+      user.hubPlanExpiresAt = null;
+      await user.save();
+    }
+
     if (user.role === "admin" || user.hubPlan === "pro") {
       return next();
     }

@@ -346,6 +346,10 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
     user.failedLoginAttempts = 0;
     user.lockoutUntil = null;
     user.loginHistory.push({ ipAddress, device: userAgent, status: "success" });
+    if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
+      user.hubPlan = "free";
+      user.hubPlanExpiresAt = null;
+    }
     await user.save();
 
     // Create session
@@ -378,6 +382,7 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
         role: user.role,
         telegramChatId: user.telegramChatId,
         hubPlan: user.hubPlan,
+        hubPlanExpiresAt: user.hubPlanExpiresAt,
       },
     });
   } catch (err) {
@@ -427,6 +432,10 @@ async function processSocialLoginUser({ provider, accountId, email, name, avatar
 
   // Record login
   user.loginHistory.push({ ipAddress, device: userAgent, status: "success" });
+  if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
+    user.hubPlan = "free";
+    user.hubPlanExpiresAt = null;
+  }
   await user.save();
   return user;
 }
@@ -472,6 +481,7 @@ router.post("/social-login", async (req, res, next) => {
         role: user.role,
         telegramChatId: user.telegramChatId,
         hubPlan: user.hubPlan,
+        hubPlanExpiresAt: user.hubPlanExpiresAt,
       },
     });
   } catch (err) {
@@ -845,6 +855,7 @@ router.get("/me", protect, async (req, res) => {
       role: req.user.role,
       telegramChatId: req.user.telegramChatId,
       hubPlan: req.user.hubPlan,
+      hubPlanExpiresAt: req.user.hubPlanExpiresAt,
     },
   });
 });

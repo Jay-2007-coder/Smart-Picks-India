@@ -59,6 +59,7 @@ router.put("/profile", validate(updateProfileSchema), async (req, res, next) => 
         role: user.role,
         telegramChatId: user.telegramChatId,
         hubPlan: user.hubPlan,
+        hubPlanExpiresAt: user.hubPlanExpiresAt,
       },
     });
   } catch (err) {
@@ -237,6 +238,7 @@ router.post("/upgrade-pro", async (req, res, next) => {
     }
 
     user.hubPlan = "pro";
+    user.hubPlanExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
     await user.save();
 
     res.status(200).json({
@@ -247,6 +249,7 @@ router.post("/upgrade-pro", async (req, res, next) => {
         name: user.name,
         email: user.email,
         hubPlan: user.hubPlan,
+        hubPlanExpiresAt: user.hubPlanExpiresAt,
       }
     });
   } catch (err) {

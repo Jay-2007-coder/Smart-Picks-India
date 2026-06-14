@@ -14,6 +14,7 @@ interface User {
   role?: string;
   telegramChatId?: string;
   hubPlan?: string;
+  hubPlanExpiresAt?: string;
 }
 
 interface AuthContextType {

@@ -88,6 +88,10 @@ const UserSchema = new mongoose.Schema(
       enum: ["free", "pro"],
       default: "free",
     },
+    hubPlanExpiresAt: {
+      type: Date,
+      default: null,
+    },
     hubUsage: {
       type: Number,
       default: 0,

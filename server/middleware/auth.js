@@ -31,6 +31,12 @@ export async function protect(req, res, next) {
       });
     }
 
+    if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
+      user.hubPlan = "free";
+      user.hubPlanExpiresAt = null;
+      await user.save();
+    }
+
     req.user = user;
     return next();
   } catch (err) {
@@ -74,6 +80,12 @@ async function handleTokenRefresh(req, res, next, refreshToken) {
         success: false,
         message: "Account is temporarily locked. Please try again later.",
       });
+    }
+
+    if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
+      user.hubPlan = "free";
+      user.hubPlanExpiresAt = null;
+      await user.save();
     }
 
     // 4. Generate new access token
