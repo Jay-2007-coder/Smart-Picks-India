@@ -346,6 +346,9 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
     user.failedLoginAttempts = 0;
     user.lockoutUntil = null;
     user.loginHistory.push({ ipAddress, device: userAgent, status: "success" });
+    if (user.hubPlan === "pro" && !user.hubPlanExpiresAt) {
+      user.hubPlanExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    }
     if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
       user.hubPlan = "free";
       user.hubPlanExpiresAt = null;
@@ -432,6 +435,9 @@ async function processSocialLoginUser({ provider, accountId, email, name, avatar
 
   // Record login
   user.loginHistory.push({ ipAddress, device: userAgent, status: "success" });
+  if (user.hubPlan === "pro" && !user.hubPlanExpiresAt) {
+    user.hubPlanExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  }
   if (user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && new Date(user.hubPlanExpiresAt) < new Date()) {
     user.hubPlan = "free";
     user.hubPlanExpiresAt = null;
