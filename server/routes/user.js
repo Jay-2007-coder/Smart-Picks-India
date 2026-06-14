@@ -58,6 +58,7 @@ router.put("/profile", validate(updateProfileSchema), async (req, res, next) => 
         isPhoneVerified: user.isPhoneVerified,
         role: user.role,
         telegramChatId: user.telegramChatId,
+        hubPlan: user.hubPlan,
       },
     });
   } catch (err) {

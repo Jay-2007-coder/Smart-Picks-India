@@ -13,6 +13,7 @@ interface User {
   isPhoneVerified: boolean;
   role?: string;
   telegramChatId?: string;
+  hubPlan?: string;
 }
 
 interface AuthContextType {

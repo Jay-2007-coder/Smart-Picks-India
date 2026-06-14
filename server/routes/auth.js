@@ -377,6 +377,7 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
         isPhoneVerified: user.isPhoneVerified,
         role: user.role,
         telegramChatId: user.telegramChatId,
+        hubPlan: user.hubPlan,
       },
     });
   } catch (err) {
@@ -470,6 +471,7 @@ router.post("/social-login", async (req, res, next) => {
         isPhoneVerified: user.isPhoneVerified,
         role: user.role,
         telegramChatId: user.telegramChatId,
+        hubPlan: user.hubPlan,
       },
     });
   } catch (err) {
@@ -842,6 +844,7 @@ router.get("/me", protect, async (req, res) => {
       isPhoneVerified: req.user.isPhoneVerified,
       role: req.user.role,
       telegramChatId: req.user.telegramChatId,
+      hubPlan: req.user.hubPlan,
     },
   });
 });

@@ -324,16 +324,40 @@ export default function Navbar() {
               <div className="relative shrink-0" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl border border-border bg-card hover:bg-muted/65 transition-all shrink-0 hover:border-brand-500/30 cursor-pointer shadow-sm"
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-xl border bg-card hover:bg-muted/65 transition-all shrink-0 cursor-pointer shadow-sm",
+                    user.hubPlan === "pro"
+                      ? "border-brand-500/40 ring-1 ring-brand-500/10 hover:border-brand-500/50"
+                      : "border-border hover:border-brand-500/30"
+                  )}
                 >
                   {user.profileImage ? (
-                    <img src={user.profileImage} alt={user.name} className="h-5.5 w-5.5 rounded-full object-cover ring-2 ring-brand-500/10" />
+                    <img
+                      src={user.profileImage}
+                      alt={user.name}
+                      className={cn(
+                        "h-5.5 w-5.5 rounded-full object-cover ring-2",
+                        user.hubPlan === "pro" ? "ring-brand-500/30" : "ring-brand-500/10"
+                      )}
+                    />
                   ) : (
-                    <div className="flex h-5.5 w-5.5 items-center justify-center rounded-full bg-gradient-to-tr from-brand-500 to-rose-500 text-[9px] font-black text-white shadow-sm">
+                    <div
+                      className={cn(
+                        "flex h-5.5 w-5.5 items-center justify-center rounded-full text-[9px] font-black text-white shadow-sm",
+                        user.hubPlan === "pro"
+                          ? "bg-gradient-to-tr from-amber-500 via-brand-500 to-rose-500"
+                          : "bg-gradient-to-tr from-brand-500 to-rose-500"
+                      )}
+                    >
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <span className="hidden lg:inline">{user.name.split(" ")[0]}</span>
+                  {user.hubPlan === "pro" && (
+                    <span className="inline-flex items-center text-[9px] font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 dark:bg-brand-500/20 border border-brand-500/20 px-1.5 py-0.5 rounded-lg leading-none shadow-sm uppercase tracking-wider">
+                      ⚡ PRO
+                    </span>
+                  )}
                 </button>
                 <AnimatePresence>
                   {dropdownOpen && (
@@ -342,8 +366,24 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-border bg-card p-2 shadow-2xl z-50 flex flex-col gap-0.5"
+                      className="absolute right-0 mt-2.5 w-52 rounded-2xl border border-border bg-card p-2 shadow-2xl z-50 flex flex-col gap-0.5"
                     >
+                      <div className="px-3 py-2.5 border-b border-border/60 mb-1.5 flex flex-col gap-1 select-none">
+                        <span className="text-[10px] font-bold text-muted-foreground truncate leading-none">
+                          {user.email}
+                        </span>
+                        <div className="flex items-center mt-0.5">
+                          {user.hubPlan === "pro" ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 uppercase tracking-widest leading-none">
+                              ⚡ PRO MEMBER
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black bg-muted text-muted-foreground border border-border uppercase tracking-widest leading-none">
+                              FREE TIER
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       <Link
                         href="/dashboard"
                         onClick={() => setDropdownOpen(false)}
@@ -464,15 +504,38 @@ export default function Navbar() {
                   className="flex items-center gap-3 px-3.5 py-3 text-xs font-bold rounded-xl hover:bg-muted/80 transition-colors mt-3 border-t border-border/40 pt-3.5"
                 >
                   {user.profileImage ? (
-                    <img src={user.profileImage} alt={user.name} className="h-7 w-7 rounded-full object-cover" />
+                    <img
+                      src={user.profileImage}
+                      alt={user.name}
+                      className={cn(
+                        "h-7 w-7 rounded-full object-cover",
+                        user.hubPlan === "pro" && "ring-2 ring-brand-500/30"
+                      )}
+                    />
                   ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-black text-white">
+                    <div
+                      className={cn(
+                        "flex h-7 w-7 items-center justify-center rounded-full text-xs font-black text-white shadow-sm",
+                        user.hubPlan === "pro"
+                          ? "bg-gradient-to-tr from-amber-500 via-brand-500 to-rose-500"
+                          : "bg-brand-600"
+                      )}
+                    >
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <p className="font-extrabold text-foreground leading-none">{user.name}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1.5 font-medium">Open User Dashboard &rarr;</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-extrabold text-foreground leading-none">{user.name}</p>
+                      {user.hubPlan === "pro" && (
+                        <span className="inline-flex items-center text-[8px] text-brand-600 dark:text-brand-400 font-black gap-0.5 bg-brand-500/10 border border-brand-500/20 px-1.5 py-0.5 rounded leading-none uppercase tracking-wider">
+                          PRO
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1.5 font-medium">
+                      {user.hubPlan === "pro" ? "⚡ Pro Active • " : ""}Open Dashboard &rarr;
+                    </p>
                   </div>
                 </Link>
               ) : (

@@ -22,6 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
 
 const tools = [
   {
@@ -168,6 +169,7 @@ const getCardBorder = (title: string, category: string) => {
 };
 
 export default function StudentHub() {
+  const { user } = useAuth() as any;
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTools = useMemo(() => {
@@ -225,7 +227,7 @@ export default function StudentHub() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 flex justify-center gap-3"
+              className="mt-6 flex flex-wrap justify-center gap-3"
             >
               <Link 
                 href="/student-hub/leaderboard" 
@@ -233,12 +235,18 @@ export default function StudentHub() {
               >
                 <Trophy className="h-4 w-4" /> View Leaderboard
               </Link>
-              <Link 
-                href="/student-hub/upgrade" 
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all uppercase tracking-wider"
-              >
-                <Zap className="h-4 w-4 fill-current text-white animate-pulse" /> Upgrade to Pro
-              </Link>
+              {user && user.hubPlan === "pro" ? (
+                <div className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-rose-600 text-white text-xs font-black shadow-lg shadow-brand-500/20 uppercase tracking-wider border border-white/10 select-none">
+                  <ShieldCheck className="h-4 w-4 text-white" /> ⚡ Pro Active
+                </div>
+              ) : (
+                <Link 
+                  href="/student-hub/upgrade" 
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all uppercase tracking-wider"
+                >
+                  <Zap className="h-4 w-4 fill-current text-white animate-pulse" /> Upgrade to Pro
+                </Link>
+              )}
             </motion.div>
           </div>
         </motion.div>
