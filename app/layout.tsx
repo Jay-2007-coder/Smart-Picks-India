@@ -9,6 +9,7 @@ import AIChatbot from "@/components/AIChatbot";
 import StickyCompareBar from "@/components/StickyCompareBar";
 import ScrollToTop from "@/components/ScrollToTop";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/react";
 import { Suspense } from "react";
 import "./globals.css";
 
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <AIChatbot />
                 <StickyCompareBar />
                 <ScrollToTop />
+                <Analytics />
               </div>
             </CompareProvider>
           </AuthProvider>
