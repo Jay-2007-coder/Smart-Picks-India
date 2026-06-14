@@ -237,13 +237,288 @@ export default function ProjectReportGenerator() {
 
   const handleDownload = () => {
     if (!report) return;
-    const blob = new Blob([report], { type: "text/markdown" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `${title.replace(/\s+/g, "_")}_Report.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    // Convert markdown to clean HTML for print
+    const lines = report.split("\n");
+    const htmlLines = lines.map(line => {
+      if (/^# (.+)/.test(line))        return `<h1>${line.replace(/^# /, "")}</h1>`;
+      if (/^## (.+)/.test(line))       return `<h2>${line.replace(/^## /, "")}</h2>`;
+      if (/^### (.+)/.test(line))      return `<h3>${line.replace(/^### /, "")}</h3>`;
+      if (/^#### (.+)/.test(line))     return `<h4>${line.replace(/^#### /, "")}</h4>`;
+      if (/^\*\*(.+)\*\*$/.test(line)) return `<p><strong>${line.replace(/\*\*/g, "")}</strong></p>`;
+      if (/^- (.+)/.test(line))        return `<li>${line.replace(/^- /, "")}</li>`;
+      if (/^\d+\. (.+)/.test(line))    return `<li>${line.replace(/^\d+\. /, "")}</li>`;
+      if (/^---/.test(line))           return `<hr/>`;
+      if (/^```/.test(line))           return line.includes("```") && line.length > 3 ? `<pre><code>` : `</code></pre>`;
+      if (line.trim() === "")          return `<br/>`;
+      // inline bold/italic/code
+      const formatted = line
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+        .replace(/`(.+?)`/g, "<code>$1</code>");
+      return `<p>${formatted}</p>`;
+    });
+
+    const cleanTitle = title || "Project Report";
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${cleanTitle} — Project Report</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 12pt;
+      color: #1a1a2e;
+      line-height: 1.75;
+      background: #fff;
+      padding: 0;
+    }
+
+    /* Cover page */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 60px 40px;
+      border-bottom: 4px solid #7F77DD;
+      page-break-after: always;
+      background: linear-gradient(135deg, #f8f7ff 0%, #eff6ff 100%);
+    }
+    .cover-logo {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #7F77DD, #378ADD);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 32px;
+    }
+    .cover h1 {
+      font-size: 28pt;
+      font-weight: 900;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+    .cover .subtitle {
+      font-size: 11pt;
+      color: #6b7280;
+      font-weight: 600;
+      margin-bottom: 40px;
+    }
+    .cover-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    .cover-meta-item {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: left;
+    }
+    .cover-meta-item .label {
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .cover-meta-item .value {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .generated-by {
+      margin-top: 48px;
+      font-size: 9pt;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+      width: 100%;
+    }
+
+    /* Body content */
+    .content {
+      padding: 48px 56px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 17pt;
+      font-weight: 900;
+      color: #1a1a2e;
+      margin: 28px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 2.5px solid #7F77DD;
+    }
+    h1:first-child { margin-top: 0; }
+
+    h2 {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #2d2b55;
+      margin: 22px 0 8px;
+    }
+
+    h3 {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #374151;
+      margin: 16px 0 6px;
+    }
+
+    h4 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #4b5563;
+      margin: 12px 0 4px;
+    }
+
+    p {
+      margin-bottom: 10px;
+      color: #374151;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 12px;
+    }
+
+    li {
+      margin-bottom: 5px;
+      color: #374151;
+    }
+
+    strong { font-weight: 800; color: #1a1a2e; }
+    em     { color: #7F77DD; font-style: italic; }
+
+    code {
+      background: #f1f0ff;
+      color: #7F77DD;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-family: 'Fira Code', monospace;
+      font-size: 10pt;
+    }
+
+    pre {
+      background: #1a1a2e;
+      color: #a9b2c3;
+      padding: 18px 22px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 14px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 9.5pt;
+      line-height: 1.6;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    hr {
+      border: none;
+      border-top: 1.5px solid #e5e7eb;
+      margin: 22px 0;
+    }
+
+    blockquote {
+      border-left: 4px solid #7F77DD;
+      padding-left: 16px;
+      color: #6b7280;
+      font-style: italic;
+      margin: 14px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 10.5pt;
+    }
+    th {
+      background: #f1f0ff;
+      color: #1a1a2e;
+      font-weight: 800;
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid #d1d5db;
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    td {
+      padding: 9px 14px;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+    }
+    tr:nth-child(even) td { background: #f9f9ff; }
+
+    /* Page footer */
+    @page {
+      margin: 16mm 18mm;
+    }
+
+    @media print {
+      .cover { page-break-after: always; }
+      h1, h2 { page-break-after: avoid; }
+      pre, table { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Page -->
+  <div class="cover">
+    <div class="cover-logo">📄</div>
+    <h1>${cleanTitle}</h1>
+    <p class="subtitle">Project Documentation Report</p>
+    <div class="cover-meta">
+      ${collegeName ? `<div class="cover-meta-item"><span class="label">Institution</span><span class="value">${collegeName}</span></div>` : ""}
+      <div class="cover-meta-item"><span class="label">Tech Stack</span><span class="value">${techStack}</span></div>
+      <div class="cover-meta-item"><span class="label">Report Type</span><span class="value">${selectedRType.label}</span></div>
+      <div class="cover-meta-item"><span class="label">Domain</span><span class="value">${selectedDomain.label}</span></div>
+      ${teamSize ? `<div class="cover-meta-item"><span class="label">Team Size</span><span class="value">${teamSize} member(s)</span></div>` : ""}
+      ${duration ? `<div class="cover-meta-item"><span class="label">Duration</span><span class="value">${duration}</span></div>` : ""}
+    </div>
+    <div class="generated-by">Generated by Smart Picks India — AI Project Report Writer · ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</div>
+  </div>
+
+  <!-- Report Content -->
+  <div class="content">
+    ${htmlLines.join("\n")}
+  </div>
+
+</body>
+</html>`;
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+      alert("Please allow pop-ups for this site to download the PDF.");
+      return;
+    }
+    printWindow.document.write(html);
+    printWindow.document.close();
+    // Wait for fonts to load then trigger print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 800);
+    };
   };
 
   /* ── Loading state ── */
@@ -621,11 +896,12 @@ export default function ProjectReportGenerator() {
                     <div className="flex items-center gap-2">
                       <button onClick={handleCopy}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black border border-border/60 hover:bg-muted transition-all cursor-pointer">
-                        {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy MD</>}
+                        {copied ? <><Check className="h-3 w-3 text-emerald-500" /> Copied!</> : <><Copy className="h-3 w-3" /> Copy</>}
                       </button>
                       <button onClick={handleDownload}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black bg-brand-500/10 text-brand-500 border border-brand-500/20 hover:bg-brand-500/20 transition-all cursor-pointer">
-                        <Download className="h-3 w-3" /> Download
+                        title="Opens a print window — choose 'Save as PDF' in the print dialog"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black bg-brand-500 text-white border border-brand-500 hover:bg-brand-600 transition-all cursor-pointer shadow-sm">
+                        <Download className="h-3 w-3" /> Download PDF
                       </button>
                     </div>
                   </div>
