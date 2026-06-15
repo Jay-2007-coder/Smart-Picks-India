@@ -22,6 +22,7 @@ import {
   History,
   Info,
   Zap,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -385,21 +386,37 @@ export default function DashboardPage() {
                         : "Upgrade to Student Pro to remove the 3 daily limits on AI placement preparation helper tools."}
                     </p>
                     {user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && (
-                      <p className="mt-2.5 text-brand-700 dark:text-brand-300 font-semibold flex flex-wrap items-center gap-1.5">
-                        <span>Plan Expiration:</span>
-                        <strong className="text-foreground dark:text-white bg-brand-500/10 px-2 py-0.5 rounded-md text-[10px] tracking-wide border border-brand-500/10">
-                          {(() => {
-                            const days = getDaysRemaining();
-                            const dateStr = new Date(user.hubPlanExpiresAt).toLocaleDateString("en-IN", {
+                      <div className="mt-4 space-y-2.5 border-t border-brand-500/10 pt-3.5">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5 text-brand-500" />
+                            <span>Expires on {new Date(user.hubPlanExpiresAt).toLocaleDateString("en-IN", {
                               day: "2-digit",
                               month: "2-digit",
-                              year: "numeric",
-                            });
-                            if (days === null) return `Expires on ${dateStr}`;
-                            return `${dateStr} (${days} ${days === 1 ? "day" : "days"} remaining)`;
-                          })()}
-                        </strong>
-                      </p>
+                              year: "numeric"
+                            })}</span>
+                          </span>
+                          <span className="text-brand-600 dark:text-brand-400 font-extrabold uppercase tracking-wide">
+                            {(() => {
+                              const days = getDaysRemaining();
+                              if (days === null) return "Unknown days";
+                              return `${days} ${days === 1 ? "day" : "days"} remaining`;
+                            })()}
+                          </span>
+                        </div>
+                        {(() => {
+                          const days = getDaysRemaining() || 0;
+                          const percent = Math.min(100, Math.max(0, (days / 30) * 100));
+                          return (
+                            <div className="w-full h-1.5 bg-slate-200 dark:bg-neutral-850 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-brand-500 to-rose-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.35)] transition-all duration-500"
+                                style={{ width: `${percent}%` }}
+                              />
+                            </div>
+                          );
+                        })()}
+                      </div>
                     )}
                   </div>
                 </div>

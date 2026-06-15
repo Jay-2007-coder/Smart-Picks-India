@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { Check, ShieldCheck, Zap, Sparkles, Award, Heart, HelpCircle, Loader2, QrCode, CreditCard, Smartphone, Lock, X } from "lucide-react";
+import { Check, ShieldCheck, Zap, Sparkles, Award, Heart, HelpCircle, Loader2, QrCode, CreditCard, Smartphone, Lock, X, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function StudentHubUpgrade() {
@@ -121,16 +121,37 @@ export default function StudentHubUpgrade() {
                 : "Thank you for supporting Smart Picks India. You have unlimited daily access to all placement helper utilities."}
             </p>
             {user && user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && (
-              <div className="mb-8 p-3 rounded-2xl bg-brand-500/5 border border-brand-500/20 text-xs font-semibold text-brand-700 dark:text-brand-300">
-                Plan Expiration: <span className="text-foreground dark:text-white font-extrabold">{new Date(user.hubPlanExpiresAt).toLocaleDateString("en-IN")}</span>
-                <span className="mx-1.5">•</span>
-                <span className="bg-brand-500/10 px-2 py-0.5 rounded text-[10px] text-brand-600 dark:text-brand-350 font-extrabold">
-                  {(() => {
-                    const days = getDaysRemaining();
-                    if (days === null) return "Unknown";
-                    return `${days} ${days === 1 ? "day" : "days"} remaining`;
-                  })()}
-                </span>
+              <div className="mb-8 p-5 rounded-3xl bg-brand-500/5 border border-brand-500/15 text-left space-y-3.5 shadow-sm max-w-sm mx-auto">
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4 text-brand-500" /> Plan Expiration
+                  </span>
+                  <span className="text-foreground dark:text-white font-extrabold">
+                    {new Date(user.hubPlanExpiresAt).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric"
+                    })}
+                  </span>
+                </div>
+                {(() => {
+                  const days = getDaysRemaining() || 0;
+                  const percent = Math.min(100, Math.max(0, (days / 30) * 100));
+                  return (
+                    <div className="space-y-2">
+                      <div className="w-full h-1.5 bg-slate-200 dark:bg-neutral-850 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-brand-500 to-rose-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.35)] transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-wider">
+                        <span>Active status</span>
+                        <span>{days} {days === 1 ? "day" : "days"} left</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
             <button
