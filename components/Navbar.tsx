@@ -20,7 +20,12 @@ const navLinks = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const { query, setQuery, results, loading, open, setOpen, clear } = useSearch();
   const { user, logout } = useAuth();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -80,8 +85,8 @@ export default function Navbar() {
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "bg-background/85 backdrop-blur-xl border-b border-border/80 shadow-lg shadow-black/5"
-          : "bg-background/70 backdrop-blur-md border-b border-border/40"
+          ? "glass-premium border-b border-border/80 shadow-lg shadow-black/5"
+          : "bg-background/40 backdrop-blur-md border-b border-border/10"
       )}
     >
       {/* Top brand-gradient line border */}
@@ -304,7 +309,9 @@ export default function Navbar() {
               aria-label="Toggle theme"
             >
               <AnimatePresence mode="wait">
-                {theme === "dark" ? (
+                {!mounted ? (
+                  <div className="h-4.5 w-4.5" />
+                ) : theme === "dark" ? (
                   <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
                     <Sun className="h-4.5 w-4.5 text-amber-500" />
                   </motion.div>

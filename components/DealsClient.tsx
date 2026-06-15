@@ -257,17 +257,19 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                 const catId = cat.toLowerCase();
                 const isActive = selectedCategory === catId;
                 return (
-                  <button
+                  <motion.button
                     key={cat}
                     onClick={() => setSelectedCategory(catId)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                       isActive
-                        ? "bg-[#d43f36] text-white shadow-sm"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                        ? "bg-gradient-to-r from-brand-600 to-rose-600 text-white shadow-md shadow-brand-500/20 border-brand-500/30"
+                        : "bg-muted dark:bg-slate-900 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
                     }`}
                   >
                     {cat}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -279,7 +281,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                 <select
                   value={selectedDiscount}
                   onChange={(e) => setSelectedDiscount(e.target.value)}
-                  className="h-9 rounded-xl border border-input/80 bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d43f36]"
+                  className="h-9 rounded-xl border border-border/80 bg-muted/30 dark:bg-slate-900 px-3 text-xs font-bold text-foreground focus-visible:outline-none transition-all duration-200"
                 >
                   <option value="all">All Discounts</option>
                   <option value="20">20%+ off</option>
@@ -294,7 +296,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                 <select
                   value={selectedSort}
                   onChange={(e) => setSelectedSort(e.target.value)}
-                  className="h-9 rounded-xl border border-input/80 bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d43f36]"
+                  className="h-9 rounded-xl border border-border/80 bg-muted/30 dark:bg-slate-900 px-3 text-xs font-bold text-foreground focus-visible:outline-none transition-all duration-200"
                 >
                   <option value="highest-discount">Highest Discount</option>
                   <option value="lowest-price">Lowest Price</option>

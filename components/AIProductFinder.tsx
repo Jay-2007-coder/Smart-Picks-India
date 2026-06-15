@@ -191,12 +191,13 @@ export default function AIProductFinder() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-xl border border-teal-500/20 bg-teal-500/5 dark:bg-teal-500/10 text-teal-800 dark:text-teal-200 text-sm leading-relaxed"
+                  className="p-5 rounded-2xl border border-teal-500/30 bg-teal-500/5 dark:bg-teal-500/10 text-teal-800 dark:text-teal-200 text-sm leading-relaxed shadow-lg shadow-teal-500/5 backdrop-blur-sm relative"
                 >
-                  <strong className="font-bold flex items-center gap-1 mb-1 text-teal-900 dark:text-teal-100">
-                    <Sparkles className="h-4 w-4" /> AI Pick Analysis:
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none" />
+                  <strong className="font-extrabold flex items-center gap-1.5 mb-2 text-teal-900 dark:text-teal-100 uppercase tracking-wider text-[11px]">
+                    <Sparkles className="h-4 w-4 text-teal-500" /> AI Pick Analysis
                   </strong>
-                  {reasoning}
+                  <p className="font-medium text-slate-700 dark:text-slate-300">{reasoning}</p>
                 </motion.div>
               )}
 

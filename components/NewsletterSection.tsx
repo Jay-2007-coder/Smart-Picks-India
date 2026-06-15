@@ -40,7 +40,7 @@ export default function NewsletterSection() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="relative bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 rounded-3xl p-8 sm:p-12 text-white text-center overflow-hidden"
+      className="relative bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 rounded-3xl p-8 sm:p-12 text-white text-center overflow-hidden border border-brand-500/20 shadow-2xl shadow-brand-500/10"
     >
       {/* Animated background blobs */}
       <motion.div
@@ -112,9 +112,9 @@ export default function NewsletterSection() {
                 <motion.button
                   type="submit"
                   disabled={status === "loading"}
-                  whileHover={{ scale: 1.04 }}
+                  whileHover={{ scale: 1.04, boxShadow: "0 8px 25px -4px rgba(255,255,255,0.25)" }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-brand-700 hover:bg-brand-50 font-bold px-5 py-3 shrink-0 transition-all shadow-lg cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-brand-700 hover:bg-brand-50 font-bold px-5 py-3 shrink-0 transition-all shadow-lg cursor-pointer btn-shiny"
                 >
                   {status === "loading" ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

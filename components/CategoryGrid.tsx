@@ -22,7 +22,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
           whileHover={{ y: -6 }}
         >
           <Link href={`/category/${cat.slug}`} className="group block h-full">
-            <div className="card overflow-hidden text-center p-0 h-full hover:shadow-lg hover:shadow-black/8 transition-shadow duration-300">
+            <div className="card overflow-hidden text-center p-0 h-full hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/40 hover:border-brand-500/30 transition-all duration-300 border border-border/80 dark:border-border/30">
               <div className="relative h-28 overflow-hidden">
                 <Image
                   src={cat.image}

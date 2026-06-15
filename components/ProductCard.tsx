@@ -36,10 +36,10 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
         transition={{ duration: 0.45, delay: index * 0.07, ease: "easeOut" }}
         whileHover={{
           y: -6,
-          boxShadow: "0 20px 40px -15px rgba(0,0,0,0.15), 0 0 20px 2px rgba(212,63,54,0.06)",
-          borderColor: "rgba(212,63,54,0.25)"
+          boxShadow: "0 22px 48px -12px rgba(0,0,0,0.22), 0 0 28px 4px rgba(212,63,54,0.12)",
+          borderColor: "rgba(212,63,54,0.38)"
         }}
-        className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80"
+        className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80 dark:border-border/30 bg-card"
       >
         {/* Image Container */}
         <div className="relative aspect-square bg-muted overflow-hidden">
@@ -175,9 +175,9 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
             href={product.affiliateLink}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-brand-500/20 transition-all duration-300 btn-shiny"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-brand-500/20 transition-all duration-300 btn-shiny btn-premium-glow"
             id={`buy-${product.slug}`}
-            whileHover={{ scale: 1.02, boxShadow: "0 8px 20px -4px rgba(212, 63, 54, 0.3)" }}
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 22px -4px rgba(212, 63, 54, 0.4)" }}
             whileTap={{ scale: 0.97 }}
           >
             <ShoppingCart className="h-3.5 w-3.5" />

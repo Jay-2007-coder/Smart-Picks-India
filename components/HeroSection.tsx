@@ -23,7 +23,7 @@ export default function HeroSection({ heroProducts }: { heroProducts: Product[] 
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <section ref={containerRef} className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#1a0a0a] to-slate-900 text-white min-h-[88vh] flex flex-col justify-center">
+    <section ref={containerRef} className="relative overflow-hidden bg-gradient-to-br from-[#080d1a] via-[#0d1527] to-[#080d1a] text-white min-h-[88vh] flex flex-col justify-center">
       {/* Animated background blobs */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -171,10 +171,10 @@ export default function HeroSection({ heroProducts }: { heroProducts: Product[] 
                   whileHover={{
                     y: -6,
                     scale: 1.02,
-                    borderColor: "rgba(228,93,84,0.3)",
-                    boxShadow: "0 15px 30px -5px rgba(228,93,84,0.1)"
+                    borderColor: "rgba(212, 63, 54, 0.35)",
+                    boxShadow: "0 15px 30px -5px rgba(212, 63, 54, 0.15)"
                   }}
-                  className={`rounded-2xl overflow-hidden bg-white/8 backdrop-blur-sm border border-white/10 p-3 shadow-xl cursor-pointer transition-all duration-300 ${i % 2 === 1 ? "mt-6" : ""}`}
+                  className={`rounded-2xl overflow-hidden bg-white/5 dark:bg-slate-900/30 backdrop-blur-sm border border-white/10 dark:border-white/5 p-3 shadow-xl cursor-pointer transition-all duration-300 ${i % 2 === 1 ? "mt-6" : ""}`}
                 >
                   <div className="relative aspect-square rounded-xl overflow-hidden mb-3 bg-white/5">
                     {item.image && (

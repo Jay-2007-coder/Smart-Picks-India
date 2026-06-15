@@ -19,8 +19,12 @@ export default function BlogCard({ post, priority = false, index = 0 }: BlogCard
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.45, delay: index * 0.08 }}
-      whileHover={{ y: -6 }}
-      className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80 bg-card rounded-3xl shadow-sm glow-card-hover"
+      whileHover={{
+        y: -6,
+        boxShadow: "0 22px 48px -12px rgba(0,0,0,0.18), 0 0 28px 4px rgba(212,63,54,0.08)",
+        borderColor: "rgba(212,63,54,0.3)"
+      }}
+      className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80 dark:border-border/30 bg-card rounded-3xl shadow-sm"
     >
       {/* Image */}
       <Link href={`/blog/${post.slug}`} className="relative block overflow-hidden">
@@ -70,8 +74,8 @@ export default function BlogCard({ post, priority = false, index = 0 }: BlogCard
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
           {post.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="inline-flex items-center gap-1 text-xs text-brand-600 bg-brand-50 dark:bg-brand-950 rounded-full px-2.5 py-0.5 border border-brand-500/10">
-              <Tag className="h-3 w-3" />
+            <span key={tag} className="inline-flex items-center gap-1.5 text-[10px] font-bold text-brand-600 dark:text-brand-400 bg-brand-500/5 dark:bg-brand-500/10 rounded-full px-2.5 py-0.5 border border-brand-500/15 transition-all hover:bg-brand-500/10 dark:hover:bg-brand-500/20">
+              <Tag className="h-2.5 w-2.5" />
               {tag}
             </span>
           ))}
