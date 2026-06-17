@@ -16,6 +16,7 @@
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-toast": "^1.2.15",
     "@types/canvas-confetti": "^1.9.0",
+    "@types/three": "^0.184.1",
     "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.11.0",
     "canvas-confetti": "^1.9.4",
@@ -35,7 +36,8 @@
     "react-markdown": "^10.1.0",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
