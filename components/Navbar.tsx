@@ -85,8 +85,8 @@ export default function Navbar() {
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "glass-premium border-b border-border/80 shadow-lg shadow-black/5"
-          : "bg-background/40 backdrop-blur-md border-b border-border/10"
+          ? "bg-background/95 backdrop-blur-2xl border-b border-border/50 shadow-md"
+          : "bg-background/80 backdrop-blur-xl border-b border-border/10"
       )}
     >
       {/* Top brand-gradient line border */}
