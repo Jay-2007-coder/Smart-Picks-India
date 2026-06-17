@@ -400,4 +400,146 @@ Keep answers concise, structured, and student-focused. Avoid excessive verbosity
   }
 });
 
+// ──────────────────────────────────────────────────────────────────────────────
+// 6. AI PROJECT IDEA GENERATOR (ANTI-CLICHE)
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/project-idea-generator", awardXp, async (req, res, next) => {
+  try {
+    const { techStack, level, domain } = req.body;
+
+    if (!techStack || techStack.length === 0) {
+      return res.status(400).json({ success: false, message: "Tech stack is required." });
+    }
+
+    const techStackArray = Array.isArray(techStack) 
+      ? techStack 
+      : String(techStack).split(",").map(t => t.trim()).filter(Boolean);
+      
+    const techStackStr = techStackArray.join(", ");
+    const levelStr = level || "Intermediate";
+    const domainStr = domain && domain !== "any" ? domain : "General / Multi-disciplinary";
+
+    const systemPrompt = `You are a visionary software architect and senior developer mentor.
+Generate exactly 3 unique, non-cliché project ideas that solve real-world problems.
+DO NOT suggest standard clichés like To-Do lists, Weather apps, Simple chats, E-commerce/Netflix clones, recipe apps, notes apps, or basic calculators.
+Each project must have a clear value proposition, comparison against typical cliché alternatives, tech stack alignment, and a step-by-step architectural roadmap.
+Output MUST be raw JSON format with NO markdown formatting (no backticks, no markdown code block formatting).
+JSON format:
+[
+  {
+    "title": "Anti-Cliche Project Title",
+    "clicheComparison": "Contrast this with the typical cliche. E.g. 'Instead of a basic e-commerce store, this is a community-driven excess-food sharing marketplace...'",
+    "description": "A detailed explanation of the project idea, what it solves, and why it is interesting.",
+    "realWorldProblem": "The specific real-world problem it addresses.",
+    "techStackUsed": ["React", "Node.js", "MongoDB", "Tailwind CSS"],
+    "difficulty": "Intermediate",
+    "features": [
+      {
+        "name": "Feature 1",
+        "description": "Details of feature 1"
+      },
+      {
+        "name": "Feature 2",
+        "description": "Details of feature 2"
+      },
+      {
+        "name": "Feature 3",
+        "description": "Details of feature 3"
+      }
+    ],
+    "architecturalRoadmap": [
+      "Step 1: Set up the DB schema and write migrations for energy tracking.",
+      "Step 2: Build the core backend API to calculate energy decay and priority coefficients.",
+      "Step 3: Develop the frontend dashboard with Framer Motion transitions."
+    ]
+  }
+]`;
+
+    const userPrompt = `Generate 3 anti-cliche projects for:
+- Tech Stack: ${techStackStr}
+- Experience level: ${levelStr}
+- Target Domain/Theme: ${domainStr}
+Ensure ideas are highly innovative and align with the provided tech stack.`;
+
+    // Wrapped: callGemini returns null on quota exhaustion
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini project-idea-generator error:", aiErr.message);
+    }
+
+    if (!aiOutput) {
+      // Mock Fallback using the user's tech stack and experience level
+      const mockResult = [
+        {
+          title: "EcoRoute: Dynamic Carbon-Footprint Transit Optimizer",
+          clicheComparison: "Instead of a generic Google Maps clone or weather tracker, EcoRoute calculates carbon emission metrics per transport option in real-time, helping users budget their green transit.",
+          description: `A green logistics dashboard built on ${techStackStr} that overlays real-time public transit APIs, ridesharing emissions, and pedestrian routing to give users a unified 'carbon score' for their daily commute.`,
+          realWorldProblem: "Inability for urban commuters to easily quantify and reduce their personal daily transportation emissions.",
+          techStackUsed: techStackArray,
+          difficulty: levelStr,
+          features: [
+            { name: "Multi-Modal Emission Engine", description: "Calculates precise CO2 metrics based on transport type and vehicle efficiency parameters." },
+            { name: "Gamified Green Goals", description: "Users earn badges and rank on a local neighborhood leaderboard for carbon reduction." },
+            { name: "Route Comparison Chart", description: "Interactive visual comparison of speed vs. emissions vs. cost." }
+          ],
+          architecturalRoadmap: [
+            "Step 1: Set up server-side integration with open routing APIs (like OpenRouteService or Google Directions).",
+            "Step 2: Implement emission calculation equations based on EPA guidelines.",
+            "Step 3: Build a responsive dashboard UI with active charts displaying route comparison statistics."
+          ]
+        },
+        {
+          title: "FocusShift: Cognitive Energy Task Scheduler",
+          clicheComparison: "Instead of a basic To-Do checklist or kanban board, FocusShift maps out tasks according to the user's circadian rhythm and mental energy levels.",
+          description: `An intelligent productivity app built on ${techStackStr} where users log their high/medium/low energy periods, and tasks are automatically scheduled to run during their peak cognitive hours.`,
+          realWorldProblem: "Standard calendar systems encourage static scheduling, which leads to burnout and drop in student productivity during low-energy states.",
+          techStackUsed: techStackArray,
+          difficulty: levelStr,
+          features: [
+            { name: "Chronotype Questionnaire", description: "Determines user's natural daily energy flow (morning person vs. night owl)." },
+            { name: "Adaptive Task Prioritizer", description: "Algorithmically reschedules high-difficulty coding tasks to high-energy time slots." },
+            { name: "Focus Timer with Decay", description: "A smart timer that adjusts break intervals depending on duration of previous focused blocks." }
+          ],
+          architecturalRoadmap: [
+            "Step 1: Define database schemas for user chronotypes, tasks, and historical productivity logs.",
+            "Step 2: Develop the scheduling algorithm that scores tasks by energy requirements.",
+            "Step 3: Create a clean, distraction-free timer dashboard with ambient animations."
+          ]
+        },
+        {
+          title: "NeighbourAid: Peer-to-Peer Local Skill Swap",
+          clicheComparison: "Instead of a basic social media feed or e-commerce clone, NeighbourAid uses mutual credit and local networking to swap skills without monetary transactions.",
+          description: `A localized platform built on ${techStackStr} where community members trade skills (e.g. coding tutoring for plumbing help) using a time-banked credit system.`,
+          realWorldProblem: "High cost of professional services and educational tutoring, which isolates local community members from exchanging value.",
+          techStackUsed: techStackArray,
+          difficulty: levelStr,
+          features: [
+            { name: "Mutual Trust Time-ledger", description: "Keeps transaction history of hours served and hours consumed securely." },
+            { name: "Geofenced Skill Search", description: "Locates users with desired skills within a customizable 5-kilometer radius." },
+            { name: "Interactive Availability Calendar", description: "Allows real-time scheduling and booking of swap sessions." }
+          ],
+          architecturalRoadmap: [
+            "Step 1: Build the backend ledger services for time-credit verification.",
+            "Step 2: Add geolocation queries in the database to retrieve nearby users efficiently.",
+            "Step 3: Implement an instant chat-request flow to coordinate swap meetups."
+          ]
+        }
+      ];
+      return res.status(200).json({ success: true, ideas: mockResult, quotaFallback: true });
+    }
+
+    try {
+      const ideas = cleanGeminiJson(aiOutput);
+      res.status(200).json({ success: true, ideas });
+    } catch (parseErr) {
+      console.error("AI JSON Parse Error:", parseErr.message, "\nRaw:", aiOutput);
+      res.status(500).json({ success: false, message: "Failed to parse AI-generated project ideas. Try again." });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

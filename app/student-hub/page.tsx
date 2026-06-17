@@ -20,6 +20,7 @@ import {
   Briefcase,
   Compass,
   Zap,
+  Lightbulb,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -133,6 +134,14 @@ const tools = [
         icon: CheckCircle,
         color: "text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/5",
         hoverColor: "group-hover:text-cyan-400 group-hover:bg-cyan-500/20",
+      },
+      {
+        title: "AI Project Generator",
+        description: "Generate highly unique, anti-cliché project ideas with detailed architectural roadmaps.",
+        href: "/student-hub/project-idea-generator",
+        icon: Lightbulb,
+        color: "text-amber-500 bg-amber-500/10 dark:bg-amber-500/5",
+        hoverColor: "group-hover:text-amber-400 group-hover:bg-amber-500/20",
       },
     ],
   },
@@ -324,7 +333,7 @@ export default function StudentHub() {
                                 Most Used
                               </span>
                             )}
-                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker"].includes(tool.title) && (
+                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker", "AI Project Generator"].includes(tool.title) && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
                                 New
                               </span>
