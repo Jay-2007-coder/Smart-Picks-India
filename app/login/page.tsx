@@ -448,11 +448,14 @@ function LoginFormContent() {
           ].map((social) => (
             <motion.button
               key={social.id}
+              type="button"
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => socialLogin(social.id as any)}
+              onClick={() => {
+                window.location.href = `/api/v1/auth/${social.id}`;
+              }}
               disabled={isPending}
-              className="flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group"
+              className="flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group cursor-pointer relative z-50"
             >
               <div className="group-hover:scale-110 transition-transform">{social.icon}</div>
             </motion.button>
