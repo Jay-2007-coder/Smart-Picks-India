@@ -12,12 +12,7 @@ const features = [
   { icon: Tag, text: "Daily Deals", color: "text-pink-400", bg: "bg-pink-400/10" },
 ];
 
-const stats = [
-  { label: "Users", value: "50K+", suffix: "" },
-  { label: "Saved", value: "₹1 Cr+", suffix: "" },
-  { label: "Resources", value: "10K+", suffix: "" },
-  { label: "Daily Deals", value: "1000+", suffix: "" },
-];
+
 
 export function AuthHero() {
 
@@ -85,20 +80,7 @@ export function AuthHero() {
         })}
       </motion.div>
 
-      {/* 4. Stats Row */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1 }}
-        className="flex items-center justify-between py-6 border-y border-white/10 mb-8"
-      >
-        {stats.map((stat, i) => (
-          <div key={i} className="text-center">
-            <div className="text-2xl font-black text-white">{stat.value}</div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">{stat.label}</div>
-          </div>
-        ))}
-      </motion.div>
+
 
 
 
