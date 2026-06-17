@@ -1,17 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Brain, GraduationCap, Tag, TrendingUp, Award, CheckCircle2 } from "lucide-react";
-
-const activityData = [
-  { user: "Rahul from Mumbai", action: "saved ₹1200 on an iPad" },
-  { user: "Priya", action: "unlocked Student Discount" },
-  { user: "Aman", action: "bought Laptop Stand at ₹399" },
-  { user: "Neha", action: "saved ₹2500 on a new phone" },
-  { user: "Vikram", action: "claimed 40% off on headphones" },
-  { user: "Sneha", action: "found the best price for MacBook" },
-];
+import React from "react";
+import { motion } from "framer-motion";
+import { Zap, Brain, GraduationCap, Tag } from "lucide-react";
+import Typewriter from "typewriter-effect";
 
 const features = [
   { icon: Zap, text: "Instant Price Comparison", color: "text-amber-400", bg: "bg-amber-400/10" },
@@ -28,15 +20,6 @@ const stats = [
 ];
 
 export function AuthHero() {
-  const [currentActivity, setCurrentActivity] = useState(0);
-
-  // Cycle through activity feed
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentActivity((prev) => (prev + 1) % activityData.length);
-    }, 3500);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="relative z-10 hidden lg:flex flex-col justify-center h-full max-w-lg mx-auto pr-10 text-white">
@@ -46,12 +29,22 @@ export function AuthHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="mb-6"
+        className="mb-6 h-[60px] flex items-center"
       >
         <h1 className="text-5xl font-black tracking-tight leading-[1.1]">
-          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">Save Smarter.</span>
-          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400 mt-1">Study Better.</span>
-          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400 mt-1">Shop Faster.</span>
+          <Typewriter
+            options={{
+              strings: [
+                '<span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">Save Smarter.</span>',
+                '<span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400">Study Better.</span>',
+                '<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">Shop Faster.</span>'
+              ],
+              autoStart: true,
+              loop: true,
+              delay: 50,
+              deleteSpeed: 30,
+            }}
+          />
         </h1>
       </motion.div>
 
@@ -107,36 +100,7 @@ export function AuthHero() {
         ))}
       </motion.div>
 
-      {/* 5. Live Activity Feed */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1.2 }}
-        className="mt-auto"
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Live Activity</span>
-        </div>
-        
-        <div className="h-12 relative overflow-hidden bg-white/5 border border-white/10 rounded-xl px-4 py-3 backdrop-blur-md">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentActivity}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0 flex items-center px-4"
-            >
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 mr-2 flex-shrink-0" />
-              <p className="text-sm text-slate-300 truncate">
-                <span className="font-semibold text-white">{activityData[currentActivity].user}</span> {activityData[currentActivity].action}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </motion.div>
+
 
     </div>
   );
