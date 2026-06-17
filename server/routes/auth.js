@@ -229,6 +229,7 @@ router.post("/send-otp", authLimiter, validate(requestOtpSchema), async (req, re
 
     // Generate 6-digit OTP code
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`\n[AUTH] Generated OTP for ${phone}: ${otpCode}\n`);
     const salt = await bcrypt.genSalt(10);
     const codeHash = await bcrypt.hash(otpCode, salt);
 
