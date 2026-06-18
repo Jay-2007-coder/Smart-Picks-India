@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth";
 /* ─────────────── TYPES & INTERFACES ─────────────── */
 interface TechCard {
   name: string;
+  category?: string;
   whatIsIt: string;
   whyUsed: string;
   analogy: string;
@@ -157,6 +158,341 @@ const DOMAINS = [
     roles: ["Freelancing", "Startup Founder", "Technical Product Manager", "Solutions Architect", "System Design Engineer"]
   }
 ];
+
+/* ─────────────── TECHNOLOGIES DATABASE & RESOLVERS ─────────────── */
+const TECH_DATABASE: Record<string, Omit<TechCard, "name" | "category">> = {
+  "React": {
+    whatIsIt: "A declarative, component-based frontend library for building highly interactive user interfaces.",
+    whyUsed: "It leverages a Virtual DOM to minimize direct browser manipulation, rendering state changes efficiently.",
+    analogy: "Like a building constructed from modular prefabricated rooms (Lego blocks) that can be swapped out instantly without rebuilding the structure.",
+    beginnerDesc: "Learn JSX syntax, component props, and basic hooks like useState and useEffect to manage component lifecycles.",
+    advancedDesc: "Master concurrent features (useTransition, Suspense), fiber reconciliation internals, and custom hook abstraction.",
+    advantages: ["Component modularity", "Massive ecosystem and libraries", "Fast updates via Virtual DOM"],
+    limitations: ["Unopinionated design requires architectural decisions", "Frequent state updates can cause performance issues if not optimized"],
+    difficulty: "Medium",
+    learningTime: "3-4 Weeks",
+    prerequisites: ["HTML", "CSS", "ES6 JavaScript (closures, array methods, async/await)"],
+    interviewQuestion: {
+      q: "What is reconciliation in React and how does the Virtual DOM help?",
+      a: "Reconciliation is React's algorithm to sync the virtual UI tree with the real DOM. When state changes, a new Virtual DOM tree is generated. React diffs it with the old tree and batches updates to commit only the minimum changes, avoiding expensive layout repaints."
+    },
+    miniProject: {
+      title: "Collaborative Sprint Board",
+      desc: "An interactive project management board enabling card dragging, list filtering, and local state management."
+    },
+    resources: ["Official React Docs (react.dev)", "Kent C. Dodds - Epic React", "Scrimba React Course"]
+  },
+  "Next.js": {
+    whatIsIt: "A production-grade React framework providing Server Components, App Routing, optimization tools, and Server Actions.",
+    whyUsed: "It solves SEO and page load speed issues through Server-Side Rendering (SSR), Static Site Generation (SSG), and Edge Middleware.",
+    analogy: "Like a high-end restaurant where dishes are pre-cooked and plated in the kitchen (server) rather than having the guest cook them at the table (client).",
+    beginnerDesc: "Learn file-based App Routing, page layouts, data fetching with fetch(), and client vs. server components.",
+    advancedDesc: "Master Incremental Static Regeneration (ISR), Server Actions, intercepting/parallel routes, and middleware edge functions.",
+    advantages: ["Excellent out-of-the-box SEO", "Zero configuration routing and asset optimization", "Hybrid SSR/SSG models"],
+    limitations: ["Steep learning curve with App Router", "Serverless environment deployment quirks"],
+    difficulty: "Medium",
+    learningTime: "2-3 Weeks",
+    prerequisites: ["React", "Basic Node.js concepts"],
+    interviewQuestion: {
+      q: "What is the difference between Server and Client Components in Next.js App Router?",
+      a: "Server Components render on the server, sending pre-rendered HTML to the browser and reducing client bundle sizes. Client Components are hydration-ready components that execute on the client, enabling client-side state hooks and event listeners."
+    },
+    miniProject: {
+      title: "SEO-Optimized Product Catalogue",
+      desc: "A dynamic catalog using Incremental Static Regeneration, dynamic route prefetching, and metadata optimization."
+    },
+    resources: ["Next.js Learn Course", "Vercel Documentation", "Next.js GitHub repository"]
+  },
+  "Spring Boot": {
+    whatIsIt: "An opinionated framework that simplifies Java enterprise application development through auto-configuration.",
+    whyUsed: "It eliminates boilerplate code, hosts an embedded Tomcat server, and integrates the entire Spring ecosystem.",
+    analogy: "Like renting a fully furnished apartment where everything is pre-connected, instead of buying empty space and laying the wiring yourself.",
+    beginnerDesc: "Learn Dependency Injection, basic annotations (@RestController, @Service, @Autowired), and building REST endpoints.",
+    advancedDesc: "Master custom starter packs, Spring AOP (Aspect-Oriented Programming), dynamic profiles, and JDBC connection pool configurations.",
+    advantages: ["No XML configuration required", "Embedded server simplifies deployments", "Robust transaction management"],
+    limitations: ["High memory footprint compared to Go or Node.js", "Opinionated setup makes customization complex"],
+    difficulty: "Hard",
+    learningTime: "4-5 Weeks",
+    prerequisites: ["Core Java", "SQL Databases"],
+    interviewQuestion: {
+      q: "Explain Bean scopes in Spring Boot.",
+      a: "By default, Spring Beans are Singletons (one instance per container). Other scopes include Prototype (new instance every request), Request (one per HTTP request), Session, and Application."
+    },
+    miniProject: {
+      title: "Secure E-Commerce Core API",
+      desc: "A Java Spring Boot service integrating database migrations, JPA relation mappings, and custom exception handlers."
+    },
+    resources: ["Spring Boot Documentation", "Java Brains Spring Course", "Baeldung Spring tutorials"]
+  },
+  "Docker": {
+    whatIsIt: "A containerization platform that packages applications and dependencies into isolated container environments.",
+    whyUsed: "It solves the 'works on my machine' issue by ensuring consistency across development, testing, and production.",
+    analogy: "Like standardized shipping containers on a cargo ship: they all fit the slots perfectly, regardless of whether they hold cars, electronics, or food.",
+    beginnerDesc: "Learn to write Dockerfiles, build images, run containers, and manage environment variables.",
+    advancedDesc: "Master multi-stage builds, container security, network bridges, volume mounts, and Docker Compose orchestration.",
+    advantages: ["Consistent environment delivery", "Isolation of processes", "Resource-efficient compared to Virtual Machines"],
+    limitations: ["Persistent data requires volume configuration", "Slight runtime overhead for network bridging"],
+    difficulty: "Medium",
+    learningTime: "1-2 Weeks",
+    prerequisites: ["Basic Terminal Command Line"],
+    interviewQuestion: {
+      q: "What is the difference between a Docker Image and a Docker Container?",
+      a: "A Docker Image is a read-only blueprint containing the OS, application code, and libraries. A Docker Container is a runnable, writeable instance of that image executing as an isolated process on the host kernel."
+    },
+    miniProject: {
+      title: "Multi-Service App Container Stack",
+      desc: "Containerize a Next.js frontend, a Node.js backend, and a PostgreSQL database using a Docker Compose network configuration."
+    },
+    resources: ["Docker Get Started Guide", "Katacoda Interactive Labs", "Docker Mastery Course"]
+  },
+  "Kubernetes": {
+    whatIsIt: "An open-source container orchestration engine that automates deployment, scaling, and container management.",
+    whyUsed: "It ensures high availability, self-healing containers, automatic horizontal scaling, and service discovery.",
+    analogy: "Like a conductor of an orchestra: directing individual musicians (containers) to play in sync, scale volume, and step in if a musician falls ill.",
+    beginnerDesc: "Learn basic objects like Pods, Deployments, Services, Namespaces, and running kubectl commands.",
+    advancedDesc: "Master Helm Chart templating, Custom Resource Definitions (CRDs), ingress controller configurations, and network policies.",
+    advantages: ["Automatic scaling and self-healing", "Declarative configurations", "Cloud-provider independence"],
+    limitations: ["High setup and configuration complexity", "Steep learning curve for local environments"],
+    difficulty: "Hard",
+    learningTime: "4-6 Weeks",
+    prerequisites: ["Docker", "Linux basics", "Basic networking concepts"],
+    interviewQuestion: {
+      q: "What is a Pod in Kubernetes, and why don't we deploy Pods directly?",
+      a: "A Pod is the smallest deployable unit in K8s, wrapping one or more containers sharing storage and network. We don't deploy them directly because they are ephemeral; instead, we use Deployments or ReplicaSets to ensure self-healing and replication."
+    },
+    miniProject: {
+      title: "Highly-Available Cloud Deploy",
+      desc: "Deploy a microservice cluster configured with auto-scalers, ingress routing, health checks, and config maps."
+    },
+    resources: ["Kubernetes interactive docs", "KubeAcademy by VMware", "Certified Kubernetes Administrator (CKA) course"]
+  },
+  "LangGraph": {
+    whatIsIt: "A framework designed to build stateful, multi-actor applications with LLMs using graph structures.",
+    whyUsed: "It natively supports cyclic graph loops, execution checkpointing, and human-in-the-loop interventions, making it perfect for complex AI agents.",
+    analogy: "Like a collaborative board game: players (agents) take turns, update the game board state, and follow custom rules, with a game log tracking every move.",
+    beginnerDesc: "Learn node definitions, edges, state schemas, and simple cyclic prompt chains.",
+    advancedDesc: "Master state token management, parallel execution branches, custom memory checkpointers, and user intervention approvals.",
+    advantages: ["Handles complex cyclic agent flows", "State persistence and time-travel debugging", "Built-in telemetry"],
+    limitations: ["Steep concept curve compared to simple LangChain chains", "Requires careful management of prompt tokens"],
+    difficulty: "Hard",
+    learningTime: "3-4 Weeks",
+    prerequisites: ["Python async/await", "LangChain fundamentals"],
+    interviewQuestion: {
+      q: "Why use LangGraph instead of standard LangChain pipelines for complex agents?",
+      a: "Standard LangChain pipelines are directed acyclic graphs (DAGs) which struggle with feedback loops. LangGraph supports cyclic architectures, allowing agents to self-evaluate, correct errors, and collaborate statefully over multiple turns."
+    },
+    miniProject: {
+      title: "Self-Correcting Code Writer Agent",
+      desc: "An AI Agent that writes code, runs it in an isolated environment, reads terminal errors, and iterates until compilation passes."
+    },
+    resources: ["LangChain Academy", "LangGraph GitHub examples", "DeepLearning.AI Agentic Workflows Course"]
+  }
+};
+
+function getTechCard(name: string, category: string): TechCard {
+  const staticCard = TECH_DATABASE[name];
+  if (staticCard) {
+    return {
+      ...staticCard,
+      name,
+      category
+    };
+  }
+
+  const difficulty: "Easy" | "Medium" | "Hard" = 
+    ["Cypress", "Kubernetes", "Microservices", "System Design", "Kafka", "PyTorch", "TensorFlow", "Kubeflow", "Multi-Agent Systems", "Terraform", "Ansible", "ELK Stack"].some(x => name.includes(x))
+      ? "Hard"
+      : ["React", "Next.js", "Spring Boot", "Redux", "Zustand", "PostgreSQL", "Docker", "GitLab CI", "LangChain", "LangGraph", "LlamaIndex", "FastAPI", "MLflow", "Airflow", "Mockito", "Hibernate", "JPA"].some(x => name.includes(x))
+        ? "Medium"
+        : "Easy";
+
+  const learningTime = difficulty === "Hard" ? "4-6 Weeks" : difficulty === "Medium" ? "2-3 Weeks" : "1 Week";
+  
+  return {
+    name,
+    category,
+    whatIsIt: `A critical tool/concept in the ${category} landscape, used for modern software implementation.`,
+    whyUsed: `It provides industry-standard capabilities to handle ${category.toLowerCase()} workloads efficiently.`,
+    analogy: `Like using a specialized tool in a toolbox that is optimized for this exact job.`,
+    beginnerDesc: `Learn the setup, basic syntax, and core commands of ${name}.`,
+    advancedDesc: `Master advanced configuration, scalability patterns, and performance tuning for ${name}.`,
+    advantages: ["Industry standard", "High performance", "Large community support"],
+    limitations: ["Learning curve", "Operational complexity"],
+    difficulty,
+    learningTime,
+    prerequisites: ["Core programming logic", "Development foundations"],
+    interviewQuestion: {
+      q: `What is the primary benefit of using ${name} in a production environment?`,
+      a: `It simplifies operations, enhances scalability, and integrates seamlessly within standard enterprise pipelines.`
+    },
+    miniProject: {
+      title: `${name} Integration Demo`,
+      desc: `Build a small application showcasing basic features and config options of ${name}.`
+    },
+    resources: [`Official ${name} Docs`, `SmartPicks ${name} Quickstart`]
+  };
+}
+
+function getRoleTechnologies(role: string, domain: string, difficulty: string): TechCard[] {
+  const normalizedRole = role.toLowerCase();
+  
+  if (normalizedRole.includes("mern") || normalizedRole.includes("frontend developer") || normalizedRole.includes("backend developer") && !normalizedRole.includes("java") && !normalizedRole.includes("python")) {
+    return [
+      getTechCard("HTML", "Languages"),
+      getTechCard("CSS", "Languages"),
+      getTechCard("JavaScript", "Languages"),
+      getTechCard("TypeScript", "Languages"),
+      getTechCard("React", "Frontend"),
+      getTechCard("Next.js", "Frontend"),
+      getTechCard("Redux", "Frontend"),
+      getTechCard("Zustand", "Frontend"),
+      getTechCard("Node.js", "Backend"),
+      getTechCard("Express.js", "Backend"),
+      getTechCard("MongoDB", "Databases"),
+      getTechCard("MySQL", "Databases"),
+      getTechCard("PostgreSQL", "Databases"),
+      getTechCard("Redis", "Databases"),
+      getTechCard("JWT", "Authentication"),
+      getTechCard("OAuth", "Authentication"),
+      getTechCard("Firebase Auth", "Authentication"),
+      getTechCard("Docker", "DevOps"),
+      getTechCard("Kubernetes", "DevOps"),
+      getTechCard("GitHub Actions", "DevOps"),
+      getTechCard("AWS", "Cloud"),
+      getTechCard("GCP", "Cloud"),
+      getTechCard("Azure", "Cloud"),
+      getTechCard("REST APIs", "Architecture"),
+      getTechCard("GraphQL", "Architecture"),
+      getTechCard("Microservices", "Architecture"),
+      getTechCard("System Design", "Architecture"),
+      getTechCard("Kafka", "Messaging"),
+      getTechCard("RabbitMQ", "Messaging"),
+      getTechCard("Prometheus", "Monitoring"),
+      getTechCard("Grafana", "Monitoring"),
+      getTechCard("Sentry", "Monitoring"),
+      getTechCard("Jest", "Testing"),
+      getTechCard("Cypress", "Testing"),
+      getTechCard("Postman", "Testing"),
+      getTechCard("Git", "Version Control"),
+      getTechCard("GitHub", "Version Control"),
+    ];
+  }
+  
+  if (normalizedRole.includes("java")) {
+    return [
+      getTechCard("Java", "Languages"),
+      getTechCard("SQL", "Languages"),
+      getTechCard("JavaScript", "Languages"),
+      getTechCard("Spring Boot", "Frameworks"),
+      getTechCard("Spring Security", "Frameworks"),
+      getTechCard("Spring MVC", "Frameworks"),
+      getTechCard("Hibernate", "Frameworks"),
+      getTechCard("JPA", "Frameworks"),
+      getTechCard("MySQL", "Databases"),
+      getTechCard("PostgreSQL", "Databases"),
+      getTechCard("MongoDB", "Databases"),
+      getTechCard("Redis", "Databases"),
+      getTechCard("Microservices", "Architecture"),
+      getTechCard("REST APIs", "Architecture"),
+      getTechCard("Design Patterns", "Architecture"),
+      getTechCard("Kafka", "Messaging"),
+      getTechCard("RabbitMQ", "Messaging"),
+      getTechCard("Docker", "DevOps"),
+      getTechCard("Kubernetes", "DevOps"),
+      getTechCard("Jenkins", "DevOps"),
+      getTechCard("AWS", "Cloud"),
+      getTechCard("Azure", "Cloud"),
+      getTechCard("JUnit", "Testing"),
+      getTechCard("Mockito", "Testing"),
+      getTechCard("Maven", "Build Tools"),
+      getTechCard("Gradle", "Build Tools"),
+    ];
+  }
+  
+  if (normalizedRole.includes("agent")) {
+    return [
+      getTechCard("Python", "Languages"),
+      getTechCard("JavaScript", "Languages"),
+      getTechCard("Prompt Engineering", "Concepts"),
+      getTechCard("Retrieval Augmented Generation (RAG)", "Concepts"),
+      getTechCard("Model Context Protocol (MCP)", "Concepts"),
+      getTechCard("Agent Memory & State Management", "Concepts"),
+      getTechCard("Tool Calling & Function Execution", "Concepts"),
+      getTechCard("Multi-Agent Systems", "Concepts"),
+      getTechCard("LangChain", "Frameworks"),
+      getTechCard("LangGraph", "Frameworks"),
+      getTechCard("CrewAI", "Frameworks"),
+      getTechCard("AutoGen", "Frameworks"),
+      getTechCard("OpenAI SDK", "Frameworks"),
+      getTechCard("PydanticAI", "Frameworks"),
+      getTechCard("Pinecone", "Vector Databases"),
+      getTechCard("ChromaDB", "Vector Databases"),
+      getTechCard("Redis", "Vector Databases"),
+      getTechCard("n8n", "Integration & Workflow"),
+      getTechCard("Zapier", "Integration & Workflow"),
+      getTechCard("Make.com", "Integration & Workflow"),
+      getTechCard("Docker", "DevOps & Hosting"),
+      getTechCard("FastAPI", "DevOps & Hosting"),
+      getTechCard("AWS (ECS, Lambda)", "DevOps & Hosting"),
+    ];
+  }
+  
+  if (normalizedRole.includes("ai") || normalizedRole.includes("machine learning") || normalizedRole.includes("deep learning") || normalizedRole.includes("data scientist")) {
+    return [
+      getTechCard("Python", "Languages"),
+      getTechCard("SQL", "Languages"),
+      getTechCard("NumPy", "Libraries"),
+      getTechCard("Pandas", "Libraries"),
+      getTechCard("Matplotlib", "Libraries"),
+      getTechCard("Seaborn", "Libraries"),
+      getTechCard("Scikit-Learn", "Libraries"),
+      getTechCard("TensorFlow", "Deep Learning"),
+      getTechCard("PyTorch", "Deep Learning"),
+      getTechCard("Keras", "Deep Learning"),
+      getTechCard("NLTK", "NLP"),
+      getTechCard("SpaCy", "NLP"),
+      getTechCard("Hugging Face Transformers", "NLP"),
+      getTechCard("LangChain", "Generative AI"),
+      getTechCard("LlamaIndex", "Generative AI"),
+      getTechCard("OpenAI API", "Generative AI"),
+      getTechCard("Vector Databases (Pinecone, ChromaDB, Weaviate)", "Generative AI"),
+      getTechCard("Docker", "DevOps/MLOps"),
+      getTechCard("FastAPI", "DevOps/MLOps"),
+      getTechCard("AWS (SageMaker)", "DevOps/MLOps"),
+      getTechCard("MLflow", "DevOps/MLOps"),
+      getTechCard("Airflow", "DevOps/MLOps"),
+      getTechCard("Kubeflow", "DevOps/MLOps"),
+    ];
+  }
+  
+  if (normalizedRole.includes("devops") || normalizedRole.includes("sre") || normalizedRole.includes("cloud") || normalizedRole.includes("platform")) {
+    return [
+      getTechCard("Linux Fundamentals", "Operating System & Networking"),
+      getTechCard("Networking Basics (HTTP, DNS, SSH)", "Operating System & Networking"),
+      getTechCard("Bash/Shell Scripting", "Scripting & Version Control"),
+      getTechCard("Git & GitHub", "Scripting & Version Control"),
+      getTechCard("Docker", "Containers & Orchestration"),
+      getTechCard("Kubernetes", "Containers & Orchestration"),
+      getTechCard("Jenkins", "CI/CD Pipelines"),
+      getTechCard("GitHub Actions", "CI/CD Pipelines"),
+      getTechCard("GitLab CI", "CI/CD Pipelines"),
+      getTechCard("Terraform", "Infrastructure as Code"),
+      getTechCard("Ansible", "Infrastructure as Code"),
+      getTechCard("AWS", "Cloud Platforms"),
+      getTechCard("Azure", "Cloud Platforms"),
+      getTechCard("GCP", "Cloud Platforms"),
+      getTechCard("Prometheus", "Monitoring & Logging"),
+      getTechCard("Grafana", "Monitoring & Logging"),
+      getTechCard("ELK Stack", "Monitoring & Logging"),
+    ];
+  }
+
+  return [
+    getTechCard("Git", "Version Control"),
+    getTechCard("Docker", "DevOps"),
+    getTechCard("AWS", "Cloud Platforms"),
+  ];
+}
 
 export default function CareerBlueprintHub() {
   const { user, loading: authLoading } = useAuth() as any;
@@ -510,130 +846,112 @@ export default function CareerBlueprintHub() {
 
   // Dynamic Generator Fallback to cover ALL remaining roles
   const activeRoleDetails = useMemo((): RoleDetails => {
+    let details: RoleDetails;
     if (MOCK_ROLES_DATABASE[selectedRole]) {
-      return MOCK_ROLES_DATABASE[selectedRole];
-    }
-    
-    // Generate intelligent details on the fly
-    const resolvedDifficulty: "Easy" | "Medium" | "Hard" = 
-      selectedRole.includes("Senior") || selectedRole.includes("Architect") || selectedRole.includes("MLOps") || selectedRole.includes("SRE") || selectedRole.includes("Deep Learning")
-        ? "Hard"
-        : selectedRole.includes("Analyst") || selectedRole.includes("Prompt") || selectedRole.includes("Freelancing")
-          ? "Easy"
-          : "Medium";
+      details = { ...MOCK_ROLES_DATABASE[selectedRole] };
+    } else {
+      // Generate intelligent details on the fly
+      const resolvedDifficulty: "Easy" | "Medium" | "Hard" = 
+        selectedRole.includes("Senior") || selectedRole.includes("Architect") || selectedRole.includes("MLOps") || selectedRole.includes("SRE") || selectedRole.includes("Deep Learning")
+          ? "Hard"
+          : selectedRole.includes("Analyst") || selectedRole.includes("Prompt") || selectedRole.includes("Freelancing")
+            ? "Easy"
+            : "Medium";
 
-    const isAi = selectedDomain === "Artificial Intelligence";
-    const isCloud = selectedDomain === "Cloud & DevOps";
-    const isSecurity = selectedDomain === "Security Domain";
-    
-    return {
-      role: selectedRole,
-      icon: isAi ? Brain : isCloud ? Server : isSecurity ? ShieldAlert : Briefcase,
-      category: selectedDomain,
-      level: resolvedDifficulty === "Hard" ? "Advanced" : resolvedDifficulty === "Medium" ? "Intermediate" : "Beginner",
-      duration: resolvedDifficulty === "Hard" ? "9 Months" : resolvedDifficulty === "Medium" ? "6 Months" : "3 Months",
-      difficulty: resolvedDifficulty,
-      demand: resolvedDifficulty === "Hard" ? "Critical" : "High",
-      growth: resolvedDifficulty === "Hard" ? "35%" : "22%",
-      remoteWork: "Yes",
-      about: `Professional career track for ${selectedRole} in the ${selectedDomain} industry. This role focuses on high-yield production tasks and target configurations.`,
-      importance: `Essential role ensuring high performance, optimization, and system safety in modern digital platforms.`,
-      problemsSolved: `Automates workflows, resolves technical bottlenecks, and scales infrastructure setup rules.`,
-      responsibilities: [
-        `Configure and support systems aligned with ${selectedRole} standard conventions.`,
-        "Collaborate with development teams to align technology stacks and production targets.",
-        "Perform testing, diagnostic audits, and speed optimizations.",
-        "Review architectural blueprints and construct clean documentation."
-      ],
-      industries: [
-        { name: "Enterprise SaaS", howUsed: "Scaling secure customer interfaces, processing databases, and optimizing runtime performance.", example: "Salesforce, AWS, Snowflake", growthPotential: "High" },
-        { name: "Startups & Agencies", howUsed: "Building quick models, testing features, and automating routine deployment templates.", example: "Y-Combinator companies", growthPotential: "Very High" }
-      ],
-      technologies: [
-        {
-          name: "Standard Tools & SDKs",
-          whatIsIt: "Primary command-line, code frameworks, or interface APIs used in production systems.",
-          whyUsed: "Provides industry-proven performance standards and reduces coding boilerplate.",
-          analogy: "Like a craftsman's workbench: you need the right tools nearby to build high-quality solutions.",
-          beginnerDesc: "Core frameworks and helper libraries that simplify building features for this role.",
-          advancedDesc: "Complex configurations, caching libraries, asynchronous call pipelines, and strict type management.",
-          advantages: ["Increases workflow speed", "High community support", "Production stability"],
-          limitations: ["Frequent updates", "High runtime memory footprints"],
-          difficulty: resolvedDifficulty,
-          learningTime: "4 Weeks",
-          prerequisites: ["Basic Programming", "CLI basics"],
-          interviewQuestion: {
-            q: `What is the most critical constraint when scaling tools for ${selectedRole}?`,
-            a: "Optimizing database memory load, managing call latency times, keeping endpoints secure, and ensuring modular components."
-          },
-          miniProject: {
-            title: "Industry dashboard template",
-            desc: "A clean dashboard compiling monitoring alerts, logging errors, and managing configurations."
-          },
-          resources: ["Documentation manuals", "Tech blogs", "Youtube tutorials"]
-        }
-      ],
-      roadmap: [
-        {
-          id: `road-node-${selectedRole.toLowerCase().replace(/\s+/g, "-")}-1`,
-          title: "Introduction & Syntax",
-          phase: "Foundation",
-          explanation: "Master core programming syntax, terminal controls, and system rules.",
-          objectives: ["Understand base commands", "Write simple scripts", "Configure workspace tools"],
-          timeEstimate: "3 Weeks",
-          resources: ["Official guides", "MDN tutorials"],
-          projectCheckpoint: { title: "Basic Calculator Console", desc: "A simple calculator console parsing inputs and executing operations." },
-          quiz: {
-            question: "Which data structure is optimal for caching key-value parameters?",
-            options: ["Array", "Linked List", "Hash Map / Object", "Binary Tree"],
-            answerIndex: 2,
-            explanation: "Hash maps allow constant time lookup O(1) for keys, making them ideal for caching configurations."
+      const isAi = selectedDomain === "Artificial Intelligence";
+      const isCloud = selectedDomain === "Cloud & DevOps";
+      const isSecurity = selectedDomain === "Security Domain";
+
+      details = {
+        role: selectedRole,
+        icon: isAi ? Brain : isCloud ? Server : isSecurity ? ShieldAlert : Briefcase,
+        category: selectedDomain,
+        level: resolvedDifficulty === "Hard" ? "Advanced" : resolvedDifficulty === "Medium" ? "Intermediate" : "Beginner",
+        duration: resolvedDifficulty === "Hard" ? "9 Months" : resolvedDifficulty === "Medium" ? "6 Months" : "3 Months",
+        difficulty: resolvedDifficulty,
+        demand: resolvedDifficulty === "Hard" ? "Critical" : "High",
+        growth: resolvedDifficulty === "Hard" ? "35%" : "22%",
+        remoteWork: "Yes",
+        about: `Professional career track for ${selectedRole} in the ${selectedDomain} industry. This role focuses on high-yield production tasks and target configurations.`,
+        importance: `Essential role ensuring high performance, optimization, and system safety in modern digital platforms.`,
+        problemsSolved: `Automates workflows, resolves technical bottlenecks, and scales infrastructure setup rules.`,
+        responsibilities: [
+          `Configure and support systems aligned with ${selectedRole} standard conventions.`,
+          "Collaborate with development teams to align technology stacks and production targets.",
+          "Perform testing, diagnostic audits, and speed optimizations.",
+          "Review architectural blueprints and construct clean documentation."
+        ],
+        industries: [
+          { name: "Enterprise SaaS", howUsed: "Scaling secure customer interfaces, processing databases, and optimizing runtime performance.", example: "Salesforce, AWS, Snowflake", growthPotential: "High" },
+          { name: "Startups & Agencies", howUsed: "Building quick models, testing features, and automating routine deployment templates.", example: "Y-Combinator companies", growthPotential: "Very High" }
+        ],
+        technologies: [],
+        roadmap: [
+          {
+            id: `road-node-${selectedRole.toLowerCase().replace(/\s+/g, "-")}-1`,
+            title: "Introduction & Syntax",
+            phase: "Foundation",
+            explanation: "Master core programming syntax, terminal controls, and system rules.",
+            objectives: ["Understand base commands", "Write simple scripts", "Configure workspace tools"],
+            timeEstimate: "3 Weeks",
+            resources: ["Official guides", "MDN tutorials"],
+            projectCheckpoint: { title: "Basic Calculator Console", desc: "A simple calculator console parsing inputs and executing operations." },
+            quiz: {
+              question: "Which data structure is optimal for caching key-value parameters?",
+              options: ["Array", "Linked List", "Hash Map / Object", "Binary Tree"],
+              answerIndex: 2,
+              explanation: "Hash maps allow constant time lookup O(1) for keys, making them ideal for caching configurations."
+            }
           }
+        ],
+        skillsTree: [
+          { id: "s-gen-1", name: "Core Fundamentals", tier: "Beginner", whyMatters: "Base requirement for all follow-up systems.", dependencies: [], hours: 40, importance: "High", techs: ["CLI", "Syntax"], unlocked: true, completed: false },
+          { id: "s-gen-2", name: "Advanced Operations", tier: "Intermediate", whyMatters: "Allows handling real-world systems.", dependencies: ["s-gen-1"], hours: 80, importance: "High", techs: ["Frameworks"], unlocked: false, completed: false },
+          { id: "s-gen-3", name: "System Orchestrations", tier: "Advanced", whyMatters: "Coordinates multi-layered environments.", dependencies: ["s-gen-2"], hours: 100, importance: "High", techs: ["Cloud", "Security"], unlocked: false, completed: false }
+        ],
+        projects: [
+          {
+            title: `Autonomous ${selectedRole} dashboard`,
+            level: "Advanced",
+            problemStatement: "Organizations need a place to coordinate telemetry, trace logs, and manage configuration keys.",
+            features: ["Real-time alerts", "Role permissions configurations", "Interactive graphs", "Export data templates"],
+            architecture: "Serverless lambda pipeline with vector stores and cache layers.",
+            techStack: ["Python", "FastAPI", "Docker", "AWS"],
+            outcomes: ["Telemetry tracking", "Cloud security architectures"],
+            completionTime: "4 Weeks",
+            resumeValue: 4
+          }
+        ],
+        placementPrep: {
+          dsa: "Data structure basics: Hash maps, Arrays, and binary search patterns.",
+          systemDesign: "System design basics: load balancing, microservices structure, database index tuning.",
+          coreSubjects: ["Database Systems", "Operating Systems", "Networking"],
+          resumeRules: ["Highlight real metrics of projects.", "List exact technologies in skills matrices."],
+          githubRules: ["Show green commit streaks.", "Structure clean repository branches."],
+          portfolioRules: ["Provide interactive live demos."],
+          mockQuestions: [
+            { q: "Explain the standard architectural flow of this role.", topic: "Architecture" }
+          ]
+        },
+        salaries: {
+          internship: 20000,
+          fresher: 5.5,
+          mid: 12.0,
+          senior: 24.0,
+          globalTrend: "High growth in remote placements and enterprise roles.",
+          remoteTrend: "Ranges from $35,000 to $90,000 USD."
+        },
+        trends: {
+          trendingTechs: ["AI Assistants", "Serverless edges", "Strict type verification"],
+          emergingSkills: ["AI models fine-tuning", "Modular architecture construction"],
+          predictions: "Automation will increase development velocity, shifting engineers' time toward architecture."
         }
-      ],
-      skillsTree: [
-        { id: "s-gen-1", name: "Core Fundamentals", tier: "Beginner", whyMatters: "Base requirement for all follow-up systems.", dependencies: [], hours: 40, importance: "High", techs: ["CLI", "Syntax"], unlocked: true, completed: false },
-        { id: "s-gen-2", name: "Advanced Operations", tier: "Intermediate", whyMatters: "Allows handling real-world systems.", dependencies: ["s-gen-1"], hours: 80, importance: "High", techs: ["Frameworks"], unlocked: false, completed: false },
-        { id: "s-gen-3", name: "System Orchestrations", tier: "Advanced", whyMatters: "Coordinates multi-layered environments.", dependencies: ["s-gen-2"], hours: 100, importance: "High", techs: ["Cloud", "Security"], unlocked: false, completed: false }
-      ],
-      projects: [
-        {
-          title: `Autonomous ${selectedRole} dashboard`,
-          level: "Advanced",
-          problemStatement: "Organizations need a place to coordinate telemetry, trace logs, and manage configuration keys.",
-          features: ["Real-time alerts", "Role permissions configurations", "Interactive graphs", "Export data templates"],
-          architecture: "Serverless lambda pipeline with vector stores and cache layers.",
-          techStack: ["Python", "FastAPI", "Docker", "AWS"],
-          outcomes: ["Telemetry tracking", "Cloud security architectures"],
-          completionTime: "4 Weeks",
-          resumeValue: 4
-        }
-      ],
-      placementPrep: {
-        dsa: "Data structure basics: Hash maps, Arrays, and binary search patterns.",
-        systemDesign: "System design basics: load balancing, microservices structure, database index tuning.",
-        coreSubjects: ["Database Systems", "Operating Systems", "Networking"],
-        resumeRules: ["Highlight real metrics of projects.", "List exact technologies in skills matrices."],
-        githubRules: ["Show green commit streaks.", "Structure clean repository branches."],
-        portfolioRules: ["Provide interactive live demos."],
-        mockQuestions: [
-          { q: "Explain the standard architectural flow of this role.", topic: "Architecture" }
-        ]
-      },
-      salaries: {
-        internship: 20000,
-        fresher: 5.5,
-        mid: 12.0,
-        senior: 24.0,
-        globalTrend: "High growth in remote placements and enterprise roles.",
-        remoteTrend: "Ranges from $35,000 to $90,000 USD."
-      },
-      trends: {
-        trendingTechs: ["AI Assistants", "Serverless edges", "Strict type verification"],
-        emergingSkills: ["AI models fine-tuning", "Modular architecture construction"],
-        predictions: "Automation will increase development velocity, shifting engineers' time toward architecture."
-      }
-    };
+      };
+    }
+
+    // Dynamic enrichment with categories
+    details.technologies = getRoleTechnologies(details.role, details.category, details.difficulty);
+    return details;
   }, [selectedRole, selectedDomain]);
 
   // Selected Quiz Node helper
@@ -1083,82 +1401,106 @@ export default function CareerBlueprintHub() {
               {/* Tab: Technologies Used Card list */}
               {activeTab === "technologies" && (
                 <div className="space-y-4">
-                  {activeRoleDetails.technologies.map((tech, i) => {
-                    const isOpen = expandedTechCard === tech.name;
+                  {(() => {
+                    const groups: Record<string, TechCard[]> = {};
+                    activeRoleDetails.technologies.forEach(tech => {
+                      const cat = tech.category || "Core Stack";
+                      if (!groups[cat]) groups[cat] = [];
+                      groups[cat].push(tech);
+                    });
+
                     return (
-                      <div
-                        key={i}
-                        className="bg-neutral-900/40 border border-neutral-850 rounded-3xl overflow-hidden shadow-xl"
-                      >
-                        <button
-                          onClick={() => setExpandedTechCard(isOpen ? null : tech.name)}
-                          className="w-full p-5 text-left flex justify-between items-center gap-4 cursor-pointer hover:bg-neutral-800/10"
-                        >
-                          <div className="space-y-1">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500">Tech Stack Core</span>
-                            <h3 className="text-sm font-black text-white">{tech.name}</h3>
+                      <div className="space-y-8">
+                        {Object.entries(groups).map(([catName, techList]) => (
+                          <div key={catName} className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-xs font-black uppercase tracking-wider text-cyan-400">{catName}</h3>
+                              <div className="h-[1px] bg-neutral-800/60 flex-1" />
+                              <span className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-widest">{techList.length} Tools</span>
+                            </div>
+                            <div className="space-y-3">
+                              {techList.map((tech) => {
+                                const isOpen = expandedTechCard === tech.name;
+                                return (
+                                  <div
+                                    key={tech.name}
+                                    className="bg-neutral-900/40 border border-neutral-850 rounded-3xl overflow-hidden shadow-xl"
+                                  >
+                                    <button
+                                      onClick={() => setExpandedTechCard(isOpen ? null : tech.name)}
+                                      className="w-full p-5 text-left flex justify-between items-center gap-4 cursor-pointer hover:bg-neutral-800/10"
+                                    >
+                                      <div className="space-y-1">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500">{tech.category || "Tech Stack Core"}</span>
+                                        <h3 className="text-sm font-black text-white">{tech.name}</h3>
+                                      </div>
+                                      <ChevronDown className={`h-4 w-4 text-neutral-500 transform transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                      {isOpen && (
+                                        <motion.div
+                                          initial={{ height: 0, opacity: 0 }}
+                                          animate={{ height: "auto", opacity: 1 }}
+                                          exit={{ height: 0, opacity: 0 }}
+                                          className="border-t border-neutral-850 bg-neutral-950/40 p-5 space-y-5"
+                                        >
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            <div className="space-y-3">
+                                              <div>
+                                                <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">What is it?</span>
+                                                <p className="text-xs text-neutral-300 leading-relaxed font-semibold">{tech.whatIsIt}</p>
+                                              </div>
+                                              <div>
+                                                <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Why do we use it?</span>
+                                                <p className="text-xs text-neutral-400 leading-relaxed">{tech.whyUsed}</p>
+                                              </div>
+                                              <div>
+                                                <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Analogy</span>
+                                                <p className="text-xs text-neutral-400 leading-relaxed italic">" {tech.analogy} "</p>
+                                              </div>
+                                            </div>
+
+                                            <div className="space-y-3 bg-neutral-900/60 p-4 rounded-2xl border border-neutral-850">
+                                              <div className="flex justify-between text-[10px] text-neutral-400 font-extrabold uppercase">
+                                                <span>Learn Time: {tech.learningTime}</span>
+                                                <span>Level: {tech.difficulty}</span>
+                                              </div>
+                                              <div>
+                                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Beginner Concept</span>
+                                                <p className="text-[11px] text-neutral-300 leading-relaxed mt-0.5">{tech.beginnerDesc}</p>
+                                              </div>
+                                              <div>
+                                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Advanced Pipeline</span>
+                                                <p className="text-[11px] text-neutral-400 leading-relaxed mt-0.5">{tech.advancedDesc}</p>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <div className="border-t border-neutral-850 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-neutral-900/20 p-3 rounded-xl border border-neutral-850 space-y-1">
+                                              <span className="text-[9px] font-black uppercase text-amber-500">Interview QA Check</span>
+                                              <p className="text-xs font-bold text-white">Q: {tech.interviewQuestion.q}</p>
+                                              <p className="text-[11px] text-neutral-400 leading-relaxed mt-1">A: {tech.interviewQuestion.a}</p>
+                                            </div>
+                                            <div className="bg-neutral-900/20 p-3 rounded-xl border border-neutral-850 space-y-1">
+                                              <span className="text-[9px] font-black uppercase text-green-500">Suggested Build Checkpoint</span>
+                                              <p className="text-xs font-bold text-white">Project: {tech.miniProject.title}</p>
+                                              <p className="text-[11px] text-neutral-400 leading-relaxed mt-1">{tech.miniProject.desc}</p>
+                                            </div>
+                                          </div>
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                          <ChevronDown className={`h-4 w-4 text-neutral-500 transform transition-transform ${isOpen ? "rotate-180" : ""}`} />
-                        </button>
-
-                        <AnimatePresence>
-                          {isOpen && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t border-neutral-850 bg-neutral-950/40 p-5 space-y-5"
-                            >
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="space-y-3">
-                                  <div>
-                                    <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">What is it?</span>
-                                    <p className="text-xs text-neutral-300 leading-relaxed font-semibold">{tech.whatIsIt}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Why do we use it?</span>
-                                    <p className="text-xs text-neutral-400 leading-relaxed">{tech.whyUsed}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Analogy</span>
-                                    <p className="text-xs text-neutral-400 leading-relaxed italic">" {tech.analogy} "</p>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-3 bg-neutral-900/60 p-4 rounded-2xl border border-neutral-850">
-                                  <div className="flex justify-between text-[10px] text-neutral-400 font-extrabold uppercase">
-                                    <span>Learn Time: {tech.learningTime}</span>
-                                    <span>Level: {tech.difficulty}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Beginner Concept</span>
-                                    <p className="text-[11px] text-neutral-300 leading-relaxed mt-0.5">{tech.beginnerDesc}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Advanced Pipeline</span>
-                                    <p className="text-[11px] text-neutral-400 leading-relaxed mt-0.5">{tech.advancedDesc}</p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="border-t border-neutral-850 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-neutral-900/20 p-3 rounded-xl border border-neutral-850 space-y-1">
-                                  <span className="text-[9px] font-black uppercase text-amber-500">Interview QA Check</span>
-                                  <p className="text-xs font-bold text-white">Q: {tech.interviewQuestion.q}</p>
-                                  <p className="text-[11px] text-neutral-400 leading-relaxed mt-1">A: {tech.interviewQuestion.a}</p>
-                                </div>
-                                <div className="bg-neutral-900/20 p-3 rounded-xl border border-neutral-850 space-y-1">
-                                  <span className="text-[9px] font-black uppercase text-green-500">Suggested Build Checkpoint</span>
-                                  <p className="text-xs font-bold text-white">Project: {tech.miniProject.title}</p>
-                                  <p className="text-[11px] text-neutral-400 leading-relaxed mt-1">{tech.miniProject.desc}</p>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        ))}
                       </div>
                     );
-                  })}
+                  })()}
                 </div>
               )}
 
