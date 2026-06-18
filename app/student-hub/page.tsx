@@ -83,6 +83,14 @@ const tools = [
         hoverColor: "group-hover:text-amber-400 group-hover:bg-amber-500/20",
       },
       {
+        title: "Career Blueprint Hub",
+        description: "Explore interactive industry roadmaps, skill trees, tools, and salary trends for 40+ technology roles.",
+        href: "/student-hub/career-blueprint",
+        icon: Compass,
+        color: "text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/5",
+        hoverColor: "group-hover:text-cyan-400 group-hover:bg-cyan-500/20",
+      },
+      {
         title: "Aptitude Quiz Practice",
         description: "Practice quantitative, logical reasoning, and English grammar exams with timers.",
         href: "/student-hub/aptitude-practice",
@@ -333,7 +341,7 @@ export default function StudentHub() {
                                 Most Used
                               </span>
                             )}
-                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker", "AI Project Generator"].includes(tool.title) && (
+                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker", "AI Project Generator", "Career Blueprint Hub"].includes(tool.title) && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
                                 New
                               </span>
