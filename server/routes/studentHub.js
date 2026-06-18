@@ -120,7 +120,7 @@ Provide high-yield, conceptual, and coding questions commonly asked in actual ro
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
-// 2. RESUME ANALYZER & JOB COMPARATOR
+// 2. RESUME ANALYZER & JOB COMPARATOR — Full ATS Suite
 // ──────────────────────────────────────────────────────────────────────────────
 router.post("/resume-analyzer", awardXp, async (req, res, next) => {
   try {
@@ -130,21 +130,56 @@ router.post("/resume-analyzer", awardXp, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Resume content and Job Description are required." });
     }
 
-    const systemPrompt = `You are an expert ATS (Applicant Tracking System) parser and technical recruiter.
-Analyze the user's resume text against the target job description.
+    const systemPrompt = `You are an expert ATS (Applicant Tracking System) parser, technical recruiter, and career coach.
+Analyze the user's resume text against the target job description and return a comprehensive analysis.
 Output MUST be raw JSON format with NO markdown formatting (no backticks, no code block delimiters).
 JSON schema to return:
 {
   "matchScore": 75,
   "missingKeywords": ["Docker", "Redis", "System Design"],
+  "keywordDensity": [
+    { "keyword": "React", "inResume": 4, "inJd": 6, "status": "good" },
+    { "keyword": "TypeScript", "inResume": 1, "inJd": 5, "status": "low" },
+    { "keyword": "Docker", "inResume": 0, "inJd": 3, "status": "missing" }
+  ],
+  "sectionScores": {
+    "contactInfo":    { "score": 90, "feedback": "Name and email present. Consider adding LinkedIn URL." },
+    "summary":        { "score": 60, "feedback": "No professional summary found. Adding one improves ATS ranking." },
+    "experience":     { "score": 80, "feedback": "Strong work history. Add more quantified metrics." },
+    "skills":         { "score": 70, "feedback": "Skills section present. Missing key JD technologies." },
+    "education":      { "score": 95, "feedback": "Education clearly listed with degree and institution." },
+    "projects":       { "score": 75, "feedback": "Good projects section. Add live links or GitHub URLs." },
+    "certifications": { "score": 40, "feedback": "No certifications found. JD may prefer certified candidates." }
+  },
+  "actionVerbScore": 62,
+  "weakVerbs": [
+    { "found": "helped with", "suggested": "facilitated" },
+    { "found": "worked on", "suggested": "engineered" },
+    { "found": "was responsible for", "suggested": "led" }
+  ],
+  "quantificationScore": 45,
+  "unquantifiedBullets": [
+    "Developed a backend API for user authentication",
+    "Improved website performance"
+  ],
+  "tailoredSummary": "A 2-3 sentence professional summary tailored specifically for this job description, written in first person, keyword-rich, and ATS-optimized.",
   "bulletImprovements": [
     {
       "original": "Worked on the frontend team building React code",
-      "improved": "Refactored React components using custom hooks, improving site responsiveness by 15%"
+      "improved": "Engineered reusable React component library, reducing UI development time by 35% across 3 product teams"
     }
   ],
-  "overallFeedback": "A concise text summary of strengths, major improvements, and ATS formatting layout tips."
-}`;
+  "overallFeedback": "A concise 3-4 sentence summary of overall resume strengths, critical improvements needed, and top ATS formatting tips."
+}
+Rules:
+- keywordDensity: include top 8-10 most important keywords from the JD. status is "good" (inResume >= inJd*0.5), "low" (inResume > 0 but below threshold), or "missing" (inResume === 0).
+- sectionScores: score each section 0-100. If section is absent, score it 0-30.
+- actionVerbScore: 0-100. Penalize passive or weak language across all bullet points.
+- weakVerbs: identify up to 5 weak or passive phrases and suggest stronger action verbs.
+- quantificationScore: 0-100. Percentage of bullet points that include numbers, percentages, or measurable outcomes.
+- unquantifiedBullets: list up to 4 bullet points that lack metrics, exactly as they appear in the resume.
+- tailoredSummary: write this as if the candidate wrote it — professional, confident, 2-3 sentences, keyword-rich.
+- bulletImprovements: pick the 3-4 weakest bullets and rewrite them with strong action verbs, numbers, and JD keywords.`;
 
     const userPrompt = `Resume text:
 ${resumeText}
@@ -153,7 +188,6 @@ ${resumeText}
 Job Description:
 ${jobDescription}`;
 
-    // Wrapped: callGemini returns null on quota exhaustion
     let aiOutput = null;
     try {
       aiOutput = await callGemini(systemPrompt, userPrompt, true);
@@ -162,21 +196,57 @@ ${jobDescription}`;
     }
 
     if (!aiOutput) {
-      // Mock Fallback
       const mockResult = {
         matchScore: 68,
         missingKeywords: ["TypeScript", "CI/CD Pipelines", "Docker", "Unit Testing"],
+        keywordDensity: [
+          { keyword: "React",      inResume: 4, inJd: 5, status: "good"    },
+          { keyword: "Node.js",    inResume: 3, inJd: 4, status: "good"    },
+          { keyword: "TypeScript", inResume: 0, inJd: 6, status: "missing" },
+          { keyword: "Docker",     inResume: 0, inJd: 4, status: "missing" },
+          { keyword: "MongoDB",    inResume: 2, inJd: 3, status: "good"    },
+          { keyword: "REST APIs",  inResume: 1, inJd: 4, status: "low"     },
+          { keyword: "Git",        inResume: 2, inJd: 3, status: "good"    },
+          { keyword: "CI/CD",      inResume: 0, inJd: 3, status: "missing" },
+        ],
+        sectionScores: {
+          contactInfo:    { score: 85, feedback: "Name and email present. Consider adding a LinkedIn profile URL." },
+          summary:        { score: 30, feedback: "No professional summary detected. A tailored summary significantly boosts ATS ranking." },
+          experience:     { score: 78, feedback: "Good work history. Add quantified outcomes (%, $ savings, speed improvements) to each bullet." },
+          skills:         { score: 65, feedback: "Skills section present but missing key JD technologies: TypeScript, Docker, CI/CD." },
+          education:      { score: 92, feedback: "Education clearly listed with degree, institution, and graduation year." },
+          projects:       { score: 70, feedback: "Projects section found. Add GitHub links and describe the impact of each project." },
+          certifications: { score: 20, feedback: "No certifications found. The JD may prefer AWS/Docker/TypeScript certified candidates." },
+        },
+        actionVerbScore: 55,
+        weakVerbs: [
+          { found: "was responsible for", suggested: "owned / led"                         },
+          { found: "helped with",         suggested: "collaborated on / facilitated"       },
+          { found: "worked on",           suggested: "engineered / developed / built"      },
+          { found: "did testing",         suggested: "validated / executed test suites"    },
+        ],
+        quantificationScore: 38,
+        unquantifiedBullets: [
+          "Developed a backend API for user authentication",
+          "Improved website performance and fixed bugs",
+          "Assisted the team in building mobile-responsive layouts",
+        ],
+        tailoredSummary: "Full-stack developer with 2+ years of experience building scalable web applications using React and Node.js. Proficient in RESTful API design, MongoDB, and agile workflows. Eager to contribute to innovative engineering teams and expand expertise in TypeScript and cloud-native technologies.",
         bulletImprovements: [
           {
             original: "Developed web application using NodeJS and React.",
-            improved: "Built dynamic client portal in React/NodeJS, introducing state variables and reducing database query load by 22%.",
+            improved: "Engineered a full-stack client portal in React/Node.js, processing 500+ daily user requests with sub-200ms API response times.",
           },
           {
             original: "Responsible for fixing bugs in production code.",
-            improved: "Collaborated in debugging sessions using Chrome DevTools, resolving memory leaks and boosting runtime performance.",
+            improved: "Resolved 30+ critical production bugs using Chrome DevTools and structured logging, reducing crash rate by 22%.",
+          },
+          {
+            original: "Helped the team with code reviews.",
+            improved: "Conducted weekly code reviews for a 4-member team, enforcing ESLint standards and cutting regression rate by 15%.",
           },
         ],
-        overallFeedback: "Your resume represents strong fundamental skills. To pass automated ATS filters, emphasize cloud technologies (Docker, AWS) and quantify your achievements with clear metric results (percentages, load times, revenue saved).",
+        overallFeedback: "Your resume demonstrates solid full-stack fundamentals but needs stronger ATS signals. Add a tailored professional summary, quantify at least 60% of your bullet points with metrics, and incorporate the missing keywords (TypeScript, Docker, CI/CD) into your skills and experience sections. Avoid tables or multi-column layouts as they break most ATS parsers.",
       };
       return res.status(200).json({ success: true, result: mockResult });
     }
