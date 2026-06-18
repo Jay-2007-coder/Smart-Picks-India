@@ -10,7 +10,7 @@ import {
   ChevronUp, Users, Code, Terminal, Clock, ShieldAlert, Heart,
   Building, Brain, Server, ShieldCheck, TrendingUp, DollarSign,
   ListTodo, Map, Activity, ExternalLink, GraduationCap, LayoutGrid,
-  CheckSquare, RefreshCw
+  CheckSquare, RefreshCw, Lock as LockIcon
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -710,6 +710,46 @@ export default function CareerBlueprintHub() {
       addXp(10, "Interacted with AI Career Mentor");
     }, 1000);
   };
+
+  // Check access restriction
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#09090B] text-slate-100">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw className="h-8 w-8 text-cyan-500 animate-spin" />
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Verifying Dashboard access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#09090B] text-slate-100 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.1)_0%,transparent_70%)] pointer-events-none" />
+        <div className="max-w-md w-full bg-neutral-900/60 backdrop-blur-xl border border-neutral-800 rounded-3xl p-8 text-center shadow-2xl space-y-6 relative z-10">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500">
+            <LockIcon className="h-6 w-6" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold tracking-tight">Access Restricted</h2>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Please sign in to your SmartPicks account to access the Career Blueprint Hub.
+            </p>
+          </div>
+          <Link
+            href={`/login?redirect=/student-hub/career-blueprint`}
+            className="flex h-11 w-full items-center justify-center bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-650 hover:to-red-700 text-white rounded-xl text-xs font-black shadow-lg shadow-orange-500/20 transition-all active:scale-95 cursor-pointer"
+          >
+            Sign In to Continue
+          </Link>
+          <Link href="/student-hub" className="block text-[11px] font-bold text-neutral-500 hover:text-neutral-300">
+            Back to Student Hub
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
