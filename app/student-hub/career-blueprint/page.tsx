@@ -4,13 +4,13 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Compass, Search, Award, Flame, Bell, Settings,
+  ArrowLeft, Compass, Search, Award, Flame, Settings,
   Star, Bookmark, ChevronDown, ChevronRight, X, Sparkles, Zap,
   Trophy, Briefcase, BookOpen, Check, Copy, HelpCircle, FileText,
   ChevronUp, Users, Code, Terminal, Clock, ShieldAlert, Heart,
   Building, Brain, Server, ShieldCheck, TrendingUp, DollarSign,
   ListTodo, Map, Activity, ExternalLink, GraduationCap, LayoutGrid,
-  CheckSquare, RefreshCw, Lock as LockIcon
+  CheckSquare, RefreshCw, Lock as LockIcon, Cpu, BarChart2
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -579,12 +579,11 @@ export default function CareerBlueprintHub() {
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Notification state
+  // Notification state (alerts shown inline, no bell UI)
   const [notifications, setNotifications] = useState<string[]>([
-    "🎉 Career blueprint dashboard loaded. Complete milestones to earn XP!",
+    "🎉 Career blueprint loaded. Complete milestones to earn XP!",
     "🔥 12-Day Streak active."
   ]);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   // Local Storage synchronizer
   useEffect(() => {
@@ -1876,112 +1875,78 @@ export default function CareerBlueprintHub() {
         ))}
       </div>
 
-      {/* Sticky Sub-Header */}
-      <header className="sticky top-0 z-40 bg-[#09090b]/75 backdrop-blur-xl border-b border-neutral-850">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      {/* Sticky Sub-Header — Blueprint Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-[#09090b]/80 backdrop-blur-xl border-b border-neutral-800/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
+          {/* Left: Back + Title */}
+          <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/student-hub"
-              className="flex items-center justify-center h-8 w-8 rounded-xl bg-neutral-900 border border-neutral-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="flex items-center justify-center h-8 w-8 rounded-xl bg-neutral-900 border border-neutral-800 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 transition-all cursor-pointer shrink-0"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-widest font-black text-cyan-400 flex items-center gap-1">
-                <Compass className="h-3 w-3 animate-spin" /> Career Blueprint Hub
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] uppercase tracking-widest font-black text-cyan-400 flex items-center gap-1">
+                <Compass className="h-2.5 w-2.5" /> Career Blueprint Hub
               </span>
-              <h1 className="text-sm font-black tracking-tight text-white">Career Operating System</h1>
+              <h1 className="text-sm font-black tracking-tight text-white leading-none truncate">Career Operating System</h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Right: Stats + Compare */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowCompareModal(true)}
-              className="px-3.5 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 hover:border-cyan-500/50 text-[10px] font-black text-slate-300 hover:text-white transition-all uppercase tracking-wider cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 hover:border-cyan-500/50 hover:text-white text-[10px] font-black text-slate-400 transition-all uppercase tracking-wider cursor-pointer"
             >
-              ⚖️ Compare Tracks
+              ⚖️ Compare
             </button>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-extrabold text-xs">
-              <Trophy className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-extrabold text-[11px]">
+              <Trophy className="h-3 w-3" />
               <span>{xp} XP</span>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 font-extrabold text-xs">
-              <Flame className="h-3.5 w-3.5 fill-current" />
-              <span>{streak} Days</span>
-            </div>
-
-            {/* Notifications */}
-            <div className="relative">
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors relative cursor-pointer"
-              >
-                <Bell className="h-4.5 w-4.5" />
-                <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-cyan-400 rounded-full animate-ping" />
-              </button>
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-3 w-80 bg-neutral-900 border border-neutral-800 rounded-2xl p-4 shadow-2xl z-50 space-y-3"
-                  >
-                    <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
-                      <span className="text-xs font-black uppercase text-neutral-400 tracking-wider">Blueprint Alerts</span>
-                      <button onClick={() => setShowNotifications(false)} className="text-neutral-500 hover:text-white text-xs cursor-pointer">Clear</button>
-                    </div>
-                    <div className="space-y-2">
-                      {notifications.map((msg, i) => (
-                        <div key={i} className="text-[10px] leading-relaxed text-neutral-300 bg-neutral-950/40 p-2 rounded-lg border border-neutral-800/40 font-semibold">
-                          {msg}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Profile Avatar */}
-            <div className="h-8 w-8 rounded-full border border-neutral-800 overflow-hidden bg-neutral-900 flex items-center justify-center text-xs font-bold text-cyan-400">
-              {user.profileImage ? (
-                <img src={user.profileImage} alt="User Avatar" className="h-full w-full object-cover" />
-              ) : (
-                <span>{user.name.charAt(0).toUpperCase()}</span>
-              )}
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 font-extrabold text-[11px]">
+              <Flame className="h-3 w-3 fill-current" />
+              <span>{streak}d</span>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Workspace Frame */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-          {/* LEFT SIDEBAR: Domain Categories & Roles Menu (Col-Span 3) */}
-          <aside className="lg:col-span-3 space-y-6">
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-850 rounded-3xl p-5 shadow-2xl space-y-4">
-              <div className="border-b border-neutral-800 pb-3">
-                <h3 className="text-xs font-black uppercase text-neutral-400 tracking-wider">Explore Career Tracks</h3>
-                <div className="mt-2.5 relative flex items-center">
-                  <Search className="absolute left-2.5 h-3.5 w-3.5 text-neutral-500" />
+          {/* LEFT SIDEBAR: Domain Categories & Roles Menu */}
+          <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-[3.75rem]">
+            <div className="bg-neutral-900/50 backdrop-blur-xl border border-neutral-800/60 rounded-2xl overflow-hidden shadow-xl">
+              {/* Sidebar Header */}
+              <div className="px-4 pt-4 pb-3 border-b border-neutral-800/60">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[10px] font-black uppercase text-neutral-300 tracking-widest">Career Tracks</h3>
+                  <span className="text-[9px] font-black text-cyan-500 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.5 rounded">
+                    {DOMAINS.flatMap(d => d.roles).length} Paths
+                  </span>
+                </div>
+                <div className="relative flex items-center">
+                  <Search className="absolute left-2.5 h-3 w-3 text-neutral-500" />
                   <input
                     type="text"
                     value={roleSearchQuery}
                     onChange={(e) => setRoleSearchQuery(e.target.value)}
                     placeholder="Search careers..."
-                    className="w-full bg-neutral-950/80 border border-neutral-850 rounded-lg pl-8 pr-3 py-1.5 text-[11px] font-bold text-slate-200 placeholder:text-neutral-600 outline-none"
+                    className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-[10px] font-bold text-slate-200 placeholder:text-neutral-600 outline-none focus:border-cyan-500/40 transition-colors"
                   />
                 </div>
               </div>
 
-              {/* Collapsible Domain & role selector rows */}
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+              {/* Scrollable Domain & Role list */}
+              <div className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto p-3 pr-2">
                 {filteredRolesByDomain.map((domain, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <span className="text-[9px] font-black uppercase text-cyan-500 tracking-wider block">{domain.name}</span>
-                    <div className="space-y-1">
+                  <div key={i} className="space-y-1">
+                    <span className="text-[8px] font-black uppercase text-cyan-500/80 tracking-widest block px-1 pt-1">{domain.name}</span>
+                    <div className="space-y-0.5">
                       {domain.roles.map(r => (
                         <button
                           key={r}
@@ -1990,70 +1955,98 @@ export default function CareerBlueprintHub() {
                             setSelectedDomain(domain.name);
                             addXp(10, `Explored Career Path: ${r}`);
                           }}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-[10px] font-extrabold flex items-center justify-between transition-all cursor-pointer ${
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between transition-all cursor-pointer ${
                             selectedRole === r
-                              ? "bg-cyan-500/10 border border-cyan-500/30 text-cyan-400"
-                              : "bg-transparent border border-transparent text-neutral-400 hover:bg-neutral-800/35 hover:text-white"
+                              ? "bg-cyan-500/10 border border-cyan-500/25 text-cyan-300"
+                              : "text-neutral-400 hover:bg-neutral-800/50 hover:text-white border border-transparent"
                           }`}
                         >
                           <span className="truncate">{r}</span>
-                          {selectedRole === r && <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+                          {selectedRole === r && <ChevronRight className="h-3 w-3 shrink-0 text-cyan-400" />}
                         </button>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-
             </div>
           </aside>
 
           {/* RIGHT PANELS Stage (Col-Span 9) */}
           <main className="lg:col-span-9 space-y-6">
 
-            {/* Stage Title Summary card */}
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-850 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                <activeRoleDetails.icon className="h-32 w-32 text-cyan-500" />
+            {/* Role Hero Summary Card */}
+            <div className="bg-neutral-900/50 backdrop-blur-xl border border-neutral-800/60 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+              {/* Decorative role icon watermark */}
+              <div className="absolute top-0 right-0 p-6 opacity-[0.04] pointer-events-none select-none">
+                <activeRoleDetails.icon className="h-36 w-36 text-cyan-400" />
               </div>
-              
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="px-2.5 py-0.5 rounded bg-neutral-800 text-[8px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-500/10">
+
+              {/* Meta Badges Row */}
+              <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-black text-cyan-400 uppercase tracking-widest">
                   {activeRoleDetails.category}
                 </span>
-                <span className="px-2 py-0.5 rounded bg-neutral-800 text-[8px] font-black text-slate-300 uppercase tracking-widest border border-neutral-850">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-neutral-800 border border-neutral-700 text-[9px] font-black text-neutral-300 uppercase tracking-widest">
                   {activeRoleDetails.level}
                 </span>
-                <span className="px-2 py-0.5 rounded bg-green-500/10 text-[8px] font-black text-green-400 uppercase tracking-widest border border-green-500/10">
-                  Demand: {activeRoleDetails.demand}
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-green-500/10 border border-green-500/20 text-[9px] font-black text-green-400 uppercase tracking-widest">
+                  ⬬ {activeRoleDetails.demand} Demand
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[9px] font-black text-purple-400 uppercase tracking-widest">
+                  ↑ {activeRoleDetails.growth} Growth
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-neutral-800 border border-neutral-700 text-[9px] font-black text-neutral-400 uppercase tracking-widest">
+                  {activeRoleDetails.difficulty} Difficulty
                 </span>
               </div>
 
-              <h2 className="text-2xl font-black text-white">{activeRoleDetails.role} Roadmap</h2>
-              <p className="text-xs text-neutral-400 mt-2 max-w-2xl leading-relaxed">{activeRoleDetails.about}</p>
+              <h2 className="text-2xl font-black text-white tracking-tight">{activeRoleDetails.role}</h2>
+              <p className="text-[11px] text-neutral-400 mt-1.5 max-w-2xl leading-relaxed">{activeRoleDetails.about}</p>
 
-              {/* Horizontal Workspace tab triggers */}
-              <div className="flex items-center gap-1 border-t border-neutral-800 mt-6 pt-2 flex-wrap">
+              {/* Quick Stats Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-neutral-800/50">
+                <div className="text-center">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Duration</span>
+                  <span className="text-xs font-black text-white">{activeRoleDetails.duration}</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Fresher CTC</span>
+                  <span className="text-xs font-black text-green-400">₹{activeRoleDetails.salaries?.fresher} LPA</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Remote</span>
+                  <span className="text-xs font-black text-cyan-400">{activeRoleDetails.remoteWork}</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Skills Nodes</span>
+                  <span className="text-xs font-black text-white">{activeRoleDetails.skillsTree?.length || 0}</span>
+                </div>
+              </div>
+
+              {/* Horizontal Workspace Tab Bar */}
+              <div className="flex items-center gap-0.5 border-t border-neutral-800/40 mt-5 pt-3 flex-wrap">
                 {[
-                  { id: "overview", label: "Overview" },
-                  { id: "salaries", label: "Market & Salary" },
-                  { id: "technologies", label: "Technologies Used" },
-                  { id: "roadmap", label: "Roadmap Flow" },
-                  { id: "skills", label: "Skill Trees" },
-                  { id: "projects", label: "Project Roadmap" },
-                  { id: "placement", label: "Placement Prep" },
-                  { id: "mentor", label: "AI Career Mentor" }
+                  { id: "overview", label: "Overview", icon: "📁" },
+                  { id: "salaries", label: "Market & Salary", icon: "💰" },
+                  { id: "technologies", label: "Tech Stack", icon: "⚡" },
+                  { id: "roadmap", label: "Roadmap", icon: "🗺️" },
+                  { id: "skills", label: "Skill Tree", icon: "🌳" },
+                  { id: "projects", label: "Projects", icon: "🛠️" },
+                  { id: "placement", label: "Placement Prep", icon: "🏆" },
+                  { id: "mentor", label: "AI Mentor", icon: "🤖" }
                 ].map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer ${
                       activeTab === tab.id
-                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-                        : "bg-transparent text-neutral-500 hover:text-neutral-300"
+                        ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25"
+                        : "text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/40"
                     }`}
                   >
-                    {tab.label}
+                    <span>{tab.icon}</span>
+                    <span className="hidden md:inline">{tab.label}</span>
                   </button>
                 ))}
               </div>
@@ -2064,45 +2057,75 @@ export default function CareerBlueprintHub() {
               
               {/* Tab: Overview details */}
               {activeTab === "overview" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* Importance & problems solved */}
-                  <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-4">
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-black uppercase text-cyan-500 tracking-wider">Industry Relevance</h3>
-                      <p className="text-xs text-slate-300 leading-relaxed font-semibold">{activeRoleDetails.importance}</p>
+                <div className="space-y-5">
+
+                  {/* Top Row: Relevance + Problems Solved */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    {/* Industry Relevance Card */}
+                    <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-2xl p-5 shadow-xl space-y-3">
+                      <div className="flex items-center gap-2 border-b border-neutral-800/50 pb-2.5">
+                        <div className="h-6 w-6 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
+                          <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+                        </div>
+                        <h3 className="text-[10px] font-black uppercase text-cyan-400 tracking-widest">Industry Relevance</h3>
+                      </div>
+                      <p className="text-[11px] text-slate-300 leading-relaxed font-semibold">{activeRoleDetails.importance}</p>
+                      <div className="pt-2 border-t border-neutral-800/40">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-5 w-5 rounded bg-orange-500/10 flex items-center justify-center shrink-0">
+                            <Zap className="h-3 w-3 text-orange-400" />
+                          </div>
+                          <h4 className="text-[9px] font-black uppercase text-neutral-400 tracking-widest">Problems Solved Daily</h4>
+                        </div>
+                        <p className="text-[11px] text-neutral-400 leading-relaxed">{activeRoleDetails.problemsSolved}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-black uppercase text-cyan-500 tracking-wider">Day-To-Day Problems Solved</h3>
-                      <p className="text-xs text-neutral-400 leading-relaxed">{activeRoleDetails.problemsSolved}</p>
-                    </div>
-                    
-                    {/* Responsibilities */}
-                    <div className="space-y-2 pt-2">
-                      <h4 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Core Responsibilities</h4>
+
+                    {/* Core Responsibilities Card */}
+                    <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-2xl p-5 shadow-xl space-y-3">
+                      <div className="flex items-center gap-2 border-b border-neutral-800/50 pb-2.5">
+                        <div className="h-6 w-6 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                          <ListTodo className="h-3.5 w-3.5 text-purple-400" />
+                        </div>
+                        <h3 className="text-[10px] font-black uppercase text-purple-400 tracking-widest">Core Responsibilities</h3>
+                      </div>
                       <div className="space-y-2">
                         {activeRoleDetails.responsibilities.map((res, i) => (
-                          <div key={i} className="flex gap-2 text-[11px] text-neutral-400 leading-relaxed">
-                            <CheckSquare className="h-4 w-4 text-cyan-500 shrink-0" />
-                            <span>{res}</span>
+                          <div key={i} className="flex gap-2.5 items-start">
+                            <span className="h-4 w-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[8px] font-black text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            <span className="text-[11px] text-neutral-400 leading-relaxed">{res}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Industry usage table */}
-                  <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-4">
-                    <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Active Hiring Sectors</h3>
-                    <div className="space-y-4">
+                  {/* Bottom Row: Active Hiring Sectors */}
+                  <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-2xl p-5 shadow-xl space-y-4">
+                    <div className="flex items-center gap-2 border-b border-neutral-800/50 pb-2.5">
+                      <div className="h-6 w-6 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                        <Building className="h-3.5 w-3.5 text-green-400" />
+                      </div>
+                      <h3 className="text-[10px] font-black uppercase text-green-400 tracking-widest">Active Hiring Sectors</h3>
+                      <span className="ml-auto text-[9px] font-black text-neutral-500 uppercase">{activeRoleDetails.industries.length} Sectors</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                       {activeRoleDetails.industries.map((ind, i) => (
-                        <div key={i} className="bg-neutral-950/40 p-3.5 rounded-2xl border border-neutral-850 space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-black text-white">{ind.name}</span>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-green-400">{ind.growthPotential} Growth</span>
+                        <div key={i} className="bg-neutral-950/60 p-3.5 rounded-xl border border-neutral-800/50 space-y-1.5 hover:border-neutral-700 transition-colors">
+                          <div className="flex justify-between items-start gap-2">
+                            <span className="text-[11px] font-black text-white leading-tight">{ind.name}</span>
+                            <span className="text-[8px] font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/15 px-1.5 py-0.5 rounded shrink-0">
+                              {ind.growthPotential}
+                            </span>
                           </div>
-                          <p className="text-[11px] text-neutral-400 leading-relaxed">{ind.howUsed}</p>
-                          <p className="text-[10px] text-neutral-500 font-bold">Examples: {ind.example}</p>
+                          <p className="text-[10px] text-neutral-400 leading-relaxed">{ind.howUsed}</p>
+                          <div className="flex items-center gap-1 pt-1 border-t border-neutral-800/40">
+                            <Building className="h-2.5 w-2.5 text-neutral-600 shrink-0" />
+                            <p className="text-[9px] text-neutral-500 font-semibold truncate">{ind.example}</p>
+                          </div>
                         </div>
                       ))}
                     </div>

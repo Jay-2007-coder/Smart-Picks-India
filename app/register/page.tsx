@@ -20,8 +20,18 @@ const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   username: z.string().min(3, "Username must be at least 3 characters.").optional(),
   email: z.string().email("Please enter a valid email address."),
-  phone: z.string().optional(),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+  phone: z
+    .string()
+    .regex(/^\+[1-9]\d{1,14}$/, "Phone number must be in E.164 format (e.g. +919876543210)")
+    .optional()
+    .or(z.literal("")),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long.")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter.")
+    .regex(/[0-9]/, "Password must contain at least one number.")
+    .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character."),
   confirmPassword: z.string().min(8, "Confirm your password."),
   acceptTerms: z.boolean().refine(val => val === true, "You must accept the terms."),
   role: z.enum(["student", "professional", "shopper"]),
@@ -62,6 +72,7 @@ function RegisterFormContent() {
   const [step, setStep] = useState(1);
   const [isPending, setIsPending] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [showPassword, setShowPassword] = useState(false);
 
   const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm<RegisterFormValues>({
@@ -117,6 +128,7 @@ function RegisterFormContent() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsPending(true);
     setGeneralError(null);
+    setServerErrors({});
     const res = await registerAuth({
       name: data.name,
       email: data.email,
@@ -136,6 +148,9 @@ function RegisterFormContent() {
       setTimeout(() => router.push("/dashboard"), 1500);
     } else {
       setGeneralError(res.message);
+      if (res.errors) {
+        setServerErrors(res.errors);
+      }
     }
   };
 
@@ -239,8 +254,9 @@ function RegisterFormContent() {
                 <div>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input {...register("phone")} type="tel" placeholder="Phone Number (Optional)" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
+                    <input {...register("phone")} type="tel" placeholder="Phone Number (e.g. +919876543210) (Optional)" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
                   </div>
+                  {errors.phone && <p className="text-[10px] text-rose-400 mt-1">{errors.phone.message}</p>}
                 </div>
               </motion.div>
             )}
@@ -325,9 +341,18 @@ function RegisterFormContent() {
           </AnimatePresence>
 
           <AnimatePresence>
-            {generalError && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-400">
-                {generalError}
+            {(generalError || Object.keys(serverErrors).length > 0) && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }} 
+                animate={{ opacity: 1, height: 'auto' }} 
+                className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-400 space-y-1.5"
+              >
+                {generalError && <p className="font-bold">{generalError}</p>}
+                {Object.entries(serverErrors).map(([field, messages]) => (
+                  <p key={field} className="text-[11px] font-normal leading-relaxed">
+                    <span className="capitalize font-semibold text-rose-300">{field}:</span> {Array.isArray(messages) ? messages.join(", ") : messages}
+                  </p>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
