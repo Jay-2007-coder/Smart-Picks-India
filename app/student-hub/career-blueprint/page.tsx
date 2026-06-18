@@ -336,7 +336,7 @@ function getTechCard(name: string, category: string): TechCard {
 function getRoleTechnologies(role: string, domain: string, difficulty: string): TechCard[] {
   const normalizedRole = role.toLowerCase();
   
-  if (normalizedRole.includes("mern") || normalizedRole.includes("frontend developer") || normalizedRole.includes("backend developer") && !normalizedRole.includes("java") && !normalizedRole.includes("python")) {
+  if (normalizedRole.includes("mern")) {
     return [
       getTechCard("HTML", "Languages"),
       getTechCard("CSS", "Languages"),
@@ -354,24 +354,67 @@ function getRoleTechnologies(role: string, domain: string, difficulty: string): 
       getTechCard("Redis", "Databases"),
       getTechCard("JWT", "Authentication"),
       getTechCard("OAuth", "Authentication"),
-      getTechCard("Firebase Auth", "Authentication"),
       getTechCard("Docker", "DevOps"),
-      getTechCard("Kubernetes", "DevOps"),
       getTechCard("GitHub Actions", "DevOps"),
       getTechCard("AWS", "Cloud"),
-      getTechCard("GCP", "Cloud"),
-      getTechCard("Azure", "Cloud"),
+      getTechCard("REST APIs", "Architecture"),
+      getTechCard("GraphQL", "Architecture"),
+      getTechCard("Jest", "Testing"),
+      getTechCard("Cypress", "Testing"),
+      getTechCard("Postman", "Testing"),
+      getTechCard("Git", "Version Control"),
+      getTechCard("GitHub", "Version Control"),
+    ];
+  }
+
+  if (normalizedRole.includes("frontend")) {
+    return [
+      getTechCard("HTML", "Languages"),
+      getTechCard("CSS", "Languages"),
+      getTechCard("JavaScript", "Languages"),
+      getTechCard("TypeScript", "Languages"),
+      getTechCard("React", "Frontend"),
+      getTechCard("Next.js", "Frontend"),
+      getTechCard("Redux", "Frontend"),
+      getTechCard("Zustand", "Frontend"),
+      getTechCard("Tailwind CSS", "Frontend"),
+      getTechCard("Vite", "Build Tools"),
+      getTechCard("Webpack", "Build Tools"),
+      getTechCard("Jest", "Testing"),
+      getTechCard("Cypress", "Testing"),
+      getTechCard("Postman", "Testing"),
+      getTechCard("REST APIs", "Architecture"),
+      getTechCard("GraphQL", "Architecture"),
+      getTechCard("Git", "Version Control"),
+      getTechCard("GitHub", "Version Control"),
+      getTechCard("Vercel", "Cloud & Hosting"),
+    ];
+  }
+
+  if (normalizedRole.includes("backend")) {
+    return [
+      getTechCard("JavaScript", "Languages"),
+      getTechCard("TypeScript", "Languages"),
+      getTechCard("Python", "Languages"),
+      getTechCard("Go", "Languages"),
+      getTechCard("Node.js", "Backend"),
+      getTechCard("Express.js", "Backend"),
+      getTechCard("NestJS", "Backend"),
+      getTechCard("MongoDB", "Databases"),
+      getTechCard("PostgreSQL", "Databases"),
+      getTechCard("Redis", "Databases"),
+      getTechCard("JWT", "Authentication"),
+      getTechCard("OAuth", "Authentication"),
       getTechCard("REST APIs", "Architecture"),
       getTechCard("GraphQL", "Architecture"),
       getTechCard("Microservices", "Architecture"),
       getTechCard("System Design", "Architecture"),
       getTechCard("Kafka", "Messaging"),
       getTechCard("RabbitMQ", "Messaging"),
-      getTechCard("Prometheus", "Monitoring"),
-      getTechCard("Grafana", "Monitoring"),
-      getTechCard("Sentry", "Monitoring"),
+      getTechCard("Docker", "DevOps"),
+      getTechCard("GitHub Actions", "DevOps"),
+      getTechCard("AWS", "Cloud"),
       getTechCard("Jest", "Testing"),
-      getTechCard("Cypress", "Testing"),
       getTechCard("Postman", "Testing"),
       getTechCard("Git", "Version Control"),
       getTechCard("GitHub", "Version Control"),
@@ -604,52 +647,7 @@ export default function CareerBlueprintHub() {
           { name: "E-Commerce", howUsed: "Constructing inventory feeds, checkout sequences, and personalized analytics boards.", example: "Shopify ecosystem partners", growthPotential: "Stable" },
           { name: "EdTech & FinTech", howUsed: "Processing interactive courses, document uploads, and payment ledgers.", example: "Razorpay portal dashboards", growthPotential: "High" }
         ],
-        technologies: [
-          {
-            name: "React.js",
-            whatIsIt: "A component-based frontend library developed by Facebook for building single-page user interfaces.",
-            whyUsed: "Virtual DOM allows swift updates, components make code modular and reusable, and the ecosystem is massive.",
-            analogy: "Like Lego blocks: you construct self-contained modules (buttons, panels) and connect them to build a complex castle.",
-            beginnerDesc: "A library that lets you construct custom HTML structures in JavaScript (JSX) that refresh automatically when data changes.",
-            advancedDesc: "Declarative UI framework leveraging abstract reconciliations, fiber-based scheduler queues, hook bindings, and state streams.",
-            advantages: ["Modular architecture", "Fast rendering via virtual DOM", "Rich community ecosystems"],
-            limitations: ["Steep initial JSX learning curve", "Requires state library boilerplate for large apps"],
-            difficulty: "Medium",
-            learningTime: "4 Weeks",
-            prerequisites: ["HTML5", "CSS3", "ES6 JavaScript"],
-            interviewQuestion: {
-              q: "Explain React's reconciliation process and what the Virtual DOM is.",
-              a: "React creates an in-memory virtual representation of the DOM. When state changes, a new Virtual DOM tree is generated. React diffs the old and new trees using an optimized heuristic algorithm, batching updates to commit only modified elements to the real browser DOM, minimizing layout repaints."
-            },
-            miniProject: {
-              title: "Interactive Kanban taskboard",
-              desc: "A card taskboard enabling drag-and-drop actions, local-storage state persistency, and custom search tags."
-            },
-            resources: ["Official React Docs", "Beta.reactjs.org guide", "Scrimba React Course"]
-          },
-          {
-            name: "Node.js & Express",
-            whatIsIt: "Node.js is a runtime enabling JavaScript execution on servers. Express is a minimalist web framework for building APIs.",
-            whyUsed: "Runs on Chrome V8 engine, uses an asynchronous event loop for rapid file I/O operations, and supports NPM packages.",
-            analogy: "Like a restaurant kitchen: Node is the fast chef executing orders asynchronously, and Express is the waiter dispatching menu tickets.",
-            beginnerDesc: "Server tools allowing JavaScript to query database records, secure routes, and process client requests.",
-            advancedDesc: "Single-threaded non-blocking network stack utilizing libuv event loops, system-level thread pool schedules, and modular middlewares.",
-            advantages: ["Fast asynchronous execution", "Unified language stack", "Vast NPM repository"],
-            limitations: ["Single-threaded compute bottlenecks", "Callback hell issues if asynchronous logic isn't handled with promises"],
-            difficulty: "Medium",
-            learningTime: "5 Weeks",
-            prerequisites: ["Asynchronous JS", "REST conventions"],
-            interviewQuestion: {
-              q: "What is the libuv library and event loop in Node?",
-              a: "Libuv is a multi-platform C support library that handles asynchronous I/O, file operations, thread pools, and network requests. The event loop continuously schedules task queues: timers, pending callbacks, poll phases, and close handlers, offloading intensive system operations to helper threads."
-            },
-            miniProject: {
-              title: "Dynamic REST API with file attachments",
-              desc: "Write middleware-restricted endpoints for user profiles supporting secure image uploads via Multer."
-            },
-            resources: ["Nodejs.org guides", "ExpressJS API manual", "FreeCodeCamp Node Course"]
-          }
-        ],
+        technologies: [],
         roadmap: [
           {
             id: "mern-node-1",
@@ -682,6 +680,38 @@ export default function CareerBlueprintHub() {
               answerIndex: 2,
               explanation: "useMemo caches the computed value of an expensive calculation, while useCallback caches the callback function itself."
             }
+          },
+          {
+            id: "mern-node-3",
+            title: "Node.js & Express API Development",
+            phase: "Advanced Concepts",
+            explanation: "Master server development, file I/O streams, custom middlewares, database integrations, and REST rules.",
+            objectives: ["Build secure REST APIs", "Implement authentication middleware", "Connect Express to database clusters"],
+            timeEstimate: "4 Weeks",
+            resources: ["NodeJS documentation", "Express guides"],
+            projectCheckpoint: { title: "File Storage Gateway", desc: "Secure API processing user files and storing metadata in database schemas." },
+            quiz: {
+              question: "What library handles background operations and thread pools for asynchronous file runs in Node.js?",
+              options: ["V8 Engine", "libuv", "PM2", "Systemd"],
+              answerIndex: 1,
+              explanation: "libuv provides the asynchronous event loop and thread pool models that offload blocking OS commands in Node.js."
+            }
+          },
+          {
+            id: "mern-node-4",
+            title: "Production Deployment & Telemetry",
+            phase: "Deployment",
+            explanation: "Learn how to wrap applications into Docker container clusters, construct CI/CD paths, and monitor server logs.",
+            objectives: ["Containerize full-stack apps", "Deploy to AWS/GCP servers", "Set up monitoring and log traces"],
+            timeEstimate: "3 Weeks",
+            resources: ["Docker manual", "Prometheus core documents"],
+            projectCheckpoint: { title: "Automated Deployment Pipeline", desc: "Full container stack automatically deployed using GitHub Actions workflow rules." },
+            quiz: {
+              question: "Which container management command defines service volumes and ports for multi-container stacks locally?",
+              options: ["docker run", "docker-compose up", "docker build", "docker push"],
+              answerIndex: 1,
+              explanation: "docker-compose up compiles and starts multi-container setups defined in a docker-compose.yml configuration."
+            }
           }
         ],
         skillsTree: [
@@ -709,7 +739,7 @@ export default function CareerBlueprintHub() {
           dsa: "Strong basics of arrays, hash maps, two-pointer algorithms, and stack queries. Tree recursion for routing layouts is secondary.",
           systemDesign: "Caching layers (Redis), rate-limiting middleware, CORS setups, load balancers, database horizontal scaling.",
           coreSubjects: ["Computer Networks", "Database Management Systems (DBMS)", "Operating Systems fundamentals"],
-          resumeRules: ["Include active links to deployed full-stack products.", "Detail API latency reductions achieved with caching ($X$\\% metrics)."],
+          resumeRules: ["Include active links to deployed full-stack products.", "Detail API latency reductions achieved with caching ($X$\% metrics)."],
           githubRules: ["Create structured README files.", "Demonstrate Git workflow patterns with pull requests and code reviews."],
           portfolioRules: ["Provide single-page fast-loading profiles.", "Host interactive project demonstrations directly on the web."],
           mockQuestions: [
@@ -729,6 +759,567 @@ export default function CareerBlueprintHub() {
           trendingTechs: ["Next.js Server Actions", "TypeScript strict configuration", "Zustand global stores"],
           emergingSkills: ["Edge runtime optimizations", "AI SDK interfaces integration"],
           predictions: "Traditional SPAs are shifting toward server-rendered hybrid structures to improve SEO metrics and performance."
+        }
+      },
+
+      "Frontend Developer": {
+        role: "Frontend Developer",
+        icon: Code,
+        category: "Software Development",
+        level: "Beginner",
+        duration: "4 Months",
+        difficulty: "Easy",
+        demand: "High",
+        growth: "22%",
+        remoteWork: "Yes",
+        about: "A Frontend Developer builds user-facing web interfaces, implementing layouts, interactions, animations, and optimizing client-side performance.",
+        importance: "Ensures visually stunning, accessible, and fast design translation from mockups to active runtime interfaces.",
+        problemsSolved: "Resolves layout shifts, client rendering delay, visual bugs, and slow page interactions.",
+        responsibilities: [
+          "Design and build responsive UI layouts using React/Next.js and clean styling patterns.",
+          "Coordinate state updates using Zustand/Redux and optimize data fetches.",
+          "Ensure accessibility compliance matching WCAG standard rules.",
+          "Write clean modular visual components and execute testing scripts."
+        ],
+        industries: [
+          { name: "SaaS Dashboards", howUsed: "Constructing analytics panels, responsive controls, and visual drag tools.", example: "Figma, Notion", growthPotential: "Very High" },
+          { name: "E-Commerce", howUsed: "Optimizing landing flows, product catalogs, and cart state synchronization.", example: "Shopify interfaces", growthPotential: "High" },
+          { name: "Agencies & Marketing", howUsed: "Crafting marketing assets, rich animations, and static web pages.", example: "Vercel networks", growthPotential: "Stable" }
+        ],
+        technologies: [],
+        roadmap: [
+          {
+            id: "fe-node-1",
+            title: "Semantic HTML & Responsive CSS",
+            phase: "Foundation",
+            explanation: "Master DOM structure, flexbox/grid layout models, CSS custom properties, and responsive design mechanics.",
+            objectives: ["Construct semantic layout blocks", "Build custom responsive components", "Adjust alignments for standard mobile viewports"],
+            timeEstimate: "3 Weeks",
+            resources: ["MDN Web CSS Guides", "CSS Tricks reference manuals"],
+            projectCheckpoint: { title: "Responsive Media Dashboard", desc: "A dashboard incorporating sidebars, video panels, and responsive grid cards." },
+            quiz: {
+              question: "Which CSS layout method allows alignment in both columns and rows simultaneously?",
+              options: ["Flexbox", "CSS Grid", "Table Layout", "Absolute Positioning"],
+              answerIndex: 1,
+              explanation: "CSS Grid is a two-dimensional layout engine, whereas Flexbox is primarily one-dimensional."
+            }
+          },
+          {
+            id: "fe-node-2",
+            title: "Advanced JavaScript & DOM API",
+            phase: "Core Concepts",
+            explanation: "Understand closure bindings, scope chains, event delegation, and asynchronous promise handlers.",
+            objectives: ["Process promise callbacks", "Manipulate browser nodes dynamically", "Manage client-side caching configs"],
+            timeEstimate: "3 Weeks",
+            resources: ["JavaScript.info tutorials", "Eloquent JS Book"],
+            projectCheckpoint: { title: "Interactive Scheduler Client", desc: "A visual schedule client updating calendar data via REST mock streams." },
+            quiz: {
+              question: "What is event delegation in browser JavaScript?",
+              options: ["Passing state to child frames", "Attaching a single listener to a parent node to manage child event triggers", "Binding click inputs to thread queues", "Stopping events from bubbling"],
+              answerIndex: 1,
+              explanation: "Event delegation leverages event bubbling to listen at a parent level rather than binding handlers to multiple individual children."
+            }
+          },
+          {
+            id: "fe-node-3",
+            title: "React Components & State",
+            phase: "Core Concepts",
+            explanation: "Master component render triggers, hooks (useState, useEffect, useMemo), and state reconciliation flows.",
+            objectives: ["Build modular UI components", "Construct custom custom hooks", "Define data context boundaries"],
+            timeEstimate: "4 Weeks",
+            resources: ["React dev manuals", "Scrimba React courses"],
+            projectCheckpoint: { title: "SaaS Task Manager UI", desc: "A modular, hook-driven Kanban application with offline state fallback templates." },
+            quiz: {
+              question: "Which hook should be used to memoize a function definition to prevent useless child re-renders?",
+              options: ["useMemo", "useCallback", "useRef", "useEffect"],
+              answerIndex: 1,
+              explanation: "useCallback returns a memoized version of the callback function itself, while useMemo memoizes the computed value."
+            }
+          },
+          {
+            id: "fe-node-4",
+            title: "Testing & Quality Assurance",
+            phase: "Advanced Concepts",
+            explanation: "Implement testing protocols for UI libraries, and execute headless E2E testing using Jest, React Testing Library, and Cypress.",
+            objectives: ["Write component tests", "Execute automated E2E browser runs", "Measure client performance vitals"],
+            timeEstimate: "3 Weeks",
+            resources: ["Cypress manuals", "Testing Library guides"],
+            projectCheckpoint: { title: "Dashboard Component Test Suite", desc: "A React testing package validating forms, API loads, and checking error limits." },
+            quiz: {
+              question: "What does FCP stand for in Google Web Vitals metrics?",
+              options: ["First Contentful Paint", "Fast Client Rendering", "File Control Protocol", "First Component Process"],
+              answerIndex: 0,
+              explanation: "First Contentful Paint (FCP) measures the duration from when a user navigates to when the browser renders the first piece of DOM content."
+            }
+          }
+        ],
+        skillsTree: [
+          { id: "s-fe-1", name: "Responsive CSS Layouts", tier: "Beginner", whyMatters: "Enables creating clean designs across device sizes.", dependencies: [], hours: 40, importance: "High", techs: ["HTML", "CSS"], unlocked: true, completed: false },
+          { id: "s-fe-2", name: "Dynamic DOM & JS Basics", tier: "Beginner", whyMatters: "Adds scripting interaction logic to web layouts.", dependencies: ["s-fe-1"], hours: 60, importance: "High", techs: ["JS"], unlocked: true, completed: false },
+          { id: "s-fe-3", name: "React State Frameworks", tier: "Intermediate", whyMatters: "Building block for modern SPA components.", dependencies: ["s-fe-2"], hours: 100, importance: "High", techs: ["React", "Zustand"], unlocked: false, completed: false },
+          { id: "s-fe-4", name: "Next.js SSR Architectures", tier: "Intermediate", whyMatters: "Improves initial page loads and search indexing.", dependencies: ["s-fe-3"], hours: 80, importance: "High", techs: ["Next.js"], unlocked: false, completed: false },
+          { id: "s-fe-5", name: "Frontend Testing & Quality", tier: "Advanced", whyMatters: "Secures updates from breaking user paths.", dependencies: ["s-fe-3"], hours: 60, importance: "Medium", techs: ["Jest", "Cypress"], unlocked: false, completed: false }
+        ],
+        projects: [
+          {
+            title: "Modular SaaS UI Component Library",
+            level: "Advanced",
+            problemStatement: "Organizations copy and paste components, leading to broken buttons and styling inconsistencies.",
+            features: ["WCAG accessible design states", "Automated theme compilation config", "Visual catalog docs playground"],
+            architecture: "Component workspace compiled into an NPM module package with automated Storybook specs.",
+            techStack: ["React", "TypeScript", "Storybook", "Jest"],
+            outcomes: ["Reusable visual components", "Consistent branding deployment workflows"],
+            completionTime: "4 Weeks",
+            resumeValue: 5
+          }
+        ],
+        placementPrep: {
+          dsa: "String manipulation, arrays search routines, and basic DOM tree structures representation.",
+          systemDesign: "Web browser performance patterns, assets caching rules, CDN distribution configurations, and asset compilation bundling.",
+          coreSubjects: ["Computer Networks", "Software Design Principles", "Web Standards & Accessibility"],
+          resumeRules: ["List raw page load speed improvements.", "Provide links to interactive component demo hosts."],
+          githubRules: ["Show clean visual code structures.", "Include interactive web mock screenshots in README files."],
+          portfolioRules: ["Provide responsive mobile-first portfolios with fast initial load speed."],
+          mockQuestions: [
+            { q: "What is the key difference between SSR and client-side hydration?", topic: "Performance Vitals" },
+            { q: "Explain how closure allows you to maintain reference variables in event handlers.", topic: "JS Scope" }
+          ]
+        },
+        salaries: {
+          internship: 20000,
+          fresher: 5.5,
+          mid: 12.0,
+          senior: 24.0,
+          globalTrend: "High remote placements for React and state systems optimization developers.",
+          remoteTrend: "Ranges from $30,000 to $75,000 USD."
+        },
+        trends: {
+          trendingTechs: ["Server Component flows", "Strict Type check configurations", "Micro-interaction engines"],
+          emergingSkills: ["AI prototyping integrations", "Dynamic edge page compiling"],
+          predictions: "Web application interfaces will shift toward edge pre-rendering and compile-time layout optimizations, cutting client runtime code volume."
+        }
+      },
+
+      "Backend Developer": {
+        role: "Backend Developer",
+        icon: Server,
+        category: "Software Development",
+        level: "Intermediate",
+        duration: "6 Months",
+        difficulty: "Medium",
+        demand: "Critical",
+        growth: "25%",
+        remoteWork: "Yes",
+        about: "A Backend Developer architects servers, designs database models, establishes security authorizations, and manages data streaming engines.",
+        importance: "Serves as the core processor of all software data systems, defining security rules, backend API shapes, and routing pipelines.",
+        problemsSolved: "Resolves database query delays, server bottlenecks, security gaps, and high API timeouts under heavy loads.",
+        responsibilities: [
+          "Build secure server APIs using frameworks like Node.js/Express, Python, or Go.",
+          "Write optimized SQL database schemas and handle indexing queries.",
+          "Implement secure authentication schemes (JWT, OAuth) and CORS settings.",
+          "Design microservices pipelines and message distribution systems."
+        ],
+        industries: [
+          { name: "Enterprise SaaS", howUsed: "Processing transaction records, managing tenant configurations, and scaling data queues.", example: "Salesforce, AWS APIs", growthPotential: "High" },
+          { name: "Banking & FinTech", howUsed: "Executing concurrent transactions, logging history audit trails, and securing customer tokens.", example: "Stripe, Razorpay APIs", growthPotential: "Critical" },
+          { name: "Streaming Media", howUsed: "Managing real-time content delivery indices, segmenting user feeds, and caching hot assets.", example: "Netflix systems, Spotify", growthPotential: "High" }
+        ],
+        technologies: [],
+        roadmap: [
+          {
+            id: "be-node-1",
+            title: "Server Runtimes & REST Rules",
+            phase: "Foundation",
+            explanation: "Understand server lifecycles, HTTP header configurations, routing mechanisms, and REST standards.",
+            objectives: ["Build simple web servers", "Write clean request middlewares", "Parse URL parameters and body payloads"],
+            timeEstimate: "3 Weeks",
+            resources: ["NodeJS core docs", "REST API Tutorial guidelines"],
+            projectCheckpoint: { title: "REST Book Directory API", desc: "A web server exposing REST endpoints supporting full CRUD features with file persistence." },
+            quiz: {
+              question: "Which HTTP method is defined as idempotent and typically updates resource values fully?",
+              options: ["POST", "PUT", "PATCH", "DELETE"],
+              answerIndex: 1,
+              explanation: "PUT is idempotent; sending the same payload multiple times yields the same final system state. POST creates a resource, causing repeated edits."
+            }
+          },
+          {
+            id: "be-node-2",
+            title: "Databases & Index Optimizations",
+            phase: "Core Concepts",
+            explanation: "Master relational (SQL) and non-relational (NoSQL) schemas, foreign key mappings, and indexing strategies.",
+            objectives: ["Write complex database queries", "Design database connection pools", "Analyze query performance indicators"],
+            timeEstimate: "4 Weeks",
+            resources: ["PostgreSQL tutorial manuals", "MongoDB University"],
+            projectCheckpoint: { title: "Social Feed DB Schema", desc: "A database structure handling user connections, posts, and comments with index optimization logs." },
+            quiz: {
+              question: "How does a database index improve select query performance?",
+              options: ["By compressing table blocks", "By creating an optimized B-Tree structure for faster lookup searches", "By caching outputs in server memory", "By lock scheduling rows"],
+              answerIndex: 1,
+              explanation: "An index creates an ordered data index structure (typically a B-Tree), reducing search scans from O(N) to O(log N)."
+            }
+          },
+          {
+            id: "be-node-3",
+            title: "Microservices & Message Brokers",
+            phase: "Advanced Concepts",
+            explanation: "Learn architectural isolation, horizontal scaling patterns, event-driven message networks, and caching strategies.",
+            objectives: ["Build event message processors", "Integrate Redis caching layers", "Design distributed configurations"],
+            timeEstimate: "4 Weeks",
+            resources: ["Kafka intro documents", "Microservices.io guide"],
+            projectCheckpoint: { title: "Event-Driven Order Process Engine", desc: "A microservice pipeline coordinating checkout transactions using Redis channels and RabbitMQ." },
+            quiz: {
+              question: "Which role does a Message Queue play in microservice architectures?",
+              options: ["Storing large user files", "Decoupling services, handling backpressure, and ensuring async durability", "Formatting JSON layouts", "Securing API auth keys"],
+              answerIndex: 1,
+              explanation: "Message queues allow asynchronous processing and handle volume spikes (backpressure) by decoupling target producers and consumers."
+            }
+          },
+          {
+            id: "be-node-4",
+            title: "Distributed Caching & High Load Tuning",
+            phase: "Deployment",
+            explanation: "Learn to scale backend systems using Redis caching layers, connection pools, and write-ahead logging tuning to handle thousands of concurrent requests.",
+            objectives: ["Configure Redis cache invalidation strategies", "Tune database connection pools", "Implement horizontal scaling with load balancers"],
+            timeEstimate: "4 Weeks",
+            resources: ["Redis Developer Guide", "High Performance PostgreSQL", "System Design Primer"],
+            projectCheckpoint: {
+              title: "Distributed Cache Invalidator",
+              desc: "A microservice listening to database update triggers and invalidating related cache keys on Redis clusters in real-time."
+            },
+            quiz: {
+              question: "Which cache invalidation strategy updates the cache and the database synchronously inside the write transaction?",
+              options: ["Cache-Aside", "Write-Through", "Write-Behind", "Refresh-Ahead"],
+              answerIndex: 1,
+              explanation: "Write-Through cache writes data directly to both the cache and the underlying database in a single synchronous write block."
+            }
+          }
+        ],
+        skillsTree: [
+          { id: "s-be-1", name: "System Programming Logic", tier: "Beginner", whyMatters: "Language core to execute backend algorithms.", dependencies: [], hours: 60, importance: "High", techs: ["Node.js", "Python"], unlocked: true, completed: false },
+          { id: "s-be-2", name: "Database Schema Designs", tier: "Beginner", whyMatters: "Enables secure data persistence and lookup tuning.", dependencies: ["s-be-1"], hours: 80, importance: "High", techs: ["SQL", "MongoDB"], unlocked: true, completed: false },
+          { id: "s-be-3", name: "REST & GraphQL APIs", tier: "Intermediate", whyMatters: "Connects web clients to internal system data.", dependencies: ["s-be-2"], hours: 100, importance: "High", techs: ["Express", "FastAPI"], unlocked: false, completed: false },
+          { id: "s-be-4", name: "Distributed Cache & Queues", tier: "Advanced", whyMatters: "Accelerates reads and handles asynchronous messaging peaks.", dependencies: ["s-be-3"], hours: 80, importance: "High", techs: ["Redis", "Kafka"], unlocked: false, completed: false },
+          { id: "s-be-5", name: "Microservice System Architecture", tier: "Advanced", whyMatters: "Scales engineering team output and deploy safety.", dependencies: ["s-be-3"], hours: 100, importance: "High", techs: ["Docker", "Microservices"], unlocked: false, completed: false }
+        ],
+        projects: [
+          {
+            title: "Scalable E-Commerce Transaction Engine",
+            level: "Industry-Level",
+            problemStatement: "During flash sales, server instances crash due to database row locking bottlenecks.",
+            features: ["Queue-based checkout processing", "Distributed inventory locks", "Real-time stock broadcast channels"],
+            architecture: "Microservices stack using Redis mutex locks, PostgreSQL transactional isolation, and RabbitMQ message queues.",
+            techStack: ["Node.js", "PostgreSQL", "Redis", "RabbitMQ", "Docker"],
+            outcomes: ["Processed 5000 requests/sec with zero duplicate checkouts", "Automatic cache invalidations"],
+            completionTime: "4 Weeks",
+            resumeValue: 5
+          }
+        ],
+        placementPrep: {
+          dsa: "Trees, graphs BFS/DFS algorithms, hash map collisions resolutions, sorting queues, and memory caching parameters.",
+          systemDesign: "Database index design, caching strategies (Write-Through vs Cache-Aside), rate limiters, load balancing, and SQL ACID guarantees.",
+          coreSubjects: ["Database Management Systems (DBMS)", "Operating Systems (scheduling, threads)", "Computer Networks (TCP/IP, HTTP)"],
+          resumeRules: ["Quantify achievements (e.g., 'Reduced query latency by 45% using database index modifications').", "List system deployment metrics."],
+          githubRules: ["Show API documentation folders.", "Provide postman integration files directly in repository checkouts."],
+          portfolioRules: ["Provide links to active Swagger/REST API instances with sample keys."],
+          mockQuestions: [
+            { q: "How do SQL ACID properties differ from NoSQL BASE properties?", topic: "Database Theory" },
+            { q: "What is database thread pool exhaustion and how is it resolved?", topic: "Server Concurrency" }
+          ]
+        },
+        salaries: {
+          internship: 30000,
+          fresher: 7.0,
+          mid: 15.0,
+          senior: 30.0,
+          globalTrend: "Massive demand for distributed system architectures and API scalability experts.",
+          remoteTrend: "Ranges from $45,000 to $95,000 USD."
+        },
+        trends: {
+          trendingTechs: ["Serverless backends", "Rust for web infrastructure", "gRPC communication channels"],
+          emergingSkills: ["Vector database architectures setup", "Edge telemetry configurations"],
+          predictions: "Backend architectures are shifting toward distributed edge microservices and direct RPC pipelines to minimize routing times."
+        }
+      },
+
+      "Java Full Stack Developer": {
+        role: "Java Full Stack Developer",
+        icon: Briefcase,
+        category: "Software Development",
+        level: "Advanced",
+        duration: "7 Months",
+        difficulty: "Hard",
+        demand: "Critical",
+        growth: "24%",
+        remoteWork: "Yes",
+        about: "A Java Full Stack Developer engineers enterprise applications, combining Java Spring Boot backends with modern JavaScript frontend layers.",
+        importance: "Critical for building secure, highly scalable, and transactional enterprise web apps in banking, logistics, and healthcare.",
+        problemsSolved: "Resolves architectural complexity, secure transactions management, legacy updates, and database mapping bugs.",
+        responsibilities: [
+          "Design enterprise backends with Java, Spring Boot, and Hibernate JPA.",
+          "Develop frontend layers in React or Angular, aligning styles with design guidelines.",
+          "Implement robust Spring Security setups (OAuth2, JWT, role checks).",
+          "Automate deployment using Jenkins pipelines, Maven/Gradle, and Docker containers."
+        ],
+        industries: [
+          { name: "Banking & FinTech", howUsed: "Building transaction engines, ledger portals, and risk management systems.", example: "JPMorgan, HSBC systems", growthPotential: "Stable" },
+          { name: "Enterprise Systems", howUsed: "Managing inventory data feeds, logistics coordinates, and corporate dashboard workflows.", example: "SAP partner integrations", growthPotential: "High" },
+          { name: "Healthcare Tech", howUsed: "Processing patient records directories, securing medical telemetry, and integrating system APIs.", example: "Hospitals portal architectures", growthPotential: "Very High" }
+        ],
+        technologies: [],
+        roadmap: [
+          {
+            id: "java-node-1",
+            title: "Core Java & Build Systems",
+            phase: "Foundation",
+            explanation: "Master Java OOP, collections frameworks, multi-threading basics, and build automation frameworks (Maven/Gradle).",
+            objectives: ["Write complex multi-threaded console scripts", "Manage Maven dependency XML configurations", "Implement custom collection structures"],
+            timeEstimate: "4 Weeks",
+            resources: ["Oracle Java Docs", "Baeldung Java tutorials"],
+            projectCheckpoint: { title: "Multi-threaded Library Log Suite", desc: "A console script managing library inventory records with concurrent search queues." },
+            quiz: {
+              question: "Which collection in Java allows unique elements only and does not guarantee sorting order?",
+              options: ["ArrayList", "HashSet", "HashMap", "TreeSet"],
+              answerIndex: 1,
+              explanation: "HashSet stores unique elements leveraging hashing mechanisms, but does not guarantee any iteration order."
+            }
+          },
+          {
+            id: "java-node-2",
+            title: "Database Mapping & Spring Core",
+            phase: "Core Concepts",
+            explanation: "Learn Spring core configurations, Dependency Injection, Hibernate ORM, JPA mapping, and SQL database transactions.",
+            objectives: ["Configure Spring Bean scopes", "Map entity tables using JPA annotations", "Implement transaction boundaries"],
+            timeEstimate: "4 Weeks",
+            resources: ["Spring Framework tutorials", "Hibernate manuals"],
+            projectCheckpoint: { title: "JPA Booking Directory", desc: "A service mapping user bookings, seats, and payments with relational databases." },
+            quiz: {
+              question: "What JPA annotation defines a relationship where one parent record owns multiple children records?",
+              options: ["@ManyToOne", "@OneToMany", "@ManyToMany", "@Transient"],
+              answerIndex: 1,
+              explanation: "@OneToMany specifies a single parent entity is linked to a collection of child entities in ORM mappings."
+            }
+          },
+          {
+            id: "java-node-3",
+            title: "Spring Security & React UI",
+            phase: "Advanced Concepts",
+            explanation: "Secure API endpoints using Spring Security configurations, handle JWT tokens, and connect React components to endpoints.",
+            objectives: ["Build role-based auth security filters", "Write custom React components to query APIs", "Implement state stores for logged users"],
+            timeEstimate: "5 Weeks",
+            resources: ["Spring Security manuals", "React learning paths"],
+            projectCheckpoint: { title: "Secure E-Commerce Dashboard", desc: "A full-stack React-Spring dashboard managing active catalog listings with role logins." },
+            quiz: {
+              question: "Which filter component in Spring Security intercepts requests to extract and validate JWT headers?",
+              options: ["AuthenticationManager", "OncePerRequestFilter", "SecurityContextHolder", "DaoAuthenticationProvider"],
+              answerIndex: 1,
+              explanation: "OncePerRequestFilter is subclassed to execute custom logic (like token validation) once per request lifecycle."
+            }
+          },
+          {
+            id: "java-node-4",
+            title: "Enterprise Clustering & API Gateways",
+            phase: "Deployment",
+            explanation: "Understand how to route traffic, aggregate configuration settings, and monitor health metrics across decoupled Spring Cloud microservice instances using Consul or Eureka.",
+            objectives: ["Set up Spring Cloud Gateway routing rules", "Configure a central Spring Cloud Config server", "Monitor telemetry endpoints with Prometheus and Grafana"],
+            timeEstimate: "4 Weeks",
+            resources: ["Spring Cloud Documentation", "Baeldung Spring Boot Tutorials", "Prometheus Monitoring in JVM"],
+            projectCheckpoint: {
+              title: "Secure Microservices Gateway System",
+              desc: "An enterprise gateway checking JWT tokens and routing client requests to backend billing and account microservices."
+            },
+            quiz: {
+              question: "Which Spring Cloud component dynamically routes incoming external API calls to appropriate internal microservice instances?",
+              options: ["Spring Cloud Config", "Spring Cloud Gateway", "Spring Cloud OpenFeign", "Spring Cloud Eureka"],
+              answerIndex: 1,
+              explanation: "Spring Cloud Gateway handles routing, filtering, rate limiting, and security verification for incoming request flows."
+            }
+          }
+        ],
+        skillsTree: [
+          { id: "s-java-1", name: "Core Java OOP", tier: "Beginner", whyMatters: "Language core for all enterprise backend scripts.", dependencies: [], hours: 80, importance: "High", techs: ["Java"], unlocked: true, completed: false },
+          { id: "s-java-2", name: "SQL & Hibernate JPA", tier: "Beginner", whyMatters: "Enables database object mappings.", dependencies: ["s-java-1"], hours: 80, importance: "High", techs: ["SQL", "Hibernate"], unlocked: true, completed: false },
+          { id: "s-java-3", name: "Spring Boot APIs", tier: "Intermediate", whyMatters: "Automates enterprise setup configurations.", dependencies: ["s-java-2"], hours: 100, importance: "High", techs: ["Spring Boot"], unlocked: false, completed: false },
+          { id: "s-java-4", name: "React Frontend Systems", tier: "Intermediate", whyMatters: "Builds user interface dashboards.", dependencies: ["s-java-1"], hours: 80, importance: "Medium", techs: ["React", "JS"], unlocked: false, completed: false },
+          { id: "s-java-5", name: "Spring Security & Microservices", tier: "Advanced", whyMatters: "Protects financial systems and coordinates networks.", dependencies: ["s-java-3"], hours: 120, importance: "High", techs: ["Spring Security", "Microservices"], unlocked: false, completed: false }
+        ],
+        projects: [
+          {
+            title: "Enterprise Microservices Banking API",
+            level: "Industry-Level",
+            problemStatement: "Banking systems need decoupled modules for billing, accounts, and alerts running without centralized failures.",
+            features: ["Spring Cloud routing gateway", "Distributed logging aggregation", "Automated rollbacks on payment failure"],
+            architecture: "Microservices cluster using Spring Cloud Eureka, Spring Security OAuth2, PostgreSQL database instances, and Kafka streams.",
+            techStack: ["Java", "Spring Boot", "Spring Cloud", "PostgreSQL", "Kafka", "Docker"],
+            outcomes: ["Zero-downtime service rolling updates", "Secure banking operations compliant with audit rules"],
+            completionTime: "5 Weeks",
+            resumeValue: 5
+          }
+        ],
+        placementPrep: {
+          dsa: "Trees structures, graphs, sorting lists, hash maps operations, and string matching indices.",
+          systemDesign: "Spring Cloud configurations, Eureka service discoveries, API Gateways, database transaction levels, and design pattern classifications.",
+          coreSubjects: ["Operating Systems", "Object Oriented Analysis & Design (OOAD)", "Database Systems (DBMS)"],
+          resumeRules: ["Mention Maven dependency structures.", "State exact database transactions scale metrics achieved."],
+          githubRules: ["Structure directories cleanly with src/main/java folders.", "Demonstrate clean Maven pom.xml configuration files."],
+          portfolioRules: ["Provide details of complete enterprise project components deployment setups."],
+          mockQuestions: [
+            { q: "What is the difference between @Controller and @RestController annotations in Spring?", topic: "Spring MVC" },
+            { q: "Explain Java Garbage Collection models and heap space partitions.", topic: "JVM Internals" }
+          ]
+        },
+        salaries: {
+          internship: 30000,
+          fresher: 7.5,
+          mid: 16.0,
+          senior: 32.0,
+          globalTrend: "High corporate hiring demand for Java backend and Spring Cloud specialists.",
+          remoteTrend: "Ranges from $40,000 to $90,000 USD."
+        },
+        trends: {
+          trendingTechs: ["Java Virtual Threads (Project Loom)", "Spring Boot GraalVM native images", "Microservice architectures"],
+          emergingSkills: ["Cloud security certifications", "Reactive backend frameworks (WebFlux)"],
+          predictions: "JVM runtimes will become significantly lighter using native image compilations, increasing deployment speeds in serverless cloud environments."
+        }
+      },
+
+      "AI Engineer": {
+        role: "AI Engineer",
+        icon: Brain,
+        category: "Artificial Intelligence",
+        level: "Advanced",
+        duration: "8 Months",
+        difficulty: "Hard",
+        about: "An AI Engineer designs statistical machine learning systems, deep neural network algorithms, data engineering scripts, and deploys model engines.",
+        demand: "Critical",
+        growth: "38%",
+        remoteWork: "Yes",
+        importance: "Empowers digital products with intelligent features like pattern forecasting, audio/video analysis, and automated choices.",
+        problemsSolved: "Resolves predictive modeling inaccuracies, data engineering delays, and high latency of model APIs.",
+        responsibilities: [
+          "Preprocess raw data feeds using NumPy, Pandas, and data cleansing scripts.",
+          "Train classical machine learning models (Scikit-Learn) and neural networks (PyTorch/TensorFlow).",
+          "Build model endpoints using FastAPI and MLOps metrics logs.",
+          "Configure cloud training structures and monitor model drift indices."
+        ],
+        industries: [
+          { name: "Automotive Tech", howUsed: "Training object detection algorithms, processing sensor feeds, and predicting failures.", example: "ADAS models", growthPotential: "High" },
+          { name: "E-Commerce", howUsed: "Constructing user recommendation engines, clustering products, and predicting purchasing cycles.", example: "Amazon models", growthPotential: "High" },
+          { name: "FinTech & Banking", howUsed: "Running credit risk forecasts, analyzing fraud metrics, and forecasting stock values.", example: "Hedge fund systems", growthPotential: "Very High" }
+        ],
+        technologies: [],
+        roadmap: [
+          {
+            id: "ai-ml-node-1",
+            title: "Data Manipulation & Stats",
+            phase: "Foundation",
+            explanation: "Learn Python script optimization, linear algebra metrics (matrices), stats rules, and Pandas data analytics.",
+            objectives: ["Clean messy dataset files", "Calculate statistical properties", "Create plots and data graphs"],
+            timeEstimate: "3 Weeks",
+            resources: ["Python for Data Analysis Book", "Kaggle tutorials"],
+            projectCheckpoint: { title: "Housing Prices Analytics", desc: "A Python script cleaning property records and reporting price averages." },
+            quiz: {
+              question: "Which Pandas function is utilized to group records based on a column and compute group metrics?",
+              options: ["merge()", "groupby()", "pivot()", "concat()"],
+              answerIndex: 1,
+              explanation: "groupby() splits dataset rows according to categories, allowing aggregate metrics calculation on the groups."
+            }
+          },
+          {
+            id: "ai-ml-node-2",
+            title: "Classical Machine Learning",
+            phase: "Core Concepts",
+            explanation: "Understand linear regression models, decision trees, classification scoring, and Scikit-Learn tools.",
+            objectives: ["Train predictive models", "Optimize model hyperparameter values", "Evaluate classification arrays"],
+            timeEstimate: "4 Weeks",
+            resources: ["Scikit-Learn documentation", "Introduction to Statistical Learning"],
+            projectCheckpoint: { title: "Customer Churn Predictor", desc: "A classification script modeling client churn based on usage history logs." },
+            quiz: {
+              question: "What metrics evaluate binary classifiers when there is class imbalance in the targets?",
+              options: ["Accuracy score", "Precision, Recall, and F1-Score", "Mean Squared Error", "R-Squared"],
+              answerIndex: 1,
+              explanation: "Precision, Recall, and F1-Score track model reliability on minority classes directly, whereas accuracy yields skewed metrics."
+            }
+          },
+          {
+            id: "ai-ml-node-3",
+            title: "Deep Learning & MLOps",
+            phase: "Advanced Concepts",
+            explanation: "Build deep neural network architectures using PyTorch, write clean FastAPI endpoints, and manage models with MLflow.",
+            objectives: ["Design custom neural network layers", "Construct FastAPI web servers to serve models", "Track model parameters using MLflow"],
+            timeEstimate: "5 Weeks",
+            resources: ["PyTorch core docs", "MLflow tracking guide"],
+            projectCheckpoint: { title: "Medical Scan Segmentation API", desc: "A FastAPI server running a PyTorch image segmentation model with telemetry logs." },
+            quiz: {
+              question: "Which optimizer tracks historical gradient averages dynamically to control neural network updates?",
+              options: ["SGD", "Adam", "Adadelta", "RMSprop"],
+              answerIndex: 1,
+              explanation: "Adam (Adaptive Moment Estimation) tracks both first and second moments of gradients, optimizing updates dynamically."
+            }
+          },
+          {
+            id: "ai-ml-node-4",
+            title: "Generative AI & LLM Orchestrations",
+            phase: "Deployment",
+            explanation: "Scale LLM deployments using vector search indexes, customize prompt templates, and construct semantic information retrieval pipelines (RAG).",
+            objectives: ["Integrate OpenAI and open-source models with Python", "Index text chunks into vector databases", "Optimize prompt tokens and evaluate output safety"],
+            timeEstimate: "4 Weeks",
+            resources: ["LangChain Official Docs", "Pinecone Vector Search Handbook", "DeepLearning.AI Generative AI courses"],
+            projectCheckpoint: {
+              title: "Enterprise Vector Search Portal",
+              desc: "A search engine chunking PDF documents, generating vector embeddings, and running semantic matching using local model endpoints."
+            },
+            quiz: {
+              question: "Why is chunk overlap used when parsing documents for vector databases?",
+              options: ["To reduce vector index size", "To ensure context boundaries are not lost across split points", "To make embedding generation faster", "To encrypt the documents"],
+              answerIndex: 1,
+              explanation: "Chunk overlap preserves surrounding sentences around splitting boundaries, preventing loss of vital contextual semantic information."
+            }
+          }
+        ],
+        skillsTree: [
+          { id: "s-ai-ml-1", name: "Python Scripting & Stats", tier: "Beginner", whyMatters: "Calculates mathematical variables of ML models.", dependencies: [], hours: 60, importance: "High", techs: ["Python", "NumPy"], unlocked: true, completed: false },
+          { id: "s-ai-ml-2", name: "Data Engineering & Analytics", tier: "Beginner", whyMatters: "Handles messy CSV files and coordinates datasets.", dependencies: ["s-ai-ml-1"], hours: 80, importance: "High", techs: ["Pandas", "SQL"], unlocked: true, completed: false },
+          { id: "s-ai-ml-3", name: "Supervised ML Models", tier: "Intermediate", whyMatters: "Enables pattern identification and predictions.", dependencies: ["s-ai-ml-2"], hours: 100, importance: "High", techs: ["Scikit-Learn"], unlocked: false, completed: false },
+          { id: "s-ai-ml-4", name: "Deep Neural Networks", tier: "Advanced", whyMatters: "Processes unformatted data like images, audio, and texts.", dependencies: ["s-ai-ml-3"], hours: 120, importance: "High", techs: ["PyTorch", "TensorFlow"], unlocked: false, completed: false },
+          { id: "s-ai-ml-5", name: "MLOps Deployment Pipelines", tier: "Expert", whyMatters: "Packages models into scalable live APIs.", dependencies: ["s-ai-ml-4"], hours: 80, importance: "Medium", techs: ["FastAPI", "MLflow", "Docker"], unlocked: false, completed: false }
+        ],
+        projects: [
+          {
+            title: "Deep Learning Image Classification Stack",
+            level: "Advanced",
+            problemStatement: "Sorting defect logs manually in factories causes delivery delays and manual error spikes.",
+            features: ["Real-time visual processing", "Auto-alert triggers on anomalies", "API endpoint scaling specs"],
+            architecture: "PyTorch neural net served via FastAPI, built into a Docker container, and monitored with Prometheus telemetry.",
+            techStack: ["Python", "PyTorch", "FastAPI", "Docker", "AWS"],
+            outcomes: ["Automated manufacturing checks with 98.6% classification accuracy", "Model endpoints load speed below 40ms"],
+            completionTime: "4 Weeks",
+            resumeValue: 5
+          }
+        ],
+        placementPrep: {
+          dsa: "Linear algebra matrix algorithms representation, basic graphs, and probability search models.",
+          systemDesign: "Serving models, GPU execution queues, cache layers, API scaling rules, and data pipeline flows (ETL).",
+          coreSubjects: ["Linear Algebra & Calculus", "Probability & Statistics", "Data Management Systems"],
+          resumeRules: ["Mention model accuracy metrics achieved.", "List dataset sizes (e.g. 'Optimized models on 5M+ row datasets')."],
+          githubRules: ["Include Jupyter Notebook files showing clear graphs.", "Provide model deployment instructions in README configs."],
+          portfolioRules: ["Provide demo links demonstrating model inputs and outputs in real-time."],
+          mockQuestions: [
+            { q: "What is the vanishing gradient problem and how do we resolve it?", topic: "Deep Learning" },
+            { q: "Explain the bias-variance trade-off in machine learning models.", topic: "ML Theory" }
+          ]
+        },
+        salaries: {
+          internship: 35000,
+          fresher: 8.0,
+          mid: 18.0,
+          senior: 35.0,
+          globalTrend: "Extreme demand with massive venture capital funding.",
+          remoteTrend: "Ranges from $55,000 to $120,000 USD for remote talent."
+        },
+        trends: {
+          trendingTechs: ["Transformers architectures", "Quantization tools (llama.cpp)", "Local models run (Ollama)"],
+          emergingSkills: ["Edge AI inference designs", "Fine-tuning techniques (LoRA)"],
+          predictions: "Traditional ML engineering will merge with MLOps pipelines, allowing engineers to serve models to millions of edge instances securely."
         }
       },
 
@@ -795,6 +1386,57 @@ export default function CareerBlueprintHub() {
               answerIndex: 2,
               explanation: "Tool calling allows LLMs to output structured parameters to run local or remote APIs."
             }
+          },
+          {
+            id: "ai-node-2",
+            title: "Retrieval-Augmented Generation (RAG)",
+            phase: "Core Concepts",
+            explanation: "Understand document chunking methods, vector embeddings, semantic searches, and metadata filtering.",
+            objectives: ["Vector database indexes mapping", "Write custom chunk pipelines", "Optimize semantic retrieval search accuracy"],
+            timeEstimate: "4 Weeks",
+            resources: ["Pinecone guides", "LlamaIndex documentation"],
+            projectCheckpoint: { title: "Knowledge Base AI Finder", desc: "A system reading PDF documents, indexing semantic vector embeddings, and answering user queries." },
+            quiz: {
+              question: "Which database type is optimal for retrieving documents based on conceptual similarity?",
+              options: ["Relational Database", "Vector Database", "Key-Value Store", "Graph Database"],
+              answerIndex: 1,
+              explanation: "Vector databases index high-dimensional numeric arrays representing textual semantics, enabling cosine similarity lookups."
+            }
+          },
+          {
+            id: "ai-node-3",
+            title: "Stateful Agent Graphs",
+            phase: "Advanced Concepts",
+            explanation: "Build cyclic graph topologies, maintain agent memory buffers, configure human-in-the-loop nodes, and deploy agents.",
+            objectives: ["Define cyclic state structures in LangGraph", "Create tool validation checks", "Serve agents with FastAPI endpoints"],
+            timeEstimate: "5 Weeks",
+            resources: ["LangGraph docs", "DeepLearning.AI agent workflows"],
+            projectCheckpoint: { title: "Autonomous Research Team", desc: "A multi-agent team collaborating on topic analysis, Fact Check, and report generation." },
+            quiz: {
+              question: "What is 'Human-in-the-loop' configuration in LangGraph?",
+              options: ["Running LLMs on personal computers", "Pausing graph runs at specific nodes for human approval before execution", "Adding feedback links to forms", "Fine-tuning models on user chats"],
+              answerIndex: 1,
+              explanation: "Human-in-the-loop triggers pause points (interrupts) in state graphs, requiring manual validation before the agent executes tools."
+            }
+          },
+          {
+            id: "ai-node-4",
+            title: "Multi-Agent System Security & Human Controls",
+            phase: "Deployment",
+            explanation: "Learn to enforce safety guardrails on autonomous AI actions, configure persistent human-in-the-loop validation, and trace agent logs in production.",
+            objectives: ["Enforce strict API usage limits and fallback tools", "Implement LangGraph human interrupt states", "Trace agent tokens using LangSmith/Langfuse analytics"],
+            timeEstimate: "4 Weeks",
+            resources: ["LangGraph Interrupt Documentation", "LangSmith Evaluation Guide", "OWASP Top 10 LLM Security"],
+            projectCheckpoint: {
+              title: "Agent Task Approval Console",
+              desc: "A dashboard displaying agent search plans, prompting admins to approve code execution, and tracking token costs."
+            },
+            quiz: {
+              question: "What represents the main security risk in allowing autonomous LLM agents to execute shell commands directly?",
+              options: ["Prompt Injection leading to arbitrary command execution", "High network latency", "API formatting errors", "Token limits exhaustion"],
+              answerIndex: 0,
+              explanation: "If an attacker injects commands via prompt interfaces, the agent might execute harmful shell instructions inside the server environment."
+            }
           }
         ],
         skillsTree: [
@@ -820,7 +1462,7 @@ export default function CareerBlueprintHub() {
           dsa: "Basic parsing algorithms, string search filters, and graph representations.",
           systemDesign: "Handling high token load queues, concurrency logs, vector index updates, API rate limits.",
           coreSubjects: ["Probability and Statistics", "Database Architectures", "System scaling"],
-          resumeRules: ["Detail custom agent workflows you built.", "Specify token reduction metrics or prompt latency speedups ($X$\\% improvements)."],
+          resumeRules: ["Detail custom agent workflows you built.", "Specify token reduction metrics or prompt latency speedups ($X$\% improvements)."],
           githubRules: ["Include clear demo links.", "Keep API keys secure in env setups."],
           portfolioRules: ["Provide interactive dashboards to test agents in real-time."],
           mockQuestions: [
@@ -840,9 +1482,150 @@ export default function CareerBlueprintHub() {
           emergingSkills: ["Edge AI execution", "Local agent models runs (Ollama)"],
           predictions: "Autonomous agent networks will replace static pipelines, automating complex backend scripts."
         }
+      },
+
+      "DevOps Engineer": {
+        role: "DevOps Engineer",
+        icon: Terminal,
+        category: "Cloud & DevOps",
+        level: "Intermediate",
+        duration: "6 Months",
+        difficulty: "Medium",
+        demand: "Critical",
+        growth: "32%",
+        remoteWork: "Yes",
+        about: "A DevOps Engineer automates release paths, manages cloud servers, implements Infrastructure as Code, and configures telemetry monitoring stacks.",
+        importance: "Ensures the continuous integration, testing, deployment, and high availability of software operations across global cloud platforms.",
+        problemsSolved: "Resolves long build times, manual deployment errors, server downtime, and slow incident response times.",
+        responsibilities: [
+          "Automate deployment using CI/CD pipelines (Jenkins, GitHub Actions).",
+          "Manage infrastructure configuration dynamically using Terraform and Ansible.",
+          "Orchestrate application containers with Docker and Kubernetes namespaces.",
+          "Implement monitoring, tracing, and metric collection using Prometheus, Grafana, and ELK."
+        ],
+        industries: [
+          { name: "Cloud SaaS", howUsed: "Auto-scaling web clusters, managing microservice networks, and setting up CDN caching.", example: "AWS platforms, GCP systems", growthPotential: "Critical" },
+          { name: "FinTech Infrastructure", howUsed: "Enforcing zero-trust network boundaries, aggregate logging audits, and managing secure key stores.", example: "Stripe systems, bank backends", growthPotential: "High" },
+          { name: "Digital Services", howUsed: "Automating staging servers, managing domain records, and monitoring system usage logs.", example: "Vercel networks, Cloudflare configurations", growthPotential: "Stable" }
+        ],
+        technologies: [],
+        roadmap: [
+          {
+            id: "do-node-1",
+            title: "Linux Core & Bash Scripting",
+            phase: "Foundation",
+            explanation: "Master shell command execution, file system permissions, user administration, and automated Bash scripts.",
+            objectives: ["Write custom system automation scripts", "Manage server user permissions", "Configure environment files"],
+            timeEstimate: "3 Weeks",
+            resources: ["Linux Command Line Book", "GNU Bash reference"],
+            projectCheckpoint: { title: "System Logs Parser Script", desc: "A Bash script scanning system log files, parsing error metrics, and sending automated alerts." },
+            quiz: {
+              question: "Which command changes file access permissions in Linux systems?",
+              options: ["chown", "chmod", "chperm", "chgrp"],
+              answerIndex: 1,
+              explanation: "chmod (change mode) modifies read, write, and execute permissions for users, groups, and others on files."
+            }
+          },
+          {
+            id: "do-node-2",
+            title: "Containers & CI/CD Pipelines",
+            phase: "Core Concepts",
+            explanation: "Learn container setups using Docker, microservices networking configurations, and automate builds via GitHub Actions.",
+            objectives: ["Write Dockerfile configs", "Build automated build pipelines", "Publish images to container registries"],
+            timeEstimate: "4 Weeks",
+            resources: ["Docker documentation", "GitHub Actions docs"],
+            projectCheckpoint: { title: "Automated Build Release Stack", desc: "A repository trigger building a Node container and publishing it to Docker Hub on git commits." },
+            quiz: {
+              question: "What represents a single task execution boundary in GitHub Actions workflows?",
+              options: ["Workflow", "Job", "Step", "Runner"],
+              answerIndex: 2,
+              explanation: "A Step is an individual execution item (e.g. running a command or action) within a Job."
+            }
+          },
+          {
+            id: "do-node-3",
+            title: "Infrastructure as Code & Cloud",
+            phase: "Advanced Concepts",
+            explanation: "Provision AWS cloud resources declaratively using Terraform, configure deployments with Ansible, and manage Kubernetes clusters.",
+            objectives: ["Write Terraform configuration files", "Deploy services to K8s nodes", "Manage cloud cluster access keys"],
+            timeEstimate: "5 Weeks",
+            resources: ["HashiCorp Terraform docs", "Kubernetes tutorials"],
+            projectCheckpoint: { title: "Cloud High Availability Stack", desc: "Terraform configuration deploying load balancers and running containers on a Kubernetes cluster." },
+            quiz: {
+              question: "How does Terraform track the actual state of cloud resources it manages?",
+              options: ["By scanning cloud providers live", "Using a local or remote terraform.tfstate file", "By parsing Git history logs", "Through env variables"],
+              answerIndex: 1,
+              explanation: "Terraform uses the state file (tfstate) to map configuration variables to actual deployed real-world resource instances."
+            }
+          },
+          {
+            id: "do-node-4",
+            title: "GitOps Pipelines & Continuous Delivery",
+            phase: "Deployment",
+            explanation: "Implement automated state synchronization between your Git repos and running Kubernetes clusters using GitOps operators like ArgoCD.",
+            objectives: ["Configure ArgoCD application manifests", "Manage secure cluster states dynamically via Git pull requests", "Perform canary deployments on Kubernetes clusters"],
+            timeEstimate: "4 Weeks",
+            resources: ["ArgoCD Documentation", "GitOps Guidebook", "Cloud Native CNCF Interactive Map"],
+            projectCheckpoint: {
+              title: "Self-Healing GitOps Deployment",
+              desc: "A Kubernetes repository deploying application charts using ArgoCD that automatically reverts manual cluster changes back to Git state configurations."
+            },
+            quiz: {
+              question: "What is the primary architectural principle of GitOps?",
+              options: ["The Git repository serves as the single source of truth for declared infrastructure states", "Deployments must be triggered by typing commands in server SSH terminals", "Always use relational databases for system settings", "Cloud keys must be public"],
+              answerIndex: 0,
+              explanation: "GitOps specifies that the entire system state (infrastructure, configurations, and application containers) is stored in Git, which is synced to the cluster continuously."
+            }
+          }
+        ],
+        skillsTree: [
+          { id: "s-do-1", name: "Linux & Terminal scripting", tier: "Beginner", whyMatters: "Prerequisite for configuring servers and execution nodes.", dependencies: [], hours: 60, importance: "High", techs: ["Linux", "Bash"], unlocked: true, completed: false },
+          { id: "s-do-2", name: "Containers Orchestrations", tier: "Beginner", whyMatters: "Enables packaging applications consistently.", dependencies: ["s-do-1"], hours: 80, importance: "High", techs: ["Docker", "Kubernetes"], unlocked: true, completed: false },
+          { id: "s-do-3", name: "Automated CI/CD Pipelines", tier: "Intermediate", whyMatters: "Accelerates code release speeds and checks bugs.", dependencies: ["s-do-2"], hours: 80, importance: "High", techs: ["Jenkins", "GitHub Actions"], unlocked: false, completed: false },
+          { id: "s-do-4", name: "Infrastructure as Code (IaC)", tier: "Advanced", whyMatters: "Allows scaling cloud clusters programmatically.", dependencies: ["s-do-2"], hours: 100, importance: "High", techs: ["Terraform", "Ansible"], unlocked: false, completed: false },
+          { id: "s-do-5", name: "Telemetry & Monitoring", tier: "Advanced", whyMatters: "Tracks error rates and alerts teams on down-times.", dependencies: ["s-do-3"], hours: 80, importance: "Medium", techs: ["Prometheus", "Grafana", "ELK"], unlocked: false, completed: false }
+        ],
+        projects: [
+          {
+            title: "GitOps Kubernetes Infrastructure Deployment",
+            level: "Industry-Level",
+            problemStatement: "Manual deployments cause drift between production and test environments.",
+            features: ["Automated configuration synchronization", "Sealed cloud credential files", "Self-healing deployments on K8s"],
+            architecture: "GitOps architecture deploying configurations via ArgoCD pipelines onto AWS EKS clusters.",
+            techStack: ["Kubernetes", "Terraform", "ArgoCD", "Prometheus", "AWS"],
+            outcomes: ["Achieved 100% environment sync safety", "Deployment time cut from 4 hours to 8 minutes"],
+            completionTime: "4 Weeks",
+            resumeValue: 5
+          }
+        ],
+        placementPrep: {
+          dsa: "Basic parsing algorithms, path searches, trees, and hash map registries.",
+          systemDesign: "Load balancers routing, cloud firewalls, logging pipelines scaling, high availability setups, and recovery procedures.",
+          coreSubjects: ["Computer Networks (TCP, HTTP, DNS, SSH)", "Operating Systems fundamentals", "Cloud Architectures"],
+          resumeRules: ["State system reliability metrics (e.g. 'Achieved 99.99% system uptime').", "Mention container scale coordinates."],
+          githubRules: ["Show clean Terraform structural files.", "Include pipeline execution check logs in README listings."],
+          portfolioRules: ["Provide structural diagrams illustrating build pipelines and cloud topologies."],
+          mockQuestions: [
+            { q: "What is configuration drift and how does Terraform solve it?", topic: "Infrastructure as Code" },
+            { q: "Explain the container boot lifecycle and K8s readiness/liveness checks.", topic: "Orchestration" }
+          ]
+        },
+        salaries: {
+          internship: 30000,
+          fresher: 7.0,
+          mid: 15.0,
+          senior: 32.0,
+          globalTrend: "High corporate demand for cloud security automation and GitOps execution specialists.",
+          remoteTrend: "Ranges from $50,000 to $105,000 USD."
+        },
+        trends: {
+          trendingTechs: ["GitOps pipelines (ArgoCD)", "Zero-Trust network configs", "Serverless K8s nodes"],
+          emergingSkills: ["AI pipeline automation", "Platform engineering setups"],
+          predictions: "Operations automation will shift toward developer platform portals, hiding cluster configs behind standard self-service dashboards."
+        }
       }
     };
-  }, [selectedRole]);
+  }, []);
 
   // Dynamic Generator Fallback to cover ALL remaining roles
   const activeRoleDetails = useMemo((): RoleDetails => {
