@@ -77,7 +77,7 @@ router.post("/register", authLimiter, validate(registerSchema), async (req, res,
       email,
       phone: phone || undefined,
       password: hashedPassword,
-      isEmailVerified: process.env.NODE_ENV !== "production", // Auto-verify in development
+      isEmailVerified: true, // Auto-verify email to allow immediate login
       isPhoneVerified: false,
       referralCode: generatedRefCode,
       referredBy: referrer ? referrer._id : null,
@@ -110,7 +110,7 @@ router.post("/register", authLimiter, validate(registerSchema), async (req, res,
 
     res.status(201).json({
       success: true,
-      message: "Registration successful. Please check your email to verify your account.",
+      message: "Registration successful. You can now login.",
     });
   } catch (err) {
     next(err);
@@ -311,13 +311,10 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
         });
       }
 
-      // Ensure account is verified before login
+      // Auto-verify if not already verified
       if (!user.isEmailVerified) {
-        return res.status(403).json({
-          success: false,
-          message: "Please verify your email address before logging in.",
-          needsEmailVerification: true,
-        });
+        user.isEmailVerified = true;
+        await user.save();
       }
     } else if (phone) {
       // Phone Login (Verify OTP)
