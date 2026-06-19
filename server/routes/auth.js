@@ -77,7 +77,7 @@ router.post("/register", authLimiter, validate(registerSchema), async (req, res,
       email,
       phone: phone || undefined,
       password: hashedPassword,
-      isEmailVerified: false,
+      isEmailVerified: process.env.NODE_ENV !== "production", // Auto-verify in development
       isPhoneVerified: false,
       referralCode: generatedRefCode,
       referredBy: referrer ? referrer._id : null,
