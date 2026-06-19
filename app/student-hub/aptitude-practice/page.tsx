@@ -806,13 +806,25 @@ export default function AptitudePractice() {
       <header className="sticky top-0 z-40 bg-zinc-950/60 backdrop-blur-xl border-b border-zinc-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link 
-              href="/student-hub"
-              onClick={playClick}
-              className="p-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 rounded-xl transition-all active:scale-95"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+            {gameState !== "welcome" ? (
+              <button
+                onClick={() => {
+                  playClick();
+                  setGameState("welcome");
+                }}
+                className="p-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 rounded-xl transition-all active:scale-95 cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            ) : (
+              <Link 
+                href="/student-hub"
+                onClick={playClick}
+                className="p-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 rounded-xl transition-all active:scale-95"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            )}
             <div className="flex flex-col">
               <span className="text-xs font-black uppercase text-orange-500 tracking-widest flex items-center gap-1">
                 <Sparkles className="h-3 w-3 fill-orange-500 animate-pulse" /> Placement Hub
