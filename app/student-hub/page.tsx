@@ -120,6 +120,14 @@ const tools = [
         hoverColor: "group-hover:text-indigo-400 group-hover:bg-indigo-500/20",
       },
       {
+        title: "Smart Notes Generator",
+        description: "AI-powered study assistant. Transform files, scans, and lecture recordings into notes, mind maps, quizzes, and plans.",
+        href: "/student-hub/smart-notes",
+        icon: FileText,
+        color: "text-purple-500 bg-purple-500/10 dark:bg-purple-500/5",
+        hoverColor: "group-hover:text-purple-400 group-hover:bg-purple-500/20",
+      },
+      {
         title: "Project Report Writer",
         description: "Create abstracts, design schematics, and test checklists for college reports.",
         href: "/student-hub/project-report-generator",
@@ -341,7 +349,7 @@ export default function StudentHub() {
                                 Most Used
                               </span>
                             )}
-                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker", "AI Project Generator", "Career Blueprint Hub"].includes(tool.title) && (
+                            {["DSA Coding Helper", "Portfolio Generator", "Placement Tracker", "AI Project Generator", "Career Blueprint Hub", "Smart Notes Generator"].includes(tool.title) && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
                                 New
                               </span>
