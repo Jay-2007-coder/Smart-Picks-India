@@ -366,14 +366,5 @@ input:focus, select:focus, textarea:focus {
   opacity: 1;
 }
 
-/* Hide scrollbar utility class */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
 
 

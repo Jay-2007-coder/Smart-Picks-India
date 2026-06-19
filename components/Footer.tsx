@@ -3,8 +3,6 @@ import Link from "next/link";
 import { ShoppingBag, Camera, MessageCircle, Video, ArrowUpRight, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { usePathname } from "next/navigation";
-
 const footerLinks = {
   "Quick Links": [
     { href: "/", label: "Home" },
@@ -46,11 +44,6 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-  const pathname = usePathname();
-  const isAuthPage = pathname && ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/verify-otp"].some(p => pathname.startsWith(p));
-
-  if (isAuthPage) return null;
-
   return (
     <footer className="relative border-t border-border/80 bg-muted/10 dark:bg-neutral-950/20 overflow-hidden">
       {/* Gradient top glow */}

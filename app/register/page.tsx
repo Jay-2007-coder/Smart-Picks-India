@@ -179,13 +179,13 @@ function RegisterFormContent() {
       className="w-full relative"
     >
       <div className="absolute -inset-[1px] bg-gradient-to-b from-white/20 to-white/0 rounded-3xl z-0 pointer-events-none" />
-      <div className="bg-[#0b0f19]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-5 sm:p-6 shadow-2xl relative z-10 overflow-hidden min-h-[460px] flex flex-col">
+      <div className="bg-[#0b0f19]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 overflow-hidden min-h-[500px] flex flex-col">
         
         <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/10 rounded-full blur-[80px] pointer-events-none" />
 
         {/* Progress Bar Header */}
-        <div className="mb-5 relative z-20">
-          <div className="flex justify-between items-center mb-3">
+        <div className="mb-8 relative z-20">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Terminal className="w-5 h-5 text-violet-400" />
               Initialize Identity
@@ -213,7 +213,7 @@ function RegisterFormContent() {
           {watchAll.name.length > 2 && step === 1 && (
             <motion.div 
               initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-              className="flex justify-center mb-4"
+              className="flex justify-center mb-6"
             >
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-violet-500 rounded-full blur-[20px] opacity-50 group-hover:opacity-80 transition-opacity" />
@@ -357,7 +357,7 @@ function RegisterFormContent() {
             )}
           </AnimatePresence>
 
-          <div className="mt-auto pt-5 flex gap-3">
+          <div className="mt-auto pt-8 flex gap-3">
             {step > 1 && (
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="button" onClick={handlePrev} className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors">
                 <ArrowLeft className="w-5 h-5" />
@@ -378,7 +378,7 @@ function RegisterFormContent() {
           </div>
         </form>
 
-        <div className="mt-4 text-center relative z-20">
+        <div className="mt-6 text-center relative z-20">
           <p className="text-xs text-slate-500 font-medium">
             Already registered? <Link href="/login" className="font-bold text-violet-400 hover:text-violet-300">Sign In</Link>
           </p>

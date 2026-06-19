@@ -30,7 +30,7 @@ type LoginFormValues = {
 
 function AnimatedTabs({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: "email" | "phone") => void }) {
   return (
-    <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-5 relative z-20">
+    <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-8 relative z-20">
       {["email", "phone"].map((tab) => (
         <button
           key={tab}
@@ -91,10 +91,10 @@ function EmailLogin({ isPending, onSubmit }: { isPending: boolean, onSubmit: (da
             {...register("email")}
             type="email"
             placeholder="name@example.com"
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-12 pr-4 text-white placeholder-transparent focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:bg-white/10 transition-all peer z-0"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder-transparent focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:bg-white/10 transition-all peer z-0"
             disabled={isPending}
           />
-          <label className="absolute left-12 -top-2.5 text-xs font-semibold text-slate-400 bg-[#050816] px-1 peer-focus:text-violet-400 transition-colors peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:bg-transparent peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-[#050816] pointer-events-none">
+          <label className="absolute left-12 -top-2.5 text-xs font-semibold text-slate-400 bg-[#050816] px-1 peer-focus:text-violet-400 transition-colors peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:bg-transparent peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-[#050816] pointer-events-none">
             Email Address
           </label>
         </div>
@@ -113,10 +113,10 @@ function EmailLogin({ isPending, onSubmit }: { isPending: boolean, onSubmit: (da
             {...register("password")}
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-12 pr-12 text-white placeholder-transparent focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:bg-white/10 transition-all peer z-0"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-12 text-white placeholder-transparent focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:bg-white/10 transition-all peer z-0"
             disabled={isPending}
           />
-          <label className="absolute left-12 -top-2.5 text-xs font-semibold text-slate-400 bg-[#050816] px-1 peer-focus:text-violet-400 transition-colors peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-sm peer-placeholder-shown:bg-transparent peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-[#050816] pointer-events-none">
+          <label className="absolute left-12 -top-2.5 text-xs font-semibold text-slate-400 bg-[#050816] px-1 peer-focus:text-violet-400 transition-colors peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:bg-transparent peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-[#050816] pointer-events-none">
             Password
           </label>
           <button
@@ -184,7 +184,7 @@ function EmailLogin({ isPending, onSubmit }: { isPending: boolean, onSubmit: (da
         whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={isPending}
-        className="relative w-full py-3 rounded-2xl font-black text-white text-sm overflow-hidden group shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)] disabled:opacity-70"
+        className="relative w-full py-4 rounded-2xl font-black text-white text-sm overflow-hidden group shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)] disabled:opacity-70"
         style={{
           background: "linear-gradient(135deg, #7C3AED, #EC4899, #EF4444)",
           backgroundSize: "200% 200%",
@@ -250,7 +250,7 @@ function PhoneLogin({ isPending, onSendOtp, onVerifyOtp }: { isPending: boolean,
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Enter mobile number"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-12 pr-4 text-white placeholder-slate-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:bg-white/10 transition-all z-0"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder-slate-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:bg-white/10 transition-all z-0"
               disabled={isPending}
             />
           </div>
@@ -259,7 +259,7 @@ function PhoneLogin({ isPending, onSendOtp, onVerifyOtp }: { isPending: boolean,
             whileTap={{ scale: 0.98 }}
             onClick={() => { if(phone.length >= 10) setOtpSent(true); onSendOtp(phone); }}
             disabled={isPending || phone.length < 10}
-            className="w-full py-3 rounded-2xl font-black text-white text-sm bg-white/10 border border-white/20 hover:bg-white/20 transition-all shadow-lg disabled:opacity-50"
+            className="w-full py-4 rounded-2xl font-black text-white text-sm bg-white/10 border border-white/20 hover:bg-white/20 transition-all shadow-lg disabled:opacity-50"
           >
             {isPending ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Send verification code"}
           </motion.button>
@@ -393,18 +393,18 @@ function LoginFormContent() {
       className="w-full relative"
     >
       <div className="absolute -inset-[1px] bg-gradient-to-b from-white/20 to-white/0 rounded-3xl z-0 pointer-events-none" />
-      <div className="bg-[#0b0f19]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 sm:p-7 shadow-2xl relative z-10 overflow-hidden">
+      <div className="bg-[#0b0f19]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-8 shadow-2xl relative z-10 overflow-hidden">
         
         {/* Animated ambient glow inside card */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-violet-500/20 rounded-full blur-[80px] pointer-events-none" />
 
         {/* Header */}
-        <div className="text-center mb-5 relative z-20">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-pink-500/20 border border-white/10 mb-3">
-            <Zap className="w-5 h-5 text-violet-400" />
+        <div className="text-center mb-8 relative z-20">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-pink-500/20 border border-white/10 mb-4">
+            <Zap className="w-6 h-6 text-violet-400" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-1.5">Sign in to OS</h2>
-          <p className="text-xs text-slate-400 font-medium">Access your AI-powered ecosystem.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Sign in to OS</h2>
+          <p className="text-sm text-slate-400 font-medium">Access your AI-powered ecosystem.</p>
         </div>
 
         {/* Error Notification */}
@@ -432,7 +432,7 @@ function LoginFormContent() {
         </div>
 
         {/* Social Login Separator */}
-        <div className="relative my-5 z-20">
+        <div className="relative my-8 z-20">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
           <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
             <span className="bg-[#0b0f19] px-4 text-slate-500">or continue with</span>
@@ -455,7 +455,7 @@ function LoginFormContent() {
                 window.location.href = `/api/v1/auth/${social.id}`;
               }}
               disabled={isPending}
-              className="flex items-center justify-center p-2.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group cursor-pointer relative z-50"
+              className="flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group cursor-pointer relative z-50"
             >
               <div className="group-hover:scale-110 transition-transform">{social.icon}</div>
             </motion.button>
@@ -463,7 +463,7 @@ function LoginFormContent() {
         </div>
 
         {/* Footer Link */}
-        <div className="mt-5 text-center relative z-20">
+        <div className="mt-8 text-center relative z-20">
           <p className="text-xs text-slate-500 font-medium">
             New to the ecosystem?{" "}
             <Link href="/register" className="font-bold text-violet-400 hover:text-violet-300 transition-colors">

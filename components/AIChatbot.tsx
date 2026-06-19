@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, Sparkles, User, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
 
 interface Message {
   role: "user" | "model";
@@ -12,11 +11,6 @@ interface Message {
 }
 
 export default function AIChatbot() {
-  const pathname = usePathname();
-  const isAuthPage = pathname && ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/verify-otp"].some(p => pathname.startsWith(p));
-
-  if (isAuthPage) return null;
-
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([
     {
