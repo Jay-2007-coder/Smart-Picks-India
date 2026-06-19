@@ -19,7 +19,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Right Column: Auth Form */}
-        <div className="flex-1 flex flex-col items-center justify-start lg:justify-center p-6 sm:p-12 lg:p-16 h-[calc(100vh-64px)] overflow-y-auto w-full max-w-2xl mx-auto lg:max-w-none no-scrollbar py-12">
+        <div className="flex-1 flex flex-col items-center justify-start p-6 sm:p-12 lg:p-16 h-[calc(100vh-64px)] overflow-y-auto w-full max-w-2xl mx-auto lg:max-w-none no-scrollbar py-12">
           <div className="w-full max-w-[440px] relative z-10 perspective-[1000px] my-auto">
             {children}
           </div>
