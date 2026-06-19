@@ -88,7 +88,7 @@ export default async function BlogPostPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      <div className="container-custom py-8 max-w-6xl">
+      <div className="container-custom pt-8 pb-24 max-w-6xl">
         <Breadcrumbs items={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
 
         {/* Header */}

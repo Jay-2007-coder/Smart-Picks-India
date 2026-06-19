@@ -28,7 +28,7 @@ export default function DealsPage() {
     }));
 
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom pt-8 pb-24">
       <Breadcrumbs items={[{ label: "Deals" }]} />
 
       <div className="mt-8 mb-12 text-center max-w-2xl mx-auto">

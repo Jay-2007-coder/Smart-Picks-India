@@ -60,6 +60,7 @@ router.put("/profile", validate(updateProfileSchema), async (req, res, next) => 
         telegramChatId: user.telegramChatId,
         hubPlan: user.hubPlan,
         hubPlanExpiresAt: user.hubPlanExpiresAt,
+        xp: user.xp,
       },
     });
   } catch (err) {

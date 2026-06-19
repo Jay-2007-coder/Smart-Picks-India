@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <RecentlyViewedTracker slug={product.slug} />
 
-      <div className="container-custom py-8">
+      <div className="container-custom pt-8 pb-24">
         <Breadcrumbs items={[{ label: product.category, href: `/category/${product.category}` }, { label: product.title }]} />
 
         <div className="mt-8 grid lg:grid-cols-2 gap-12">

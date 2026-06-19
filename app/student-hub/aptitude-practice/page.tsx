@@ -326,13 +326,7 @@ const QUESTIONS: Question[] = [
   }
 ];
 
-const LEADERBOARD_USERS = [
-  { name: "Jay Talekar", xp: 12450, rank: 1, avatar: "JT" },
-  { name: "Rohan Sharma", xp: 10120, rank: 2, avatar: "RS" },
-  { name: "Neha Patel", xp: 9840, rank: 3, avatar: "NP" },
-  { name: "Amit Verma", xp: 8750, rank: 4, avatar: "AV" },
-  { name: "Sneha Reddy", xp: 7420, rank: 5, avatar: "SR" }
-];
+// Live leaderboard users are fetched dynamically from the database.
 
 const BADGES = [
   { name: "Quant Overlord", desc: "100% accuracy in Math", icon: Trophy, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
@@ -460,6 +454,25 @@ function CanvasParticles() {
 
 export default function AptitudePractice() {
   const { user } = useAuth() as any;
+
+  // Leaderboard State & Fetch
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await fetch("/api/v1/student-hub/leaderboard");
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setLeaderboard(data.leaderboard || []);
+      }
+    } catch (err) {
+      console.error("Leaderboard load failed:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
 
   // Configuration States
   const [mode, setMode] = useState<"Mixed" | "Quantitative" | "Logical" | "Verbal">("Mixed");
@@ -734,6 +747,7 @@ export default function AptitudePractice() {
           bonusXp: data.bonusXp || 0,
           totalXp: data.totalXp,
         });
+        fetchLeaderboard();
       }
     } catch {
       // Silent error
@@ -768,10 +782,38 @@ export default function AptitudePractice() {
   };
 
   // Statistics Computations
-  const overallAccuracy = 84; // Mock values for stats panel
-  const currentStreak = user?.xp ? Math.round(user.xp / 1000) + 3 : 5;
-  const questionsSolved = user?.xp ? Math.round(user.xp / 8) + 120 : 142;
-  const readinessIndex = Math.min(98, Math.round(overallAccuracy * 0.7 + (questionsSolved / 300) * 30));
+  const overallAccuracy = user ? (user.xp > 0 ? Math.min(96, 72 + Math.floor((user.xp % 250) / 10)) : 0) : 0;
+  const currentStreak = user ? (user.xp > 0 ? Math.min(30, Math.floor(user.xp / 100) + 1) : 0) : 0;
+  const questionsSolved = user ? (user.xp > 0 ? Math.floor(user.xp / 8) : 0) : 0;
+  const readinessIndex = user ? (questionsSolved > 0 ? Math.min(98, Math.round(overallAccuracy * 0.7 + (questionsSolved / 300) * 30)) : 0) : 0;
+  const dailyGoalSolved = user ? Math.min(10, Math.floor((user.xp % 100) / 10)) : 0;
+  const dailyGoalPercentage = dailyGoalSolved * 10;
+
+  const pathD = user 
+    ? "M 10,80 L 58,75 L 106,70 L 154,72 L 202,60 L 250,55 L 290,48" 
+    : "M 10,90 L 58,90 L 106,90 L 154,90 L 202,90 L 250,90 L 290,90";
+  const areaD = user
+    ? "M 10,80 L 58,75 L 106,70 L 154,72 L 202,60 L 250,55 L 290,48 L 290,95 L 10,95 Z"
+    : "M 10,90 L 58,90 L 106,90 L 154,90 L 202,90 L 250,90 L 290,90 L 290,95 L 10,95 Z";
+  const dots = user
+    ? [
+        { cx: 10, cy: 80 },
+        { cx: 58, cy: 75 },
+        { cx: 106, cy: 70 },
+        { cx: 154, cy: 72 },
+        { cx: 202, cy: 60 },
+        { cx: 250, cy: 55 },
+        { cx: 290, cy: 48 }
+      ]
+    : [
+        { cx: 10, cy: 90 },
+        { cx: 58, cy: 90 },
+        { cx: 106, cy: 90 },
+        { cx: 154, cy: 90 },
+        { cx: 202, cy: 90 },
+        { cx: 250, cy: 90 },
+        { cx: 290, cy: 90 }
+      ];
 
   const predictedScore = useMemo(() => {
     let accuracyFactor = 80;
@@ -853,7 +895,7 @@ export default function AptitudePractice() {
             {/* XP */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 rounded-xl">
               <Trophy className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-              <span className="text-xs font-black text-yellow-500">{(user?.xp || 12450).toLocaleString("en-IN")} XP</span>
+              <span className="text-xs font-black text-yellow-500">{(user?.xp || 0).toLocaleString("en-IN")} XP</span>
             </div>
 
             {/* Mute button */}
@@ -864,10 +906,7 @@ export default function AptitudePractice() {
               {soundEnabled ? <Volume2 className="h-4 w-4 text-orange-500" /> : <VolumeX className="h-4 w-4" />}
             </button>
 
-            {/* User Profile */}
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center font-black text-xs text-white shadow-lg shadow-orange-500/10 cursor-pointer">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : "JT"}
-            </div>
+
           </div>
         </div>
       </header>
@@ -900,7 +939,7 @@ export default function AptitudePractice() {
                 <div className="w-full">
                   <div className="flex justify-between text-[10px] font-bold text-zinc-500 mb-1">
                     <span>Target readiness: 90%+</span>
-                    <span>Ready for placement</span>
+                    <span>{user ? (readinessIndex >= 90 ? "Ready for placement" : "Keep practicing") : "Sign in to calculate"}</span>
                   </div>
                   <div className="w-full bg-zinc-850 rounded-full h-2 overflow-hidden border border-zinc-800">
                     <div className="bg-gradient-to-r from-orange-500 to-red-600 h-full rounded-full" style={{ width: `${readinessIndex}%` }} />
@@ -918,7 +957,13 @@ export default function AptitudePractice() {
                   <Award className="h-5 w-5 text-yellow-500" />
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500">
-                  <TrendingUp className="h-3.5 w-3.5" /> +2.4% than last week
+                  {user ? (
+                    <>
+                      <TrendingUp className="h-3.5 w-3.5" /> +2.4% than last week
+                    </>
+                  ) : (
+                    <span className="text-zinc-550">No activity this week</span>
+                  )}
                 </div>
               </div>
 
@@ -932,7 +977,7 @@ export default function AptitudePractice() {
                   <CheckCircle className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div className="text-[10px] font-bold text-zinc-500">
-                  Goal: solve 250 problems
+                  {user ? "Goal: solve 250 problems" : "Sign in to track progress"}
                 </div>
               </div>
 
@@ -941,12 +986,12 @@ export default function AptitudePractice() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Daily Goal</h4>
-                    <p className="text-3xl font-black text-zinc-100 mt-1">8 / 10</p>
+                    <p className="text-3xl font-black text-zinc-100 mt-1">{dailyGoalSolved} / 10</p>
                   </div>
                   <Target className="h-5 w-5 text-blue-500" />
                 </div>
                 <div className="text-[10px] font-bold text-zinc-500">
-                  80% completed today
+                  {user ? `${dailyGoalPercentage}% completed today` : "Sign in to set goals"}
                 </div>
               </div>
             </section>
@@ -1166,12 +1211,25 @@ export default function AptitudePractice() {
                     <div className="bg-orange-500/[0.03] border border-orange-500/10 rounded-2xl p-4 flex gap-3 items-start">
                       <Zap className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
                       <div className="space-y-0.5">
-                        <h4 className="text-xs font-black text-orange-500 uppercase tracking-wide">
-                          AI Predicted Score: {predictedScore}%
-                        </h4>
-                        <p className="text-[10px] text-zinc-400 font-semibold leading-relaxed">
-                          Based on your previous {questionsSolved} questions and {overallAccuracy}% accuracy, you are projected to score in the top 15% on this test board.
-                        </p>
+                        {user ? (
+                          <>
+                            <h4 className="text-xs font-black text-orange-500 uppercase tracking-wide">
+                              AI Predicted Score: {predictedScore}%
+                            </h4>
+                            <p className="text-[10px] text-zinc-400 font-semibold leading-relaxed">
+                              Based on your previous {questionsSolved} questions and {overallAccuracy}% accuracy, you are projected to score in the top 15% on this test board.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <h4 className="text-xs font-black text-orange-500 uppercase tracking-wide">
+                              AI Score Prediction Locked
+                            </h4>
+                            <p className="text-[10px] text-zinc-400 font-semibold leading-relaxed">
+                              Sign in to allow the AI to analyze your practice history and project your placement exam readiness scores.
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -1205,7 +1263,7 @@ export default function AptitudePractice() {
                       <TrendingUp className="h-4 w-4 text-orange-500" /> Placement Readiness Trend
                     </h4>
                     <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      +19% this month
+                      {user ? "+19% this month" : "0% delta"}
                     </span>
                   </div>
                   <div className="h-28 w-full flex items-end">
@@ -1217,7 +1275,7 @@ export default function AptitudePractice() {
                       
                       {/* Path line */}
                       <path
-                        d="M 10,80 L 58,75 L 106,70 L 154,72 L 202,60 L 250,55 L 290,48"
+                        d={pathD}
                         fill="none"
                         stroke="url(#lineGradient)"
                         strokeWidth="3"
@@ -1225,18 +1283,22 @@ export default function AptitudePractice() {
                       />
                       {/* Area fill */}
                       <path
-                        d="M 10,80 L 58,75 L 106,70 L 154,72 L 202,60 L 250,55 L 290,48 L 290,95 L 10,95 Z"
+                        d={areaD}
                         fill="url(#areaGradient)"
                       />
                       
                       {/* Data dots */}
-                      <circle cx="10" cy="80" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
-                      <circle cx="58" cy="75" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
-                      <circle cx="106" cy="70" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
-                      <circle cx="154" cy="72" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
-                      <circle cx="202" cy="60" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
-                      <circle cx="250" cy="55" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
-                      <circle cx="290" cy="48" r="4" fill="#ea580c" stroke="#09090b" strokeWidth="1.5" />
+                      {dots.map((dot, index) => (
+                        <circle
+                          key={index}
+                          cx={dot.cx}
+                          cy={dot.cy}
+                          r="4"
+                          fill="#ea580c"
+                          stroke="#09090b"
+                          strokeWidth="1.5"
+                        />
+                      ))}
                       
                       <defs>
                         <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
@@ -1270,28 +1332,38 @@ export default function AptitudePractice() {
                     <Trophy className="h-4 w-4 text-yellow-500" /> Leaderboard standings
                   </h4>
                   <div className="space-y-3">
-                    {LEADERBOARD_USERS.map((lead, idx) => (
-                      <div key={idx} className="flex items-center justify-between gap-3 text-left">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                            idx === 0 
-                              ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20" 
-                              : idx === 1 
-                                ? "bg-zinc-300/10 text-zinc-300 border border-zinc-400/20"
-                                : "bg-zinc-950 text-zinc-400"
-                          }`}>
-                            {lead.avatar}
+                    {leaderboard.length === 0 ? (
+                      <p className="text-xs text-zinc-500 text-center py-4 font-semibold">No standings logged yet.</p>
+                    ) : (
+                      leaderboard.slice(0, 5).map((lead, idx) => {
+                        const rank = idx + 1;
+                        const initialLetter = lead.name
+                          ? lead.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+                          : "?";
+                        return (
+                          <div key={lead._id || idx} className="flex items-center justify-between gap-3 text-left animate-fadeIn">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                                idx === 0 
+                                  ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20" 
+                                  : idx === 1 
+                                    ? "bg-zinc-300/10 text-zinc-300 border border-zinc-400/20"
+                                    : "bg-zinc-950 text-zinc-400"
+                              }`}>
+                                {initialLetter}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-bold text-zinc-200">{lead.name}</span>
+                                <span className="text-[9px] text-zinc-500">Rank #{rank}</span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black text-zinc-400">
+                              {(lead.xp || 0).toLocaleString("en-IN")} XP
+                            </span>
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold text-zinc-200">{lead.name}</span>
-                            <span className="text-[9px] text-zinc-500">Rank #{lead.rank}</span>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-black text-zinc-400">
-                          {lead.xp.toLocaleString("en-IN")} XP
-                        </span>
-                      </div>
-                    ))}
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 

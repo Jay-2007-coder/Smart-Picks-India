@@ -387,6 +387,7 @@ router.post("/login", authLimiter, validate(loginSchema), async (req, res, next)
         telegramChatId: user.telegramChatId,
         hubPlan: user.hubPlan,
         hubPlanExpiresAt: user.hubPlanExpiresAt,
+        xp: user.xp,
       },
     });
   } catch (err) {
@@ -489,6 +490,7 @@ router.post("/social-login", async (req, res, next) => {
         telegramChatId: user.telegramChatId,
         hubPlan: user.hubPlan,
         hubPlanExpiresAt: user.hubPlanExpiresAt,
+        xp: user.xp,
       },
     });
   } catch (err) {
@@ -863,6 +865,7 @@ router.get("/me", protect, async (req, res) => {
       telegramChatId: req.user.telegramChatId,
       hubPlan: req.user.hubPlan,
       hubPlanExpiresAt: req.user.hubPlanExpiresAt,
+      xp: req.user.xp,
     },
   });
 });

@@ -6,10 +6,6 @@ import { checkHubLimits } from "../middleware/hubLimits.js";
 
 const router = express.Router();
 
-// Apply protect middleware to secure student helper utilities
-router.use(protect);
-router.use(checkHubLimits);
-
 // GET student leaderboard rankings
 router.get("/leaderboard", async (req, res, next) => {
   try {
@@ -22,6 +18,11 @@ router.get("/leaderboard", async (req, res, next) => {
     next(err);
   }
 });
+
+// Apply protect middleware to secure student helper utilities
+router.use(protect);
+router.use(checkHubLimits);
+
 
 // POST submit quiz score to earn XP
 router.post("/quiz/submit", awardXp, async (req, res, next) => {

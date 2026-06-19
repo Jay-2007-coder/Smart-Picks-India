@@ -283,8 +283,9 @@ export default function SmartNotesGenerator() {
   ]);
 
   // Streak & Savings Stats
-  const streakDays = 14;
-  const timeSavedHours = 48.5;
+  const streakDays = user ? (user.xp > 0 ? Math.min(30, Math.floor(user.xp / 150) + 1) : 0) : 0;
+  const timeSavedHours = user ? (user.xp > 0 ? Math.min(100, Math.round((user.xp / 12) * 10) / 10) : 0) : 0;
+  const subjectProgress = user ? (user.xp > 0 ? Math.min(98, 40 + Math.floor((user.xp % 300) / 6)) : 0) : 0;
 
   // Semantic Search spotlight pos
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -597,10 +598,7 @@ export default function SmartNotesGenerator() {
               {soundEnabled ? <Volume2 className="h-4 w-4 text-purple-500" /> : <VolumeX className="h-4 w-4" />}
             </button>
 
-            {/* User Profile */}
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-black text-xs text-white shadow-lg shadow-purple-500/10 cursor-pointer">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : "JT"}
-            </div>
+
           </div>
         </div>
       </header>
@@ -622,7 +620,9 @@ export default function SmartNotesGenerator() {
               </div>
               <Trophy className="h-5 w-5 text-purple-500 fill-purple-500" />
             </div>
-            <p className="text-[10px] text-zinc-400 font-bold">14 consecutive revision days logged!</p>
+            <p className="text-[10px] text-zinc-400 font-bold">
+              {user ? `${streakDays} consecutive revision days logged!` : "Sign in to log revision days"}
+            </p>
           </div>
 
           {/* Time saved */}
@@ -635,7 +635,9 @@ export default function SmartNotesGenerator() {
               </div>
               <Clock className="h-5 w-5 text-indigo-500" />
             </div>
-            <p className="text-[10px] text-zinc-400 font-bold">Based on PDF scans and recording transcriptions.</p>
+            <p className="text-[10px] text-zinc-400 font-bold">
+              {user ? "Based on PDF scans and recording transcriptions." : "Sign in to save study hours"}
+            </p>
           </div>
 
           {/* Subject progress */}
@@ -643,13 +645,13 @@ export default function SmartNotesGenerator() {
             <div className="flex justify-between items-start">
               <div>
                 <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Subject Progress</h4>
-                <p className="text-2xl font-black text-zinc-100 mt-1">78% Completion</p>
+                <p className="text-2xl font-black text-zinc-100 mt-1">{subjectProgress}% Completion</p>
               </div>
               <Activity className="h-5 w-5 text-emerald-500" />
             </div>
             <div className="w-full">
               <div className="w-full bg-zinc-850 rounded-full h-1.5 overflow-hidden border border-zinc-800">
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 h-full rounded-full" style={{ width: "78%" }} />
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 h-full rounded-full" style={{ width: `${subjectProgress}%` }} />
               </div>
             </div>
           </div>
@@ -659,13 +661,19 @@ export default function SmartNotesGenerator() {
             <div className="flex justify-between items-start">
               <div>
                 <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Upcoming Exam</h4>
-                <p className="text-lg font-black text-zinc-100 mt-1">Operating Systems</p>
+                <p className="text-lg font-black text-zinc-100 mt-1">{user ? "Operating Systems" : "No exam scheduled"}</p>
               </div>
               <Calendar className="h-5 w-5 text-rose-500" />
             </div>
-            <div className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 max-w-fit">
-              3 days remaining
-            </div>
+            {user ? (
+              <div className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 max-w-fit">
+                3 days remaining
+              </div>
+            ) : (
+              <div className="text-[10px] font-bold text-zinc-500 bg-zinc-950/40 px-2.5 py-1 rounded-lg border border-zinc-800 max-w-fit">
+                Sign in to sync exams
+              </div>
+            )}
           </div>
         </section>
 
