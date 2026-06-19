@@ -29,11 +29,11 @@ export async function checkHubLimits(req, res, next) {
     }
 
     if (req.method === "POST") {
-      if (usage >= 3) {
+      if (usage >= 80) {
         return res.status(403).json({
           success: false,
           limitReached: true,
-          message: "You have reached your free daily limit of 3 AI assistance runs. Please upgrade to Pro for unlimited runs!"
+          message: "You have reached your free daily limit of 80 AI assistance runs. Please upgrade to Pro for unlimited runs!"
         });
       }
       user.hubUsage = usage + 1;

@@ -178,7 +178,7 @@ export default function StudentHubUpgrade() {
                 <ul className="space-y-4 border-t border-border pt-6">
                   <li className="flex items-center gap-3 text-xs font-semibold text-muted-foreground">
                     <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>3 daily AI assistant runs</span>
+                    <span>80 daily AI assistant runs</span>
                   </li>
                   <li className="flex items-center gap-3 text-xs font-semibold text-muted-foreground">
                     <Check className="h-4 w-4 text-emerald-500 shrink-0" />

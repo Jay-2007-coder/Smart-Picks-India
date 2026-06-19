@@ -383,7 +383,7 @@ export default function DashboardPage() {
                         ? "You have full administrator privileges with unlimited access to mock interviews, resume analyzer, and coding helper tools."
                         : user.hubPlan === "pro"
                         ? "You have unlimited daily access to mock interviews, resume analyzer, report builder, and coding helper tools."
-                        : "Upgrade to Student Pro to remove the 3 daily limits on AI placement preparation helper tools."}
+                        : "Upgrade to Student Pro to remove the 80 daily limit on AI placement preparation helper tools."}
                     </p>
                     {user.hubPlan === "pro" && user.role !== "admin" && user.hubPlanExpiresAt && (
                       <div className="mt-4 space-y-2.5 border-t border-brand-500/10 pt-3.5">
