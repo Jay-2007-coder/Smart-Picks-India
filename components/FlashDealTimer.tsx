@@ -13,6 +13,7 @@ export default function FlashDealTimer({ endsAt }: FlashDealTimerProps) {
     hours: 0,
     minutes: 0,
     seconds: 0,
+    totalMs: 0,
     isExpired: false,
   });
 
@@ -20,13 +21,14 @@ export default function FlashDealTimer({ endsAt }: FlashDealTimerProps) {
     const calculateTimeLeft = () => {
       const difference = new Date(endsAt).getTime() - new Date().getTime();
       if (difference <= 0) {
-        return { hours: 0, minutes: 0, seconds: 0, isExpired: true };
+        return { hours: 0, minutes: 0, seconds: 0, totalMs: 0, isExpired: true };
       }
 
       return {
         hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
         minutes: Math.floor((difference / 1000 / 60) % 60),
         seconds: Math.floor((difference / 1000) % 60),
+        totalMs: difference,
         isExpired: false,
       };
     };
@@ -47,29 +49,40 @@ export default function FlashDealTimer({ endsAt }: FlashDealTimerProps) {
     );
   }
 
-  const isImminent = timeLeft.hours === 0 && timeLeft.minutes < 60;
-
   const pad = (num: number) => String(num).padStart(2, "0");
-
   const formattedTime = `${pad(timeLeft.hours)}h ${pad(timeLeft.minutes)}m ${pad(timeLeft.seconds)}s`;
 
-  if (isImminent) {
-    return (
-      <motion.span
-        animate={{ scale: [1, 1.02, 1] }}
-        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-        className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-black text-white bg-red-600 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg shadow-md shadow-red-600/10 uppercase tracking-wider"
-      >
-        <Clock className="h-2.5 w-2.5 sm:h-3 w-3 animate-pulse text-white shrink-0" />
-        {formattedTime}
-      </motion.span>
-    );
+  // Determine state based on totalMs remaining
+  // Less than 10 minutes = 10 * 60 * 1000 = 600,000 ms
+  // Less than 1 hour = 60 * 60 * 1000 = 3,600,000 ms
+  const isLastTenMinutes = timeLeft.totalMs < 600000;
+  const isUnderOneHour = timeLeft.totalMs < 3600000;
+
+  let containerClasses = "";
+  let iconClasses = "";
+
+  if (isLastTenMinutes) {
+    // Shaking + Intense Orange Glow
+    containerClasses = "bg-orange-500 text-white border border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.8)] animate-shake";
+    iconClasses = "text-white animate-pulse";
+  } else if (isUnderOneHour) {
+    // Normal Orange Glow
+    containerClasses = "bg-orange-500/90 text-white border border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.5)]";
+    iconClasses = "text-white";
+  } else {
+    // Standard state: orange/accent border and text, gentle background
+    containerClasses = "text-accent-500 bg-accent-500/10 border border-accent-500/10";
+    iconClasses = "text-accent-500";
   }
 
   return (
-    <span className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-black text-accent-500 bg-accent-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg uppercase tracking-wider border border-accent-500/10">
-      <Clock className="h-2.5 w-2.5 sm:h-3 w-3 text-accent-500 shrink-0" />
+    <motion.span
+      animate={{ scale: [1, 1.03, 1] }}
+      transition={{ repeat: Infinity, duration: 1.0, ease: "easeInOut" }}
+      className={`inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg uppercase tracking-wider transition-all duration-300 ${containerClasses}`}
+    >
+      <Clock className={`h-2.5 w-2.5 sm:h-3 w-3 shrink-0 ${iconClasses}`} />
       {formattedTime}
-    </span>
+    </motion.span>
   );
 }

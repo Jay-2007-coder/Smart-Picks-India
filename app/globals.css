@@ -366,5 +366,119 @@ input:focus, select:focus, textarea:focus {
   opacity: 1;
 }
 
+/* --- Premium 3D Interaction Styles --- */
+
+/* Float animation */
+@keyframes floatSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float-subtle {
+  animation: floatSubtle 4.5s ease-in-out infinite;
+}
+
+/* Shake animation for final countdown */
+@keyframes shakeCountdown {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-2deg); }
+  40% { transform: rotate(2deg); }
+  60% { transform: rotate(-1deg); }
+  80% { transform: rotate(1deg); }
+}
+
+.animate-shake {
+  animation: shakeCountdown 0.5s ease-in-out infinite;
+}
+
+/* Card 3D border gradient and shadow */
+.card-3d-wrapper {
+  position: relative;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card-3d-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 25.5px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #f97316, #ec4899, #8b5cf6);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.group:hover.card-3d-wrapper::before {
+  opacity: 1;
+}
+
+.group:hover.card-3d-wrapper {
+  box-shadow: 0 30px 60px rgba(249, 115, 22, 0.22);
+}
+
+/* Image pop-out support */
+.card-3d-image-container {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.card-3d-image-container img {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s, box-shadow 0.4s;
+  will-change: transform, filter, box-shadow;
+}
+
+.group:hover .card-3d-image-container img {
+  transform: translate3d(0, 0, 60px) scale(1.05);
+  filter: brightness(1.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+/* Premium 3D button interactions */
+.btn-amazon-3d {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, filter 0.2s ease;
+  will-change: transform, box-shadow;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-amazon-3d:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px -3px rgba(249, 115, 22, 0.45), 0 0 15px rgba(249, 115, 22, 0.2);
+}
+
+.btn-amazon-3d:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* GPU-accelerated active ripple effect */
+.btn-amazon-3d::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-amazon-3d:active::after {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 1;
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
 
 
