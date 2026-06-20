@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,125 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles } from "lucide-react";
 import { CommunityDealSkeleton, SkeletonGrid } from "@/components/Skeletons";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import Interactive3DCard from "@/components/Interactive3DCard";
-
-function VerifiedDealCard({
-  deal,
-  idx,
-  discount
-}: {
-  deal: {
-    slug: string;
-    title: string;
-    image: string;
-    price: number;
-    oldPrice: number;
-    category: string;
-    affiliateLink: string;
-    label: string;
-    expiresIn: string;
-    rating: number;
-  };
-  idx: number;
-  discount: number;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ["start end", "end start"]
-  });
-
-  const yImage = useTransform(scrollYProgress, [0, 1], [-15, 15]);
-  const yBadge = useTransform(scrollYProgress, [0, 1], [-25, 25]);
-  const yGlow = useTransform(scrollYProgress, [0, 1], [-10, 10]);
-
-  return (
-    <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 50, rotateX: 20 }}
-      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.6, delay: (idx % 3) * 0.1, ease: "easeOut" }}
-      className="w-full h-full flex"
-      style={{ transformStyle: "preserve-3d", perspective: 1200 }}
-    >
-      <Interactive3DCard className="w-full h-full rounded-3xl">
-        <div className="rounded-3xl border border-border/80 dark:border-border/30 bg-card flex flex-col overflow-hidden h-full w-full relative transition-colors duration-300">
-          {/* Background Parallax Glow */}
-          <motion.div
-            style={{ y: yGlow }}
-            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(249,115,22,0.06),transparent_70%)] pointer-events-none"
-          />
-
-          {/* Image Container with Pop-Out support */}
-          <div className="relative aspect-[4/3] overflow-hidden bg-muted card-3d-image-container" style={{ transformStyle: "preserve-3d" }}>
-            <motion.div
-              style={{ y: yImage, transformStyle: "preserve-3d" }}
-              className="w-full h-full relative"
-            >
-              <div className="animate-float-subtle w-full h-full relative" style={{ transformStyle: "preserve-3d" }}>
-                <Image
-                  src={deal.image}
-                  alt={deal.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
-                />
-              </div>
-            </motion.div>
-            <div className="absolute top-4 left-4 flex flex-col gap-2" style={{ transformStyle: "preserve-3d" }}>
-              <motion.span
-                style={{ y: yBadge }}
-                className="badge bg-red-600 text-white font-black px-3 py-1 rounded-full text-xs shadow-sm"
-              >
-                {discount}% OFF
-              </motion.span>
-              <span className="badge bg-amber-500 text-black font-black px-3 py-1 rounded-full text-[10px] uppercase tracking-wider shadow-sm">
-                {deal.label}
-              </span>
-            </div>
-          </div>
-
-          <div className="p-5 flex flex-col flex-1 relative z-10">
-            <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2">
-              {deal.category}
-            </span>
-            <h3 className="font-bold text-foreground text-base mb-4 leading-snug line-clamp-2">
-              <Link href={`/product/${deal.slug}`} className="hover:text-red-500 transition-colors">
-                {deal.title}
-              </Link>
-            </h3>
-
-            <div className="flex items-center gap-2 mt-auto mb-4">
-              <span className="text-2xl font-black text-foreground">{formatPrice(deal.price)}</span>
-              <span className="text-sm font-semibold text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
-              <span className="text-xs font-black text-red-600 bg-red-500/10 px-2 py-0.5 rounded-md">
-                ({discount}% OFF)
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between mb-4 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 px-3 py-2.5 rounded-2xl border border-amber-500/10">
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 animate-pulse" /> Offer validity:
-              </span>
-              <span>{deal.expiresIn}</span>
-            </div>
-
-            <a
-              href={deal.affiliateLink}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="w-full text-xs py-3 rounded-2xl text-center font-bold btn-amazon-3d cursor-pointer bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white border border-brand-500/20"
-            >
-              Buy on Amazon
-            </a>
-          </div>
-        </div>
-      </Interactive3DCard>
-    </motion.div>
-  );
-}
+import { motion, AnimatePresence } from "framer-motion";
 
 interface CommunityDeal {
   id: string;
@@ -431,15 +313,75 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCuratedDeals.map((deal, idx) => {
+              {filteredCuratedDeals.map((deal) => {
                 const discount = deal.discount;
                 return (
-                  <VerifiedDealCard
+                  <motion.div
                     key={deal.slug}
-                    deal={deal}
-                    idx={idx}
-                    discount={discount}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4 }}
+                    whileHover={{
+                      y: -6,
+                      boxShadow: "0 20px 40px -15px rgba(0,0,0,0.15), 0 0 25px 2px rgba(212,63,54,0.06)",
+                      borderColor: "rgba(212,63,54,0.25)"
+                    }}
+                    className="card overflow-hidden flex flex-col group border border-border/80 bg-card rounded-3xl shadow-sm transition-all duration-300"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                      <Image
+                        src={deal.image}
+                        alt={deal.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute top-4 left-4 flex flex-col gap-2">
+                        <span className="badge bg-red-600 text-white font-black px-3 py-1 rounded-full text-xs shadow-sm">
+                          {discount}% OFF
+                        </span>
+                        <span className="badge bg-amber-500 text-black font-black px-3 py-1 rounded-full text-[10px] uppercase tracking-wider shadow-sm">
+                          {deal.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-5 flex flex-col flex-1">
+                      <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                        {deal.category}
+                      </span>
+                      <h3 className="font-bold text-foreground text-base mb-4 leading-snug line-clamp-2">
+                        <Link href={`/product/${deal.slug}`} className="hover:text-red-500 transition-colors">
+                          {deal.title}
+                        </Link>
+                      </h3>
+
+                      <div className="flex items-center gap-2 mt-auto mb-4">
+                        <span className="text-2xl font-black text-foreground">{formatPrice(deal.price)}</span>
+                        <span className="text-sm font-semibold text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
+                        <span className="text-xs font-black text-red-600 bg-red-500/10 px-2 py-0.5 rounded-md">
+                          ({discount}% OFF)
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-4 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 px-3 py-2.5 rounded-2xl border border-amber-500/10">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 animate-pulse" /> Offer validity:
+                        </span>
+                        <span>{deal.expiresIn}</span>
+                      </div>
+
+                      <a
+                        href={deal.affiliateLink}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="btn-primary w-full text-xs py-3 rounded-2xl text-center font-bold btn-shiny cursor-pointer"
+                      >
+                        Buy on Amazon
+                      </a>
+                    </div>
+                  </motion.div>
                 );
               })}
             </div>
