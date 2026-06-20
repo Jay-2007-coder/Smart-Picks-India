@@ -68,7 +68,7 @@ function FlashDealCard({ deal, idx, discount }: { deal: FlashProduct; idx: numbe
                   alt={deal.title}
                   fill
                   sizes="(max-width: 640px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="object-cover"
                 />
               </div>
             </motion.div>

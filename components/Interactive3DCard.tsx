@@ -86,13 +86,21 @@ export default function Interactive3DCard({ children, className = "" }: Interact
   const liftY = isMobile ? -6 : -15;
   const scaleVal = isMobile ? 1.01 : 1.03;
 
-  const transformStyle = isHovered
-    ? `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(0, ${liftY}px, 0) scale3d(${scaleVal}, ${scaleVal}, 1.03)`
-    : "perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0, 0, 0) scale3d(1, 1, 1)";
+  // Middle container transform: handles the smooth scale up and card lift
+  const middleTransform = isHovered
+    ? `translate3d(0, ${liftY}px, 0) scale3d(${scaleVal}, ${scaleVal}, 1)`
+    : "translate3d(0, 0, 0) scale3d(1, 1, 1)";
 
-  const transitionStyle = isHovered
-    ? "transform 0.1s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease"
-    : "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease";
+  const middleTransition = "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)"; // smooth easeOutExpo
+
+  // Inner container transform: handles the snappy 3D tilt tracking the mouse
+  const innerTransform = isHovered
+    ? `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+    : "perspective(1200px) rotateX(0deg) rotateY(0deg)";
+
+  const innerTransition = isHovered
+    ? "transform 0.1s cubic-bezier(0.25, 1, 0.5, 1)" // snappy follow
+    : "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)"; // smooth return
 
   return (
     <div
@@ -103,23 +111,35 @@ export default function Interactive3DCard({ children, className = "" }: Interact
       className={`relative w-full h-full ${className}`}
       style={{ perspective: 1200 }}
     >
+      {/* Middle Wrapper: Handles scale, lift, shadow, and gradient border */}
       <div
         className="group relative card-3d-wrapper w-full h-full"
         style={{
-          transform: transformStyle,
-          transition: transitionStyle,
-          transformStyle: "preserve-3d",
+          transform: middleTransform,
+          transition: middleTransition,
           willChange: "transform",
+          transformStyle: "preserve-3d",
         }}
       >
-        {/* Spotlight reflection */}
-        {!isMobile && isHovered && (
-          <div
-            className="absolute inset-0 z-30 pointer-events-none transition-opacity duration-300"
-            style={spotlightStyle}
-          />
-        )}
-        {children}
+        {/* Inner Wrapper: Handles snappy 3D tilt tracking */}
+        <div
+          className="w-full h-full"
+          style={{
+            transform: innerTransform,
+            transition: innerTransition,
+            willChange: "transform",
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {/* Spotlight reflection */}
+          {!isMobile && isHovered && (
+            <div
+              className="absolute inset-0 z-30 pointer-events-none transition-opacity duration-300"
+              style={spotlightStyle}
+            />
+          )}
+          {children}
+        </div>
       </div>
     </div>
   );
