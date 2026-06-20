@@ -312,7 +312,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
               <p className="text-xs text-muted-foreground mt-1">Try relaxing your category or discount filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
               {filteredCuratedDeals.map((deal) => {
                 const discount = deal.discount;
                 return (
