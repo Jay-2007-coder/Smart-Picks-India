@@ -39,17 +39,17 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
           boxShadow: "0 22px 48px -12px rgba(0,0,0,0.22), 0 0 28px 4px rgba(212,63,54,0.12)",
           borderColor: "rgba(212,63,54,0.38)"
         }}
-        className="card group flex flex-col overflow-hidden transition-all duration-300 border border-border/80 dark:border-border/30 bg-card"
+        className="group flex flex-col overflow-hidden transition-all duration-300 border border-border/80 dark:border-border/30 bg-card rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] select-none"
       >
         {/* Image Container */}
-        <div className="relative aspect-square bg-muted overflow-hidden">
+        <div className="relative aspect-square bg-white border-b border-border/40 overflow-hidden flex items-center justify-center">
           <Link href={`/product/${product.slug}`} className="relative block w-full h-full">
             <Image
               src={imgSrc}
               alt={product.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.03]"
               priority={priority}
               unoptimized={isProxied}
               onError={() =>
@@ -59,32 +59,28 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
               }
             />
             {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </Link>
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
             {aiBadge && (
-              <span className="badge bg-teal-600 text-white flex items-center gap-1 shadow font-black text-[10px]">
+              <span className="badge bg-teal-600/90 backdrop-blur-md text-white flex items-center gap-1 shadow-md font-black text-[9px] px-2 py-0.5 rounded-lg border border-teal-500/20">
                 ✨ AI Pick
               </span>
             )}
             {discount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="badge bg-brand-600 text-white text-xs font-black shadow"
-              >
+              <span className="badge bg-brand-600/90 backdrop-blur-md text-white text-[10px] font-black shadow-md px-2 py-0.5 rounded-lg border border-brand-500/20">
                 -{discount}%
-              </motion.span>
+              </span>
             )}
             {product.dealOfTheDay && (
-              <span className="badge bg-accent-500 text-white flex items-center gap-1 shadow">
+              <span className="badge bg-amber-500/90 backdrop-blur-md text-black flex items-center gap-1 shadow-md font-black text-[9px] px-2 py-0.5 rounded-lg border border-amber-400/20">
                 <Zap className="h-3 w-3" /> Deal
               </span>
             )}
             {product.trending && (
-              <span className="badge bg-purple-600 text-white flex items-center gap-1 shadow">
+              <span className="badge bg-purple-600/90 backdrop-blur-md text-white flex items-center gap-1 shadow-md font-black text-[9px] px-2 py-0.5 rounded-lg border border-purple-500/20">
                 <TrendingUp className="h-3 w-3" /> Trending
               </span>
             )}
@@ -134,9 +130,11 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
         </div>
 
         {/* Content */}
-        <div className="flex flex-col flex-1 p-3.5 sm:p-4 gap-1.5 sm:gap-2">
+        <div className="flex flex-col flex-1 p-4 gap-2">
           {/* Category */}
-          <span className="text-xs font-semibold text-brand-600 capitalize">{product.category}</span>
+          <span className="inline-flex max-w-max px-2 py-0.5 text-[9px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 rounded-md uppercase tracking-widest leading-none">
+            {product.category}
+          </span>
 
           {/* Title */}
           <Link href={`/product/${product.slug}`}>
@@ -155,7 +153,7 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
                 />
               ))}
             </div>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground font-semibold">
               {product.rating} ({product.reviewCount.toLocaleString("en-IN")})
             </span>
           </div>
@@ -164,7 +162,7 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
           <div className="flex items-baseline gap-2 mt-auto">
             <span className="text-lg font-black text-foreground">{formatPrice(product.price)}</span>
             {product.oldPrice > product.price && (
-              <span className="text-sm text-muted-foreground line-through">
+              <span className="text-xs font-semibold text-muted-foreground line-through">
                 {formatPrice(product.oldPrice)}
               </span>
             )}
@@ -175,9 +173,9 @@ export default function ProductCard({ product, priority = false, index = 0, aiBa
             href={product.affiliateLink}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 via-red-500 to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-brand-500/20 transition-all duration-300 btn-shiny btn-premium-glow"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 text-white font-black text-xs py-2.5 w-full mt-2 shadow-md border border-brand-500/10 transition-all duration-300 btn-shiny"
             id={`buy-${product.slug}`}
-            whileHover={{ scale: 1.02, boxShadow: "0 8px 22px -4px rgba(212, 63, 54, 0.4)" }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
           >
             <ShoppingCart className="h-3.5 w-3.5" />

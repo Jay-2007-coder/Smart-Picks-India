@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
-import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles } from "lucide-react";
+import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles, ShoppingCart } from "lucide-react";
 import { CommunityDealSkeleton, SkeletonGrid } from "@/components/Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -324,50 +324,54 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                     transition={{ duration: 0.4 }}
                     whileHover={{
                       y: -6,
-                      boxShadow: "0 20px 40px -15px rgba(0,0,0,0.15), 0 0 25px 2px rgba(212,63,54,0.06)",
-                      borderColor: "rgba(212,63,54,0.25)"
+                      boxShadow: "0 22px 48px -12px rgba(0,0,0,0.22), 0 0 28px 4px rgba(212,63,54,0.12)",
+                      borderColor: "rgba(212,63,54,0.38)"
                     }}
-                    className="card overflow-hidden flex flex-col group border border-border/80 bg-card rounded-3xl shadow-sm transition-all duration-300"
+                    className="overflow-hidden flex flex-col group border border-border/80 dark:border-border/30 bg-card rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all duration-300 select-none"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-white border-b border-border/40 flex items-center justify-center">
                       <Image
                         src={deal.image}
                         alt={deal.title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.03]"
                       />
-                      <div className="absolute top-4 left-4 flex flex-col gap-2">
-                        <span className="badge bg-red-600 text-white font-black px-3 py-1 rounded-full text-xs shadow-sm">
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="badge bg-brand-600/90 backdrop-blur-md text-white font-black px-2.5 py-1 rounded-lg text-[11px] shadow-md border border-brand-500/20">
                           {discount}% OFF
                         </span>
-                        <span className="badge bg-amber-500 text-black font-black px-3 py-1 rounded-full text-[10px] uppercase tracking-wider shadow-sm">
-                          {deal.label}
-                        </span>
                       </div>
+                      {deal.label && (
+                        <div className="absolute top-3 right-3 z-10">
+                          <span className="badge bg-amber-500/90 backdrop-blur-md text-black font-black px-2.5 py-1 rounded-lg text-[9px] uppercase tracking-wider shadow-md border border-amber-400/20">
+                            ★ {deal.label}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="p-5 flex flex-col flex-1">
-                      <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2">
+                    <div className="p-4 sm:p-5 flex flex-col flex-1">
+                      <span className="inline-flex max-w-max px-2 py-0.5 text-[9px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 rounded-md uppercase tracking-widest mb-2.5">
                         {deal.category}
                       </span>
-                      <h3 className="font-bold text-foreground text-base mb-4 leading-snug line-clamp-2">
-                        <Link href={`/product/${deal.slug}`} className="hover:text-red-500 transition-colors">
+                      <h3 className="font-bold text-foreground text-sm mb-3 leading-snug line-clamp-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                        <Link href={`/product/${deal.slug}`}>
                           {deal.title}
                         </Link>
                       </h3>
 
-                      <div className="flex items-center gap-2 mt-auto mb-4">
-                        <span className="text-2xl font-black text-foreground">{formatPrice(deal.price)}</span>
-                        <span className="text-sm font-semibold text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
-                        <span className="text-xs font-black text-red-600 bg-red-500/10 px-2 py-0.5 rounded-md">
-                          ({discount}% OFF)
+                      <div className="flex items-baseline gap-2 mt-auto mb-3.5">
+                        <span className="text-xl font-black text-foreground">{formatPrice(deal.price)}</span>
+                        <span className="text-xs font-medium text-muted-foreground/75 line-through">{formatPrice(deal.oldPrice)}</span>
+                        <span className="text-[9px] font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded leading-none">
+                          -{discount}%
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between mb-4 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 px-3 py-2.5 rounded-2xl border border-amber-500/10">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5 animate-pulse" /> Offer validity:
+                      <div className="flex items-center justify-between mb-4 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 dark:bg-amber-500/10 px-3 py-2 rounded-xl border border-amber-500/10">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 animate-pulse" /> Validity:
                         </span>
                         <span>{deal.expiresIn}</span>
                       </div>
@@ -376,8 +380,9 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                         href={deal.affiliateLink}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
-                        className="btn-primary w-full text-xs py-3 rounded-2xl text-center font-bold btn-shiny cursor-pointer"
+                        className="w-full text-center py-2.5 rounded-xl font-black text-xs text-white bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 hover:shadow-lg transition-all duration-300 btn-shiny cursor-pointer inline-flex items-center justify-center gap-1.5"
                       >
+                        <ShoppingCart className="h-3.5 w-3.5" />
                         Buy on Amazon
                       </a>
                     </div>
