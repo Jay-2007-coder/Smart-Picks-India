@@ -156,7 +156,7 @@ router.get("/flash", async (req, res, next) => {
       // Filter products that have a discount (originalPrice > price)
       const deals = allDbProducts
         .filter((p) => p.originalPrice > p.price)
-        .slice(0, 4)
+        .slice(0, 5)
         .map((p) => {
           // Simulate expiration date: 3 hours and 45 minutes from now
           const expiresAt = new Date(Date.now() + 3.75 * 60 * 60 * 1000);

@@ -50,8 +50,8 @@ export default function FlashDealsSection() {
       <section className="py-12 bg-gradient-to-b from-background to-muted/20">
         <div className="container-custom">
           <div className="h-6 w-48 bg-muted animate-pulse rounded-full mb-8" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="card flex flex-col h-[280px] bg-card border border-border/50 animate-pulse rounded-2xl overflow-hidden">
                 <div className="aspect-square bg-muted/65" />
                 <div className="p-3 gap-2 flex flex-col flex-1">
@@ -84,7 +84,7 @@ export default function FlashDealsSection() {
           }
         />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 mt-8">
           {deals.map((deal, idx) => {
             const discount = calculateDiscount(deal.price, deal.oldPrice);
             return (
