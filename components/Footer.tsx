@@ -60,12 +60,8 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
           >
             <Link href="/" className="flex items-center gap-2 mb-4 group">
-              <motion.div
-                whileHover={{ rotate: [0, -10, 10, -5, 0] }}
-                transition={{ duration: 0.4 }}
-                className="h-7 w-7 rounded-lg overflow-hidden shadow-sm flex items-center justify-center"
-              >
-                <img src="/brand-logo.png" alt="Smart Picks" className="h-full w-full object-cover" />
+              <motion.div whileHover={{ rotate: [0, -10, 10, -5, 0] }} transition={{ duration: 0.4 }}>
+                <ShoppingBag className="h-6 w-6 text-brand-600" />
               </motion.div>
               <span className="font-display font-bold text-lg">
                 Smart<span className="text-brand-600">Picks</span> India

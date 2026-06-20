@@ -107,9 +107,9 @@ export default function Navbar() {
               <motion.div
                 whileHover={{ rotate: [0, -8, 8, -4, 0], scale: 1.05 }}
                 transition={{ duration: 0.35 }}
-                className="flex h-8.5 w-8.5 items-center justify-center rounded-xl overflow-hidden shadow-sm"
+                className="flex h-8.5 w-8.5 items-center justify-center rounded-xl bg-brand-500/10 border border-brand-500/10 dark:border-brand-500/20 text-brand-600 shadow-sm"
               >
-                <img src="/brand-logo.png" alt="Smart Picks" className="h-full w-full object-cover" />
+                <ShoppingBag className="h-4.5 w-4.5" />
               </motion.div>
               <span className="font-display text-base font-extrabold tracking-tight text-foreground">
                 Smart<span className="text-brand-600">Picks</span>{" "}
