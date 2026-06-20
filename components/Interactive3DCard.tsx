@@ -8,7 +8,7 @@ export interface Interactive3DCardProps {
 }
 
 export default function Interactive3DCard({ children, className = "" }: Interactive3DCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -24,9 +24,9 @@ export default function Interactive3DCard({ children, className = "" }: Interact
   }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!containerRef.current) return;
     
-    const rect = cardRef.current.getBoundingClientRect();
+    const rect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
@@ -59,8 +59,8 @@ export default function Interactive3DCard({ children, className = "" }: Interact
   let rotateY = 0;
   let spotlightStyle: React.CSSProperties = {};
   
-  if (isHovered && cardRef.current) {
-    const rect = cardRef.current.getBoundingClientRect();
+  if (isHovered && containerRef.current) {
+    const rect = containerRef.current.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
     
@@ -82,32 +82,45 @@ export default function Interactive3DCard({ children, className = "" }: Interact
     }
   }
 
-  // Mobile keeps reveal and small card lift (Y translate) but skips heavy rotate angles
+  // Dynamic transforms and transitions for premium experience
+  const liftY = isMobile ? -6 : -15;
+  const scaleVal = isMobile ? 1.01 : 1.03;
+
   const transformStyle = isHovered
-    ? `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(0, -12px, 0)`
-    : "perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0, 0, 0)";
+    ? `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(0, ${liftY}px, 0) scale3d(${scaleVal}, ${scaleVal}, 1.03)`
+    : "perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0, 0, 0) scale3d(1, 1, 1)";
+
+  const transitionStyle = isHovered
+    ? "transform 0.1s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease"
+    : "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease";
 
   return (
     <div
-      ref={cardRef}
+      ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`group relative card-3d-wrapper transition-all duration-300 ${className}`}
-      style={{
-        transform: transformStyle,
-        transformStyle: "preserve-3d",
-        willChange: "transform",
-      }}
+      className={`relative w-full h-full ${className}`}
+      style={{ perspective: 1200 }}
     >
-      {/* Spotlight reflection */}
-      {!isMobile && isHovered && (
-        <div
-          className="absolute inset-0 z-30 pointer-events-none transition-opacity duration-300"
-          style={spotlightStyle}
-        />
-      )}
-      {children}
+      <div
+        className="group relative card-3d-wrapper w-full h-full"
+        style={{
+          transform: transformStyle,
+          transition: transitionStyle,
+          transformStyle: "preserve-3d",
+          willChange: "transform",
+        }}
+      >
+        {/* Spotlight reflection */}
+        {!isMobile && isHovered && (
+          <div
+            className="absolute inset-0 z-30 pointer-events-none transition-opacity duration-300"
+            style={spotlightStyle}
+          />
+        )}
+        {children}
+      </div>
     </div>
   );
 }
