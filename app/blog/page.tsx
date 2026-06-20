@@ -1,6 +1,7 @@
 import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import BlogClient from "@/components/BlogClient";
+import NewsletterSection from "@/components/NewsletterSection";
 import { blogPosts as staticPosts } from "@/data/blogPosts";
 
 export const revalidate = 60; // fetch new posts and cache for 60 seconds
@@ -40,19 +41,15 @@ export default async function BlogListingPage() {
   });
 
   return (
-    <div className="container-custom pt-8 pb-24">
-      <Breadcrumbs items={[{ label: "Blog" }]} />
-
-      <div className="mt-8 mb-12 text-center max-w-2xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
-          Latest Reviews &amp; Guides
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          In-depth analysis, top 10 lists, and buying advice to help you make smarter purchasing decisions.
-        </p>
+    <div className="container-custom pt-8 pb-24 space-y-16 relative">
+      <div className="space-y-6">
+        <Breadcrumbs items={[{ label: "Blog" }]} />
+        <BlogClient initialPosts={allPosts} />
       </div>
 
-      <BlogClient initialPosts={allPosts} />
+      <div className="pt-8 border-t border-border/50">
+        <NewsletterSection />
+      </div>
     </div>
   );
 }
