@@ -235,7 +235,7 @@ export default function SmartNotesGenerator() {
   const [selectedSubject, setSelectedSubject] = useState<string>("All");
 
   // Drag and Drop Upload States
-  const [files, setFiles] = useState<StudyFile[]>(SAMPLE_FILES);
+  const [files, setFiles] = useState<StudyFile[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [ocrModalFile, setOcrModalFile] = useState<StudyFile | null>(null);
@@ -243,9 +243,127 @@ export default function SmartNotesGenerator() {
   // Notes Config Generator States
   const [noteStyle, setNoteStyle] = useState<string>("One-Night Revision Notes");
   const [noteMode, setNoteMode] = useState<string>("University Exam Mode");
-  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>(SAMPLE_NOTES);
+  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>([]);
   const [activeNoteIdx, setActiveNoteIdx] = useState(0);
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
+
+  // Note editing states
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editTakeaways, setEditTakeaways] = useState<string[]>([]);
+  const [editFormulas, setEditFormulas] = useState<string[]>([]);
+
+  // Editing Handlers
+  const handleStartEdit = () => {
+    if (generatedNotes.length === 0) return;
+    const currentNote = generatedNotes[activeNoteIdx];
+    setEditTitle(currentNote.title);
+    setEditContent(currentNote.content);
+    setEditTakeaways([...currentNote.keyTakeaways]);
+    setEditFormulas([...(currentNote.formulas || [])]);
+    setIsEditingNote(true);
+    playClick();
+  };
+
+  const handleSaveEdit = () => {
+    if (generatedNotes.length === 0) return;
+    setGeneratedNotes((prev) => {
+      const updated = [...prev];
+      updated[activeNoteIdx] = {
+        ...updated[activeNoteIdx],
+        title: editTitle,
+        content: editContent,
+        keyTakeaways: editTakeaways.filter(t => t.trim() !== ""),
+        formulas: editFormulas.filter(f => f.trim() !== "")
+      };
+      return updated;
+    });
+    setIsEditingNote(false);
+    playSuccess();
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingNote(false);
+    playClick();
+  };
+
+  const handleAddTakeaway = () => {
+    setEditTakeaways((prev) => [...prev, ""]);
+    playClick();
+  };
+
+  const handleUpdateTakeaway = (index: number, val: string) => {
+    setEditTakeaways((prev) => {
+      const updated = [...prev];
+      updated[index] = val;
+      return updated;
+    });
+  };
+
+  const handleRemoveTakeaway = (index: number) => {
+    setEditTakeaways((prev) => prev.filter((_, idx) => idx !== index));
+    playClick();
+  };
+
+  const handleAddFormula = () => {
+    setEditFormulas((prev) => [...prev, ""]);
+    playClick();
+  };
+
+  const handleUpdateFormula = (index: number, val: string) => {
+    setEditFormulas((prev) => {
+      const updated = [...prev];
+      updated[index] = val;
+      return updated;
+    });
+  };
+
+  const handleRemoveFormula = (index: number) => {
+    setEditFormulas((prev) => prev.filter((_, idx) => idx !== index));
+    playClick();
+  };
+
+  const handleDeleteNote = (idxToDelete: number) => {
+    playClick();
+    setGeneratedNotes((prev) => {
+      const updated = prev.filter((_, idx) => idx !== idxToDelete);
+      if (activeNoteIdx >= updated.length && updated.length > 0) {
+        setActiveNoteIdx(updated.length - 1);
+      } else if (updated.length === 0) {
+        setActiveNoteIdx(0);
+      }
+      return updated;
+    });
+    setIsEditingNote(false);
+  };
+
+  const handleCreateManualNote = () => {
+    playClick();
+    const newNote: GeneratedNote = {
+      id: `note-${Date.now()}`,
+      title: "New Custom Study Note",
+      style: "Short Notes",
+      mode: "Personal Mode",
+      subject: selectedSubject === "All" ? "General Study" : selectedSubject,
+      content: "Type your study notes here...",
+      keyTakeaways: ["Add key takeaway points..."],
+      formulas: []
+    };
+    setGeneratedNotes((prev) => [newNote, ...prev]);
+    setActiveNoteIdx(0);
+    setEditTitle(newNote.title);
+    setEditContent(newNote.content);
+    setEditTakeaways([...newNote.keyTakeaways]);
+    setEditFormulas([...(newNote.formulas || [])]);
+    setIsEditingNote(true);
+  };
+
+  const handleDeleteFile = (idToDelete: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    playClick();
+    setFiles((prev) => prev.filter((file) => file.id !== idToDelete));
+  };
 
   // Chat Tutor States
   const [chatInput, setChatInput] = useState("");
@@ -765,7 +883,16 @@ export default function SmartNotesGenerator() {
                             <span className="text-[8px] text-zinc-500 font-bold">{file.size} • {file.category}</span>
                           </div>
                         </div>
-                        <ChevronRight className="h-3.5 w-3.5 text-zinc-650 group-hover:text-purple-400 transition-colors shrink-0" />
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={(e) => handleDeleteFile(file.id, e)}
+                            className="p-1 text-zinc-650 hover:text-rose-500 rounded transition-colors cursor-pointer"
+                            title="Delete File"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                          <ChevronRight className="h-3.5 w-3.5 text-zinc-650 group-hover:text-purple-400 transition-colors" />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -875,66 +1002,221 @@ export default function SmartNotesGenerator() {
                       <h3 className="text-xs font-black uppercase text-zinc-300 tracking-wider flex items-center gap-1.5">
                         <FileText className="h-4 w-4 text-purple-500" /> Active notes ({generatedNotes.length})
                       </h3>
-                      <div className="flex items-center gap-1.5">
-                        {generatedNotes.map((n, idx) => (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          {generatedNotes.map((n, idx) => (
+                            <button
+                              key={n.id}
+                              onClick={() => { playClick(); setActiveNoteIdx(idx); setIsEditingNote(false); }}
+                              className={`h-6 w-6 rounded-lg font-black text-xs flex items-center justify-center transition-all cursor-pointer ${
+                                activeNoteIdx === idx
+                                  ? "bg-purple-500 text-white"
+                                  : "bg-zinc-950 border border-zinc-800 text-zinc-500 hover:border-zinc-700"
+                              }`}
+                            >
+                              {idx + 1}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1 border-l border-zinc-800 pl-2">
                           <button
-                            key={n.id}
-                            onClick={() => { playClick(); setActiveNoteIdx(idx); }}
-                            className={`h-6 w-6 rounded-lg font-black text-xs flex items-center justify-center transition-all cursor-pointer ${
-                              activeNoteIdx === idx
-                                ? "bg-purple-500 text-white"
-                                : "bg-zinc-950 border border-zinc-800 text-zinc-500 hover:border-zinc-700"
-                            }`}
+                            onClick={handleCreateManualNote}
+                            className="p-1 bg-zinc-950 border border-zinc-805 hover:border-zinc-700 text-purple-400 hover:text-purple-300 rounded-lg text-xs font-black cursor-pointer flex items-center justify-center"
+                            title="Create Custom Note"
                           >
-                            {idx + 1}
+                            <Plus className="h-4 w-4" />
                           </button>
-                        ))}
+                          {generatedNotes.length > 0 && !isEditingNote && (
+                            <>
+                              <button
+                                onClick={handleStartEdit}
+                                className="p-1 bg-zinc-950 border border-zinc-805 hover:border-zinc-700 text-amber-500 hover:text-amber-400 rounded-lg text-xs font-black cursor-pointer flex items-center justify-center"
+                                title="Edit Active Note"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteNote(activeNoteIdx)}
+                                className="p-1 bg-zinc-950 border border-zinc-805 hover:border-zinc-700 text-rose-500 hover:text-rose-400 rounded-lg text-xs font-black cursor-pointer flex items-center justify-center"
+                                title="Delete Active Note"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     {generatedNotes.length > 0 ? (
-                      <div className="space-y-4 animate-fadeIn">
-                        <div>
-                          <h4 className="text-sm font-extrabold text-zinc-100">{generatedNotes[activeNoteIdx].title}</h4>
-                          <span className="inline-block text-[8px] font-black uppercase text-purple-500 mt-1 px-1.5 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded">
-                            {generatedNotes[activeNoteIdx].style} • {generatedNotes[activeNoteIdx].mode}
-                          </span>
-                        </div>
+                      isEditingNote ? (
+                        <div className="space-y-4 animate-fadeIn">
+                          {/* Title edit */}
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Note Title</label>
+                            <input 
+                              type="text" 
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
+                              className="w-full bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-bold text-zinc-200 outline-none focus:border-purple-500/50"
+                              placeholder="Note Title"
+                            />
+                          </div>
 
-                        <p className="text-xs text-zinc-300 leading-relaxed font-semibold">
-                          {generatedNotes[activeNoteIdx].content}
-                        </p>
+                          {/* Content edit */}
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Content</label>
+                            <textarea 
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              rows={6}
+                              className="w-full bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-bold text-zinc-200 outline-none focus:border-purple-500/50 resize-y animate-none"
+                              placeholder="Type notes body here..."
+                            />
+                          </div>
 
-                        {/* Key takeaways list */}
-                        <div className="p-4 bg-zinc-950/60 border border-zinc-850 rounded-2xl space-y-2">
-                          <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
-                            <CheckCircle className="h-3.5 w-3.5" /> Key Takeaways
-                          </strong>
-                          <ul className="list-disc list-inside text-[10px] text-zinc-400 font-semibold space-y-1.5 pl-1">
-                            {generatedNotes[activeNoteIdx].keyTakeaways.map((take, idx) => (
-                              <li key={idx}>{take}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* Equations / formulas if present */}
-                        {generatedNotes[activeNoteIdx].formulas && (
-                          <div className="p-4 bg-purple-500/[0.02] border border-purple-500/10 rounded-2xl space-y-2">
-                            <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
-                              <Database className="h-3.5 w-3.5" /> Equations & Concepts
-                            </strong>
-                            <div className="flex flex-wrap gap-2">
-                              {generatedNotes[activeNoteIdx].formulas?.map((form, idx) => (
-                                <code key={idx} className="bg-zinc-950 border border-zinc-850 px-2.5 py-1 rounded-lg text-[10px] font-mono text-zinc-300">
-                                  {form}
-                                </code>
+                          {/* Key takeaways edit */}
+                          <div className="p-4 bg-zinc-950/60 border border-zinc-855 rounded-2xl space-y-3">
+                            <div className="flex justify-between items-center">
+                              <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
+                                <CheckCircle className="h-3.5 w-3.5" /> Key Takeaways
+                              </strong>
+                              <button
+                                onClick={handleAddTakeaway}
+                                className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 text-[9px] font-bold text-purple-400 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Plus className="h-3 w-3" /> Add Point
+                              </button>
+                            </div>
+                            <div className="space-y-2">
+                              {editTakeaways.map((take, idx) => (
+                                <div key={idx} className="flex gap-2 items-center">
+                                  <input 
+                                    type="text" 
+                                    value={take}
+                                    onChange={(e) => handleUpdateTakeaway(idx, e.target.value)}
+                                    className="flex-1 bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-350 outline-none focus:border-purple-500/50"
+                                    placeholder={`Takeaway point #${idx + 1}`}
+                                  />
+                                  <button
+                                    onClick={() => handleRemoveTakeaway(idx)}
+                                    className="p-1.5 border border-zinc-800 hover:border-rose-500/30 text-zinc-500 hover:text-rose-500 bg-zinc-950 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
                               ))}
+                              {editTakeaways.length === 0 && (
+                                <p className="text-[10px] text-zinc-500 italic">No takeaways added yet.</p>
+                              )}
                             </div>
                           </div>
-                        )}
-                      </div>
+
+                          {/* Equations/formulas edit */}
+                          <div className="p-4 bg-purple-500/[0.02] border border-purple-500/10 rounded-2xl space-y-3">
+                            <div className="flex justify-between items-center">
+                              <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
+                                <Database className="h-3.5 w-3.5" /> Equations & Concepts
+                              </strong>
+                              <button
+                                onClick={handleAddFormula}
+                                className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 text-[9px] font-bold text-purple-400 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Plus className="h-3 w-3" /> Add Formula
+                              </button>
+                            </div>
+                            <div className="space-y-2">
+                              {editFormulas.map((form, idx) => (
+                                <div key={idx} className="flex gap-2 items-center">
+                                  <input 
+                                    type="text" 
+                                    value={form}
+                                    onChange={(e) => handleUpdateFormula(idx, e.target.value)}
+                                    className="flex-1 bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-1.5 text-xs font-mono text-zinc-350 outline-none focus:border-purple-500/50"
+                                    placeholder={`Formula / Concept #${idx + 1}`}
+                                  />
+                                  <button
+                                    onClick={() => handleRemoveFormula(idx)}
+                                    className="p-1.5 border border-zinc-800 hover:border-rose-500/30 text-zinc-500 hover:text-rose-500 bg-zinc-950 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                              {editFormulas.length === 0 && (
+                                <p className="text-[10px] text-zinc-500 italic">No formulas added yet.</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Save / Cancel buttons */}
+                          <div className="flex gap-2 justify-end border-t border-zinc-800 pt-3">
+                            <button
+                              onClick={handleSaveEdit}
+                              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer active:scale-95 flex items-center gap-1"
+                            >
+                              <Check className="h-3.5 w-3.5" /> Save Note
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-350 hover:text-zinc-200 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 animate-fadeIn">
+                          <div>
+                            <h4 className="text-sm font-extrabold text-zinc-100">{generatedNotes[activeNoteIdx].title}</h4>
+                            <span className="inline-block text-[8px] font-black uppercase text-purple-500 mt-1 px-1.5 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded">
+                              {generatedNotes[activeNoteIdx].style} • {generatedNotes[activeNoteIdx].mode}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-zinc-350 leading-relaxed font-semibold whitespace-pre-wrap animate-none">
+                            {generatedNotes[activeNoteIdx].content}
+                          </p>
+
+                          {/* Key takeaways list */}
+                          <div className="p-4 bg-zinc-950/60 border border-zinc-855 rounded-2xl space-y-2">
+                            <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
+                              <CheckCircle className="h-3.5 w-3.5" /> Key Takeaways
+                            </strong>
+                            <ul className="list-disc list-inside text-[10px] text-zinc-400 font-semibold space-y-1.5 pl-1">
+                              {generatedNotes[activeNoteIdx].keyTakeaways.map((take, idx) => (
+                                <li key={idx}>{take}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Equations / formulas if present */}
+                          {generatedNotes[activeNoteIdx].formulas && generatedNotes[activeNoteIdx].formulas.length > 0 && (
+                            <div className="p-4 bg-purple-500/[0.02] border border-purple-500/10 rounded-2xl space-y-2">
+                              <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
+                                <Database className="h-3.5 w-3.5" /> Equations & Concepts
+                              </strong>
+                              <div className="flex flex-wrap gap-2">
+                                {generatedNotes[activeNoteIdx].formulas?.map((form, idx) => (
+                                  <code key={idx} className="bg-zinc-950 border border-zinc-850 px-2.5 py-1 rounded-lg text-[10px] font-mono text-zinc-300">
+                                    {form}
+                                  </code>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
                     ) : (
-                      <p className="text-xs text-zinc-500 text-center py-8">Generate study notes using the config block above.</p>
+                      <div className="flex flex-col items-center justify-center py-10 space-y-3">
+                        <p className="text-xs text-zinc-550 text-center">No study notes generated yet. Upload files and configure the style above, or create a note manually!</p>
+                        <button
+                          onClick={handleCreateManualNote}
+                          className="px-4 py-2 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer transition-all flex items-center gap-1"
+                        >
+                          <Plus className="h-3.5 w-3.5" /> Create Note Manually
+                        </button>
+                      </div>
                     )}
                   </div>
                 </motion.div>

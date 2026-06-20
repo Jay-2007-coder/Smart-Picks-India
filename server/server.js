@@ -1,11 +1,9 @@
+import "./loadEnv.js";
 import express from "express";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 
 // Routers
 import authRouter from "./routes/auth.js";
@@ -24,12 +22,6 @@ import roadmapProgressRouter from "./routes/roadmapProgress.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { syncProductPrices, syncProductsFromCatalog } from "./utils/priceSync.js";
 import { initPriceSyncCron } from "./jobs/priceSync.js";
-
-// Initialize environment variables from root first, then locally
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
-dotenv.config({ path: path.join(__dirname, "..", ".env") });
-dotenv.config(); // fallbacks
 
 const app = express();
 const PORT = process.env.PORT || 5000;
