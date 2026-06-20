@@ -278,7 +278,7 @@ export default function ResumeAnalyzer() {
       if (ext === "pdf") {
         setFileParseMsg("Parsing PDF — loading engine...");
         const pdfjsLib = await import("pdfjs-dist");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
         const buf  = await file.arrayBuffer();
         const pdf  = await pdfjsLib.getDocument({ data: buf }).promise;
         let full   = "";
