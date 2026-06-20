@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, ShoppingBag, Sun, Moon, Search, Sparkles } from "lucide-react";
+import { Menu, X, ShoppingBag, Sun, Moon, Search, Sparkles, Home, Flame, Store, GraduationCap, BookOpen } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSearch } from "@/hooks/useSearch";
 import { cn } from "@/lib/utils";
@@ -10,11 +10,11 @@ import { motion, AnimatePresence, useScroll } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/deals", label: "🔥 Deals" },
-  { href: "/digital-store", label: "🎒 Store" },
-  { href: "/student-hub", label: "⚡ Student Hub" },
-  { href: "/blog", label: "Blog" },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/deals", label: "Deals", icon: Flame },
+  { href: "/digital-store", label: "Store", icon: Store },
+  { href: "/student-hub", label: "Student Hub", icon: GraduationCap },
+  { href: "/blog", label: "Blog", icon: BookOpen },
 ];
 
 export default function Navbar() {
@@ -122,21 +122,30 @@ export default function Navbar() {
           </div>
 
           {/* CENTER PARTITION: Main Nav links */}
-          <div className="hidden md:flex items-center gap-1.5">
+          <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
+              const Icon = link.icon;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "relative px-3 py-1.5 text-xs font-bold rounded-xl transition-all duration-200 select-none flex items-center gap-1",
+                    "relative px-3 py-1.5 text-xs font-bold rounded-xl transition-all duration-200 select-none flex items-center gap-1.5 border border-transparent",
                     isActive
-                      ? "text-brand-600 dark:text-brand-400 bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/10 dark:border-brand-500/20 shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60 border border-transparent"
+                      ? "text-brand-600 dark:text-brand-400 font-extrabold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                   )}
                 >
-                  {link.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeNavPill"
+                      className="absolute inset-0 bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/10 dark:border-brand-500/20 rounded-xl -z-10"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <Icon className={cn("h-3.5 w-3.5", isActive ? "text-brand-600 dark:text-brand-400" : "text-muted-foreground/80")} />
+                  <span>{link.label}</span>
                 </Link>
               );
             })}
@@ -471,25 +480,29 @@ export default function Navbar() {
             className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl overflow-hidden px-4 pb-5 shadow-2xl"
           >
             <div className="pt-3 flex flex-col gap-1">
-              {navLinks.map((link, idx) => (
-                <motion.div
-                  key={link.href}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.04 + 0.02 }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "block px-3.5 py-2.5 text-xs font-bold rounded-xl hover:bg-muted/80 transition-colors",
-                      pathname === link.href ? "bg-brand-500/5 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 font-extrabold border border-brand-500/10" : "border border-transparent"
-                    )}
+              {navLinks.map((link, idx) => {
+                const Icon = link.icon;
+                return (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.04 + 0.02 }}
                   >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-bold rounded-xl hover:bg-muted/80 transition-colors",
+                        pathname === link.href ? "bg-brand-500/5 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 font-extrabold border border-brand-500/10" : "border border-transparent"
+                      )}
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-muted-foreground/80" />
+                      <span>{link.label}</span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
 
               {user && user.role === "admin" && (
                 <motion.div
