@@ -22,11 +22,8 @@ import {
   Zap,
   Lightbulb,
   X,
-  Users,
-  Star,
   TrendingUp,
   Brain,
-  LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -184,12 +181,7 @@ const tools = [
 
 const ALL_CATEGORIES = ["All", "Academic", "Career", "AI"];
 
-const STATS = [
-  { icon: Users, label: "Students Active", value: "12K+", color: "#14b8a6" },
-  { icon: LayoutGrid, label: "Tools Available", value: "15+", color: "#6366f1" },
-  { icon: Star, label: "AI Powered", value: "8", color: "#f59e0b" },
-  { icon: TrendingUp, label: "Placements Aided", value: "500+", color: "#f43f5e" },
-];
+
 
 /* ─── Floating Orb ───────────────────────────────────────────────────────────── */
 function FloatingOrb({ x, y, size, color, delay }: { x: string; y: string; size: number; color: string; delay: number }) {
@@ -203,25 +195,7 @@ function FloatingOrb({ x, y, size, color, delay }: { x: string; y: string; size:
   );
 }
 
-/* ─── Stat Card ──────────────────────────────────────────────────────────────── */
-function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string; color: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex-1 min-w-[120px]"
-    >
-      <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}20` }}>
-        <Icon className="h-4.5 w-4.5" style={{ color }} />
-      </div>
-      <div>
-        <p className="text-lg font-black text-white leading-none">{value}</p>
-        <p className="text-[10px] text-white/50 font-semibold mt-0.5">{label}</p>
-      </div>
-    </motion.div>
-  );
-}
+
 
 /* ─── Tool Card ──────────────────────────────────────────────────────────────── */
 function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index: number }) {
@@ -443,19 +417,7 @@ export default function StudentHub() {
             )}
           </motion.div>
 
-          {/* Stat strip */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-14"
-          >
-            {STATS.map((s, i) => (
-              <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.07 }}>
-                <StatCard {...s} />
-              </motion.div>
-            ))}
-          </motion.div>
+
 
           {/* ── SEARCH BAR ──────────────────────────────────────────────────── */}
           <motion.div
