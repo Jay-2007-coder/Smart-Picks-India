@@ -217,15 +217,41 @@ export default function InterviewGenerator() {
 
   // Update dynamic readiness score based on question metrics
   const recalculateReadiness = (qs: Question[]) => {
-    if (qs.length === 0) return;
+    if (qs.length === 0) {
+      setReadinessScore(0);
+      localStorage.setItem("smartpicks_student_readiness", "0");
+      return;
+    }
     const total = qs.length;
     const solved = qs.filter(q => q.solved).length;
-    const highScores = qs.filter(q => q.evaluation && q.evaluation.score >= 80).length;
     
-    // Base readiness calculation
-    const baseScore = Math.min(100, 70 + (solved * 3) + (highScores * 4));
+    // Pure dynamic calculation of solved questions percentage
+    const baseScore = Math.round((solved / total) * 100);
     setReadinessScore(baseScore);
     localStorage.setItem("smartpicks_student_readiness", baseScore.toString());
+  };
+
+  const getTopicProgress = (topicKey: string) => {
+    if (questions.length === 0) return 0;
+    
+    let filtered: Question[] = [];
+    const tKey = topicKey.toLowerCase();
+    
+    if (tKey === "dsa") {
+      filtered = questions.filter(q => q.topic.toLowerCase().includes("dsa") || q.topic.toLowerCase().includes("algo") || q.topic.toLowerCase().includes("structure") || q.topic.toLowerCase().includes("programming") || q.topic.toLowerCase().includes("language"));
+    } else if (tKey === "oop") {
+      filtered = questions.filter(q => q.topic.toLowerCase().includes("oop") || q.topic.toLowerCase().includes("design") || q.topic.toLowerCase().includes("object"));
+    } else if (tKey === "dbms") {
+      filtered = questions.filter(q => q.topic.toLowerCase().includes("db") || q.topic.toLowerCase().includes("sql") || q.topic.toLowerCase().includes("query") || q.topic.toLowerCase().includes("database"));
+    } else if (tKey === "os") {
+      filtered = questions.filter(q => q.topic.toLowerCase().includes("os") || q.topic.toLowerCase().includes("unix") || q.topic.toLowerCase().includes("system"));
+    } else if (tKey === "hr") {
+      filtered = questions.filter(q => q.topic.toLowerCase().includes("hr") || q.topic.toLowerCase().includes("behavioral"));
+    }
+    
+    if (filtered.length === 0) return 0;
+    const solved = filtered.filter(q => q.solved).length;
+    return Math.round((solved / filtered.length) * 100);
   };
 
   const addXp = (amount: number) => {
@@ -707,8 +733,8 @@ export default function InterviewGenerator() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-widest font-black text-orange-500 flex items-center gap-1">
-                <Sparkles className="h-3 w-3 animate-pulse" /> AI Interview Prep
+              <span className="text-[10px] uppercase tracking-widest font-black text-orange-500">
+                AI Interview Prep
               </span>
               <h1 className="text-sm font-black tracking-tight text-white">SmartPicks Placement Suite</h1>
             </div>
@@ -741,38 +767,7 @@ export default function InterviewGenerator() {
               <span>{streak} Days</span>
             </div>
 
-            {/* Notifications */}
-            <div className="relative">
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white transition-colors relative"
-              >
-                <Bell className="h-4.5 w-4.5" />
-                <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-orange-500 rounded-full animate-ping" />
-              </button>
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-3 w-80 bg-neutral-900 border border-neutral-800 rounded-2xl p-4 shadow-2xl z-50 space-y-3"
-                  >
-                    <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
-                      <span className="text-xs font-black uppercase text-neutral-400 tracking-wider">Placement Alerts</span>
-                      <button onClick={() => setShowNotifications(false)} className="text-neutral-500 hover:text-white text-xs">Clear</button>
-                    </div>
-                    <div className="space-y-2">
-                      {notifications.map((msg, i) => (
-                        <div key={i} className="text-[11px] leading-relaxed text-neutral-300 bg-neutral-950/40 p-2 rounded-lg border border-neutral-800/40">
-                          {msg}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+
 
             {/* Profile Avatar */}
             <div className="h-8 w-8 rounded-full border border-neutral-800 overflow-hidden bg-neutral-900 flex items-center justify-center text-xs font-bold text-orange-400">
@@ -978,7 +973,7 @@ export default function InterviewGenerator() {
                       onClick={() => setDifficulty(d as any)}
                       className={`flex-1 py-1 rounded-lg border text-[10px] font-black tracking-wider uppercase transition-colors cursor-pointer ${
                         difficulty === d
-                          ? "bg-orange-50 text-white border-orange-500"
+                          ? "bg-orange-500/10 text-orange-400 border-orange-500"
                           : "bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-white"
                       }`}
                     >
@@ -1506,11 +1501,11 @@ export default function InterviewGenerator() {
               </div>
               <div className="space-y-3.5">
                 {[
-                  { name: "Algorithms & DSA", progress: 65, color: "bg-violet-500" },
-                  { name: "Object Oriented Design", progress: 85, color: "bg-teal-500" },
-                  { name: "DBMS & SQL Querying", progress: 40, color: "bg-blue-500" },
-                  { name: "Operating Systems / UNIX", progress: 30, color: "bg-slate-500" },
-                  { name: "HR & Behavioral round", progress: 90, color: "bg-pink-500" }
+                  { name: "Algorithms & DSA", progress: getTopicProgress("dsa"), color: "bg-violet-500" },
+                  { name: "Object Oriented Design", progress: getTopicProgress("oop"), color: "bg-teal-500" },
+                  { name: "DBMS & SQL Querying", progress: getTopicProgress("dbms"), color: "bg-blue-500" },
+                  { name: "Operating Systems / UNIX", progress: getTopicProgress("os"), color: "bg-slate-500" },
+                  { name: "HR & Behavioral round", progress: getTopicProgress("hr"), color: "bg-pink-500" }
                 ].map((topic, i) => (
                   <div key={i} className="space-y-1.5">
                     <div className="flex justify-between text-[9px] font-black uppercase text-neutral-400">
