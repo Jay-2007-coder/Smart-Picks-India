@@ -240,6 +240,69 @@ export default function SmartNotesGenerator() {
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [ocrModalFile, setOcrModalFile] = useState<StudyFile | null>(null);
 
+  // Syllabus & Custom target states
+  const [customSyllabusText, setCustomSyllabusText] = useState("");
+
+  // Modal Editing States
+  const [modalFileName, setModalFileName] = useState("");
+  const [modalCategory, setModalCategory] = useState<StudyFile["category"]>("Lecture Slides");
+  const [modalSubject, setModalSubject] = useState("");
+  const [modalDiagrams, setModalDiagrams] = useState(0);
+  const [modalEquations, setModalEquations] = useState(0);
+  const [modalExtractedText, setModalExtractedText] = useState("");
+
+  // Sync modal local states on open
+  useEffect(() => {
+    if (ocrModalFile) {
+      setModalFileName(ocrModalFile.name);
+      setModalCategory(ocrModalFile.category);
+      setModalSubject(ocrModalFile.subject);
+      setModalDiagrams(ocrModalFile.diagramsCount);
+      setModalEquations(ocrModalFile.equationsCount);
+      setModalExtractedText(ocrModalFile.extractedText || "");
+    }
+  }, [ocrModalFile]);
+
+  // Revision Form States
+  const [newExamSubject, setNewExamSubject] = useState("");
+  const [newExamDays, setNewExamDays] = useState(3);
+  const [newExamProgress, setNewExamProgress] = useState(50);
+  const [isAddingExam, setIsAddingExam] = useState(false);
+
+  const handleAddExam = () => {
+    if (!newExamSubject.trim()) return;
+    playSuccess();
+    setRevisionCountdowns(prev => [
+      ...prev,
+      { subject: newExamSubject, days: newExamDays, progress: newExamProgress }
+    ]);
+    setNewExamSubject("");
+    setNewExamDays(3);
+    setNewExamProgress(50);
+    setIsAddingExam(false);
+  };
+
+  const handleRemoveExam = (subject: string) => {
+    playClick();
+    setRevisionCountdowns(prev => prev.filter(e => e.subject !== subject));
+  };
+
+  const saveOcrModalFileDetails = () => {
+    if (!ocrModalFile) return;
+    const updated: StudyFile = {
+      ...ocrModalFile,
+      name: modalFileName,
+      category: modalCategory,
+      subject: modalSubject,
+      diagramsCount: modalDiagrams,
+      equationsCount: modalEquations,
+      extractedText: modalExtractedText
+    };
+    setFiles(prev => prev.map(f => f.id === ocrModalFile.id ? updated : f));
+    setOcrModalFile(null);
+    playSuccess();
+  };
+
   // Notes Config Generator States
   const [noteStyle, setNoteStyle] = useState<string>("One-Night Revision Notes");
   const [noteMode, setNoteMode] = useState<string>("University Exam Mode");
@@ -392,6 +455,93 @@ export default function SmartNotesGenerator() {
   const isDraggingMap = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
+  // Mind Map Connection Refs
+  const rootRef = useRef<HTMLButtonElement>(null);
+  const childRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const [connections, setConnections] = useState<Array<{ d: string; color?: string }>>([]);
+
+  const updateConnections = () => {
+    if (!rootRef.current) return;
+    const newConnections: Array<{ d: string; color?: string }> = [];
+    const rootRect = rootRef.current.getBoundingClientRect();
+    const parentContainer = rootRef.current.parentElement?.getBoundingClientRect();
+    if (!parentContainer) return;
+
+    const getRelativeCenter = (rect: DOMRect) => {
+      return {
+        x: (rect.left + rect.right) / 2 - parentContainer.left,
+        y: (rect.top + rect.bottom) / 2 - parentContainer.top,
+        top: rect.top - parentContainer.top,
+        bottom: rect.bottom - parentContainer.top,
+        left: rect.left - parentContainer.left,
+        right: rect.right - parentContainer.left
+      };
+    };
+
+    const rootCoords = getRelativeCenter(rootRect);
+
+    if (mindMapData.expanded && mindMapData.children) {
+      mindMapData.children.forEach((child) => {
+        const childEl = childRefs.current[child.id];
+        if (childEl) {
+          const childRect = childEl.getBoundingClientRect();
+          const childCoords = getRelativeCenter(childRect);
+          
+          // Draw curve from bottom of root to top of child
+          const startX = rootCoords.x;
+          const startY = rootCoords.bottom;
+          const endX = childCoords.x;
+          const endY = childCoords.top;
+          
+          const controlY1 = startY + (endY - startY) * 0.45;
+          const controlY2 = startY + (endY - startY) * 0.45;
+          
+          const path = `M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`;
+          newConnections.push({ d: path, color: child.color || "#a855f7" });
+
+          // Draw connections to grandchildren
+          if (child.expanded && child.children) {
+            child.children.forEach((grandchild) => {
+              const gcEl = childRefs.current[grandchild.id];
+              if (gcEl) {
+                const gcRect = gcEl.getBoundingClientRect();
+                const gcCoords = getRelativeCenter(gcRect);
+                
+                const gStartX = childCoords.x;
+                const gStartY = childCoords.bottom;
+                const gEndX = gcCoords.x;
+                const gEndY = gcCoords.top;
+                
+                const gControlY1 = gStartY + (gEndY - gStartY) * 0.45;
+                const gControlY2 = gStartY + (gEndY - gStartY) * 0.45;
+                
+                const gPath = `M ${gStartX} ${gStartY} C ${gStartX} ${gControlY1}, ${gEndX} ${gControlY2}, ${gEndX} ${gEndY}`;
+                newConnections.push({ d: gPath, color: "#4b5563" });
+              }
+            });
+          }
+        }
+      });
+    }
+    setConnections(newConnections);
+  };
+
+  useEffect(() => {
+    if (activeTab === "Mind Map") {
+      const timer = setTimeout(() => {
+        updateConnections();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, mindMapData, zoomScale, panOffset]);
+
+  useEffect(() => {
+    if (activeTab === "Mind Map") {
+      window.addEventListener("resize", updateConnections);
+      return () => window.removeEventListener("resize", updateConnections);
+    }
+  }, [activeTab, mindMapData]);
+
   // Revision Scheduler States
   const [revisionPlanDays, setRevisionPlanDays] = useState<number>(3);
   const [revisionCountdowns, setRevisionCountdowns] = useState([
@@ -413,6 +563,10 @@ export default function SmartNotesGenerator() {
   const subjectProgress = files.length > 0 
     ? Math.min(100, Math.round((generatedNotes.length / (files.length * 2)) * 100)) 
     : 0;
+
+  const upcomingExam = revisionCountdowns.length > 0
+    ? revisionCountdowns.reduce((prev, curr) => prev.days < curr.days ? prev : curr)
+    : null;
 
   // Semantic Search spotlight pos
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -519,15 +673,36 @@ export default function SmartNotesGenerator() {
     playClick();
     setIsGeneratingNotes(true);
     setTimeout(() => {
+      // Gather any syllabus or text context from files
+      const filesContext = files
+        .filter(f => selectedSubject === "All" || f.subject === selectedSubject)
+        .map(f => f.extractedText)
+        .filter(Boolean)
+        .join("\n");
+
+      const hasSyllabus = customSyllabusText.trim().length > 0;
+      const hasFiles = filesContext.trim().length > 0;
+
+      let syllabusSummary = "";
+      if (hasSyllabus && hasFiles) {
+        syllabusSummary = `Generated strictly using syllabus focus: "${customSyllabusText}" along with context from files: "${filesContext.substring(0, 100)}..."`;
+      } else if (hasSyllabus) {
+        syllabusSummary = `Generated strictly using syllabus focus: "${customSyllabusText}"`;
+      } else if (hasFiles) {
+        syllabusSummary = `Generated using context from uploaded files: "${filesContext.substring(0, 150)}..."`;
+      } else {
+        syllabusSummary = `Detailed notes generated using AI extraction on subject "${selectedSubject === "All" ? "Operating Systems" : selectedSubject}".`;
+      }
+
       const newNote: GeneratedNote = {
         id: `note-${Date.now()}`,
         title: `${selectedSubject === "All" ? "Operating Systems" : selectedSubject} - Generated Notes`,
         style: noteStyle,
         mode: noteMode,
         subject: selectedSubject === "All" ? "Operating Systems" : selectedSubject,
-        content: `Detailed notes generated using AI extraction on subject "${selectedSubject === "All" ? "Operating Systems" : selectedSubject}". This fits your preference for ${noteStyle} in ${noteMode}. Deadlocks conditions check: Hold and Wait, Mutual Exclusion, No Preemption, Circular Wait. Database level: 3NF functional dependencies superkey determinant BCNF. Core TCP flow control.`,
+        content: `${syllabusSummary}\n\nThis revision guide matches style "${noteStyle}" in Mode "${noteMode}". Deadlocks conditions check: Hold and Wait, Mutual Exclusion, No Preemption, Circular Wait. Database level: 3NF functional dependencies superkey determinant BCNF. Core TCP flow control.`,
         keyTakeaways: [
-          "Study pattern matched with " + noteMode,
+          hasSyllabus ? `Focus: ${customSyllabusText.substring(0, 50)}` : "Study pattern matched with " + noteMode,
           "Optimal revision focus for college/competitive preparation.",
           "Deadlock algorithms Banker's safety vector matrices check.",
           "Auto generated under " + noteStyle
@@ -788,17 +963,17 @@ export default function SmartNotesGenerator() {
             <div className="flex justify-between items-start">
               <div>
                 <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Upcoming Exam</h4>
-                <p className="text-lg font-black text-zinc-100 mt-1">{user ? "Operating Systems" : "No exam scheduled"}</p>
+                <p className="text-lg font-black text-zinc-100 mt-1">{upcomingExam ? upcomingExam.subject : "No exam scheduled"}</p>
               </div>
               <Calendar className="h-5 w-5 text-rose-500" />
             </div>
-            {user ? (
-              <div className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 max-w-fit">
-                3 days remaining
+            {upcomingExam ? (
+              <div className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 max-w-fit animate-pulse-scale">
+                {upcomingExam.days} days remaining
               </div>
             ) : (
-              <div className="text-[10px] font-bold text-zinc-500 bg-zinc-950/40 px-2.5 py-1 rounded-lg border border-zinc-800 max-w-fit">
-                Sign in to sync exams
+              <div className="text-[10px] font-bold text-zinc-550 bg-zinc-950/40 px-2.5 py-1 rounded-lg border border-zinc-800 max-w-fit">
+                Add revision exams below
               </div>
             )}
           </div>
@@ -878,32 +1053,50 @@ export default function SmartNotesGenerator() {
                 {filteredFiles.length === 0 ? (
                   <p className="text-[10px] text-zinc-500 font-semibold py-2 text-center">No files in subject tag.</p>
                 ) : (
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
-                    {filteredFiles.map((file) => (
-                      <div 
-                        key={file.id} 
-                        className="p-2.5 bg-zinc-950/60 border border-zinc-850 hover:border-purple-500/20 rounded-xl flex items-center justify-between gap-2 transition-all cursor-pointer group"
-                        onClick={() => { playClick(); setOcrModalFile(file); }}
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <FileText className="h-4 w-4 text-purple-500 shrink-0" />
-                          <div className="flex flex-col truncate">
-                            <span className="text-[10px] font-bold text-zinc-300 group-hover:text-purple-400 transition-colors truncate">{file.name}</span>
-                            <span className="text-[8px] text-zinc-500 font-bold">{file.size} • {file.category}</span>
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {filteredFiles.map((file) => {
+                      const isPdf = file.name.endsWith(".pdf");
+                      const isAudio = file.type.startsWith("audio/") || file.name.endsWith(".mp3") || file.name.endsWith(".wav");
+                      const isImage = file.type.startsWith("image/") || file.name.endsWith(".jpg") || file.name.endsWith(".png");
+
+                      return (
+                        <div 
+                          key={file.id} 
+                          className="p-3 bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-800/80 hover:border-purple-500/30 backdrop-blur-md rounded-2xl flex items-center justify-between gap-3 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+                          onClick={() => { playClick(); setOcrModalFile(file); }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/0 to-purple-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          <div className="flex items-center gap-3 truncate relative z-10">
+                            <div className={`p-2 rounded-xl shrink-0 transition-colors ${
+                              isPdf ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                              isAudio ? "bg-amber-500/10 text-amber-455 border border-amber-500/20" :
+                              isImage ? "bg-blue-500/10 text-blue-450 border border-blue-500/20" :
+                              "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                            }`}>
+                              <FileText className="h-4 w-4" />
+                            </div>
+                            <div className="flex flex-col truncate">
+                              <span className="text-[10px] font-extrabold text-zinc-200 group-hover:text-purple-400 transition-colors truncate">{file.name}</span>
+                              <span className="text-[8px] text-zinc-500 font-bold flex items-center gap-1.5 mt-0.5">
+                                <span>{file.size}</span>
+                                <span className="h-1 w-1 rounded-full bg-zinc-800" />
+                                <span className="text-purple-450">{file.category}</span>
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                            <button
+                              onClick={(e) => handleDeleteFile(file.id, e)}
+                              className="p-1.5 border border-transparent hover:border-zinc-800 hover:bg-zinc-950 text-zinc-550 hover:text-rose-500 rounded-lg transition-colors cursor-pointer"
+                              title="Delete File"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                            <ChevronRight className="h-3.5 w-3.5 text-zinc-650 group-hover:text-purple-400 transition-transform group-hover:translate-x-0.5" />
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={(e) => handleDeleteFile(file.id, e)}
-                            className="p-1 text-zinc-650 hover:text-rose-500 rounded transition-colors cursor-pointer"
-                            title="Delete File"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                          <ChevronRight className="h-3.5 w-3.5 text-zinc-650 group-hover:text-purple-400 transition-colors" />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -986,6 +1179,21 @@ export default function SmartNotesGenerator() {
                           <option value="Competitive Exam Mode">Competitive Exam Mode</option>
                         </select>
                       </div>
+                    </div>
+
+                    {/* Syllabus Focus Textarea */}
+                    <div className="space-y-2 text-left">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Syllabus / Custom Topics Focus</label>
+                        <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Optional Guidance</span>
+                      </div>
+                      <textarea
+                        value={customSyllabusText}
+                        onChange={(e) => setCustomSyllabusText(e.target.value)}
+                        placeholder="Paste your exam syllabus modules, target question list, or specific concepts to guide note generation..."
+                        rows={3}
+                        className="w-full bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-bold text-zinc-200 outline-none focus:border-purple-500/50 resize-y"
+                      />
                     </div>
 
                     <button
@@ -1073,15 +1281,62 @@ export default function SmartNotesGenerator() {
                           </div>
 
                           {/* Content edit */}
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Content</label>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Content</label>
+                              <span className="text-[9px] text-zinc-500 font-bold">{editContent.length} chars</span>
+                            </div>
                             <textarea 
                               value={editContent}
                               onChange={(e) => setEditContent(e.target.value)}
-                              rows={6}
-                              className="w-full bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-bold text-zinc-200 outline-none focus:border-purple-500/50 resize-y animate-none"
+                              rows={8}
+                              className="w-full bg-zinc-950/70 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs font-bold text-zinc-200 outline-none focus:border-purple-500/50 resize-y animate-none"
                               placeholder="Type notes body here..."
                             />
+                            {/* Formatting helper toolbar */}
+                            <div className="flex flex-wrap items-center gap-1 bg-zinc-950/80 p-1.5 border border-zinc-800/60 rounded-xl">
+                              <span className="text-[8px] font-black text-zinc-500 uppercase px-1.5">Quick Insert:</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playClick();
+                                  setEditContent(prev => prev + (prev.endsWith("\n") || prev === "" ? "" : "\n") + "### [Section Title]\n");
+                                }}
+                                className="px-2 py-1 bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800/80 text-[9px] font-black uppercase tracking-wider text-zinc-300 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Heading
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playClick();
+                                  setEditContent(prev => prev + (prev.endsWith("\n") || prev === "" ? "" : "\n") + "- Bullet point detail...\n");
+                                }}
+                                className="px-2 py-1 bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800/80 text-[9px] font-black uppercase tracking-wider text-zinc-300 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Bullet List
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playClick();
+                                  setEditContent(prev => prev + (prev.endsWith("\n") || prev === "" ? "" : "\n") + "```javascript\n// Write code here\n```\n");
+                                }}
+                                className="px-2 py-1 bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800/80 text-[9px] font-mono text-zinc-300 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Code Block
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playClick();
+                                  setEditContent(prev => prev + (prev.endsWith("\n") || prev === "" ? "" : "\n") + "[Formula: e = mc^2]\n");
+                                }}
+                                className="px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-[9px] font-black uppercase tracking-wider text-purple-400 rounded-lg transition-all cursor-pointer"
+                              >
+                                + Formula Math
+                              </button>
+                            </div>
                           </div>
 
                           {/* Key takeaways edit */}
@@ -1295,19 +1550,19 @@ export default function SmartNotesGenerator() {
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") sendChatMessage(); }}
                       placeholder="Ask the AI Tutor anything from notes..." 
-                      className="flex-1 bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 text-xs font-bold outline-none focus:border-purple-500/50 text-zinc-200"
+                      className="flex-1 bg-zinc-950 border border-zinc-800/80 rounded-xl px-3 text-xs font-bold text-zinc-200 outline-none focus:border-purple-500/50"
                     />
-                    <button 
+                    <button
                       onClick={() => sendChatMessage()}
-                      className="px-4 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer active:scale-95"
+                      className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                     >
-                      Ask
+                      <ArrowRight className="h-3.5 w-3.5" /> Ask
                     </button>
                   </div>
                 </motion.div>
               )}
 
-              {/* MODULE 5: FLASHCARD GENERATOR TAB */}
+              {/* MODULE 5: FLASHCARDS TAB */}
               {activeTab === "Flashcards" && (
                 <motion.div
                   key="flashcards-tab"
@@ -1316,12 +1571,12 @@ export default function SmartNotesGenerator() {
                   exit={{ opacity: 0 }}
                   className="space-y-6"
                 >
-                  {/* Card Widget */}
-                  <div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-8 flex flex-col justify-between min-h-[300px] relative overflow-hidden">
+                  <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-8 flex flex-col justify-between min-h-[320px] relative overflow-hidden group hover:border-purple-500/25 transition-all duration-300">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-600" />
+                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-purple-650/5 rounded-full blur-3xl pointer-events-none" />
                     
-                    <div className="flex justify-between items-start">
-                      <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-purple-500 bg-purple-500/10 rounded border border-purple-500/20">
+                    <div className="flex justify-between items-start relative z-10">
+                      <span className="px-2.5 py-1 text-[8px] font-black uppercase tracking-wider text-purple-400 bg-purple-500/10 rounded-lg border border-purple-500/20">
                         Card {flashcardIdx + 1} / {flashcards.length}
                       </span>
                       <button
@@ -1331,8 +1586,8 @@ export default function SmartNotesGenerator() {
                         }}
                         className={`p-1.5 border rounded-lg transition-colors cursor-pointer ${
                           flashcards[flashcardIdx].bookmarked
-                            ? "border-purple-500/30 bg-purple-500/10 text-purple-500"
-                            : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:text-zinc-300"
+                            ? "border-purple-500/30 bg-purple-500/15 text-purple-450"
+                            : "border-zinc-800 bg-zinc-950 text-zinc-550 hover:text-zinc-300"
                         }`}
                       >
                         <Bookmark className="h-4 w-4" />
@@ -1342,11 +1597,11 @@ export default function SmartNotesGenerator() {
                     {/* Flipping card container */}
                     <div 
                       onClick={() => { playFlip(); setIsFlipped(!isFlipped); }}
-                      className="flex-1 flex items-center justify-center py-8 cursor-pointer relative"
+                      className="flex-1 flex items-center justify-center py-8 cursor-pointer relative z-10"
                       style={{ perspective: "1000px" }}
                     >
                       <div 
-                        className="w-full max-w-sm min-h-[140px] rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center p-6 text-center shadow-lg transition-transform duration-500 relative"
+                        className="w-full max-w-sm min-h-[150px] rounded-2xl border border-zinc-800/80 bg-zinc-950/80 flex flex-col items-center justify-center p-6 text-center shadow-2xl transition-transform duration-500 relative"
                         style={{
                           transformStyle: "preserve-3d",
                           transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
@@ -1366,7 +1621,7 @@ export default function SmartNotesGenerator() {
 
                         {/* Back Side */}
                         <div 
-                          className="absolute inset-0 flex flex-col items-center justify-center p-4 backface-hidden bg-purple-500/[0.02]"
+                          className="absolute inset-0 flex flex-col items-center justify-center p-4 backface-hidden bg-purple-500/[0.03]"
                           style={{
                             backfaceVisibility: "hidden",
                             transform: "rotateY(180deg)"
@@ -1380,8 +1635,8 @@ export default function SmartNotesGenerator() {
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center gap-4">
-                      <span className="text-[9px] font-black text-zinc-500 uppercase">Difficulty: {flashcards[flashcardIdx].difficulty}</span>
+                    <div className="flex justify-between items-center gap-4 relative z-10">
+                      <span className="text-[9px] font-black text-zinc-550 uppercase">Difficulty: {flashcards[flashcardIdx].difficulty}</span>
                       
                       <div className="flex gap-2">
                         <button
@@ -1598,11 +1853,28 @@ export default function SmartNotesGenerator() {
                           transformOrigin: "center center"
                         }}
                       >
-                        <div className="flex flex-col items-center gap-10">
+                        <div className="relative p-10 flex flex-col items-center gap-10">
+                          {/* SVG Connections overlay */}
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" style={{ zIndex: 0 }}>
+                            {connections.map((conn, idx) => (
+                              <motion.path
+                                key={idx}
+                                d={conn.d}
+                                fill="none"
+                                stroke={conn.color || "#a855f7"}
+                                strokeWidth="1.5"
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 0.5 }}
+                                transition={{ duration: 0.4, ease: "easeInOut" }}
+                              />
+                            ))}
+                          </svg>
+
                           {/* Root Node */}
                           <button
+                            ref={rootRef}
                             onClick={() => handleNodeClick(mindMapData.id)}
-                            className="px-5 py-2.5 bg-zinc-900 border border-purple-500/40 text-purple-400 hover:bg-zinc-850 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg flex items-center gap-1.5 cursor-pointer"
+                            className="px-5 py-2.5 bg-zinc-900 border border-purple-500/40 text-purple-450 hover:bg-zinc-850 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg flex items-center gap-1.5 cursor-pointer relative z-10"
                           >
                             <BrainCircuit className="h-4 w-4 text-purple-400" />
                             {mindMapData.label}
@@ -1610,13 +1882,14 @@ export default function SmartNotesGenerator() {
 
                           {/* Children row */}
                           {mindMapData.expanded && mindMapData.children && (
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 relative z-10">
                               {mindMapData.children.map((child) => (
                                 <div key={child.id} className="flex flex-col items-center gap-6">
                                   {/* Child Node */}
                                   <button
+                                    ref={(el) => { childRefs.current[child.id] = el; }}
                                     onClick={() => handleNodeClick(child.id)}
-                                    className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-200 hover:border-purple-500/30 rounded-xl text-[10px] font-black cursor-pointer shadow"
+                                    className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-200 hover:border-purple-500/30 rounded-xl text-[10px] font-black cursor-pointer shadow-md transition-colors"
                                     style={{ borderLeftColor: child.color, borderLeftWidth: "4px" }}
                                   >
                                     {child.label}
@@ -1627,8 +1900,9 @@ export default function SmartNotesGenerator() {
                                     <div className="flex flex-col gap-2">
                                       {child.children.map((g) => (
                                         <div 
+                                          ref={(el) => { childRefs.current[g.id] = el; }}
                                           key={g.id} 
-                                          className="px-3 py-1.5 bg-zinc-950 border border-zinc-850 rounded-lg text-[9px] font-bold text-zinc-400 max-w-[120px] text-center"
+                                          className="px-3 py-1.5 bg-zinc-950/80 border border-zinc-850 rounded-lg text-[9px] font-bold text-zinc-400 max-w-[120px] text-center"
                                         >
                                           {g.label}
                                         </div>
@@ -1719,9 +1993,67 @@ export default function SmartNotesGenerator() {
             
             {/* MODULE 10: REVISION SCHEDULER SYSTEM */}
             <div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-5 space-y-4">
-              <h4 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-                <ListTodo className="h-4 w-4 text-purple-500" /> Revision System
-              </h4>
+              <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
+                <h4 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
+                  <ListTodo className="h-4 w-4 text-purple-500" /> Revision System
+                </h4>
+                <button
+                  onClick={() => { playClick(); setIsAddingExam(!isAddingExam); }}
+                  className="px-2 py-0.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-[9px] font-black uppercase tracking-wider text-purple-400 rounded-lg cursor-pointer transition-all"
+                >
+                  {isAddingExam ? "Cancel" : "+ Add Exam"}
+                </button>
+              </div>
+
+              {isAddingExam && (
+                <div className="p-3 bg-zinc-950/60 border border-zinc-850 rounded-2xl space-y-2.5 text-left animate-fadeIn">
+                  <span className="text-[8px] font-black uppercase tracking-wider text-zinc-550 block">Configure Exam Target</span>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-zinc-500 uppercase">Subject Name</label>
+                    <input
+                      type="text"
+                      value={newExamSubject}
+                      onChange={(e) => setNewExamSubject(e.target.value)}
+                      placeholder="e.g. Software Engineering"
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-[10px] text-zinc-200 outline-none focus:border-purple-500/50"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-black text-zinc-500 uppercase">Days Left</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={newExamDays}
+                        onChange={(e) => setNewExamDays(parseInt(e.target.value) || 1)}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-[10px] text-zinc-200 outline-none focus:border-purple-500/50"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-black text-zinc-500 uppercase">Progress %</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={newExamProgress}
+                        onChange={(e) => setNewExamProgress(parseInt(e.target.value) || 0)}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-[10px] text-zinc-200 outline-none focus:border-purple-500/50"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleAddExam}
+                    className="w-full py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Add Target
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-3">
                 {/* Select Revision Plan day configuration */}
                 <div className="flex justify-between items-center text-[10px] font-bold text-zinc-400">
@@ -1745,10 +2077,19 @@ export default function SmartNotesGenerator() {
 
                 <div className="space-y-2">
                   {revisionCountdowns.map((rev) => (
-                    <div key={rev.subject} className="p-3 bg-zinc-950/60 border border-zinc-850 rounded-2xl space-y-2 text-left">
-                      <div className="flex justify-between items-center text-[10px] font-bold">
+                    <div key={rev.subject} className="p-3 bg-zinc-950/60 border border-zinc-850 rounded-2xl space-y-2 text-left relative group">
+                      {/* Delete button */}
+                      <button
+                        onClick={() => handleRemoveExam(rev.subject)}
+                        className="absolute top-2 right-2 p-1 border border-zinc-850 hover:border-rose-500/30 text-zinc-500 hover:text-rose-500 rounded bg-zinc-950 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                        title="Delete Target"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+
+                      <div className="flex justify-between items-center text-[10px] font-bold pr-5">
                         <span className="text-zinc-200">{rev.subject}</span>
-                        <span className="text-purple-500">{rev.days} Days to exam</span>
+                        <span className="text-purple-400">{rev.days} Days to exam</span>
                       </div>
                       <div className="flex justify-between items-center text-[8px] text-zinc-500 font-bold">
                         <span>{rev.progress}% target completion</span>
@@ -1801,56 +2142,129 @@ export default function SmartNotesGenerator() {
               className="bg-zinc-950 border border-zinc-800 rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-5 flex flex-col justify-between text-left"
             >
               <div className="flex justify-between items-start gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1 w-full text-left">
                   <span className="px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-purple-500 bg-purple-500/10 rounded-lg border border-purple-500/20">
                     AI Content Extraction Desk
                   </span>
-                  <h3 className="text-sm font-black text-zinc-200 pt-1.5">{ocrModalFile.name}</h3>
+                  
+                  {/* File Name Input */}
+                  <div className="pt-3 space-y-1">
+                    <label className="text-[8px] font-black text-zinc-550 uppercase">File Label</label>
+                    <input 
+                      type="text" 
+                      value={modalFileName} 
+                      onChange={(e) => setModalFileName(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs font-bold text-zinc-150 outline-none focus:border-purple-500/50"
+                    />
+                  </div>
                 </div>
                 <button 
                   onClick={() => { playClick(); setOcrModalFile(null); }}
-                  className="p-1.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-450 hover:text-zinc-200 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-450 hover:text-zinc-200 transition-colors cursor-pointer shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               {/* Extractions Details Grid */}
-              <div className="grid grid-cols-2 gap-3 text-[10px] font-black text-zinc-400">
-                <div className="p-3 bg-zinc-900/60 border border-zinc-850 rounded-xl">
-                  Diagrams Detected: <span className="text-purple-500">{ocrModalFile.diagramsCount}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[9px] font-black text-zinc-450 text-left">
+                <div className="space-y-1">
+                  <label className="text-zinc-550 uppercase">Category</label>
+                  <select
+                    value={modalCategory}
+                    onChange={(e) => setModalCategory(e.target.value as any)}
+                    className="w-full bg-zinc-900 border border-zinc-850 rounded-xl px-2 py-1.5 text-[10px] font-bold text-zinc-200 outline-none"
+                  >
+                    <option value="Lecture Slides">Lecture Slides</option>
+                    <option value="Textbook Chapter">Textbook Chapter</option>
+                    <option value="Handwritten Note">Handwritten Note</option>
+                    <option value="Exam PYQ Paper">Exam PYQ Paper</option>
+                    <option value="Reference PDF">Reference PDF</option>
+                  </select>
                 </div>
-                <div className="p-3 bg-zinc-900/60 border border-zinc-850 rounded-xl">
-                  Formulas Recognized: <span className="text-purple-500">{ocrModalFile.equationsCount}</span>
+                
+                <div className="space-y-1">
+                  <label className="text-zinc-550 uppercase">Subject</label>
+                  <input
+                    type="text"
+                    value={modalSubject}
+                    onChange={(e) => setModalSubject(e.target.value)}
+                    placeholder="e.g. OS"
+                    className="w-full bg-zinc-900 border border-zinc-850 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-zinc-200 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-zinc-550 uppercase">Diagrams</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={modalDiagrams}
+                    onChange={(e) => setModalDiagrams(parseInt(e.target.value) || 0)}
+                    className="w-full bg-zinc-900 border border-zinc-850 rounded-xl px-2 py-1.5 text-[10px] font-bold text-zinc-200 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-zinc-550 uppercase">Formulas</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={modalEquations}
+                    onChange={(e) => setModalEquations(parseInt(e.target.value) || 0)}
+                    className="w-full bg-zinc-900 border border-zinc-850 rounded-xl px-2 py-1.5 text-[10px] font-bold text-zinc-200 outline-none"
+                  />
                 </div>
               </div>
 
-              {/* Extracted Text */}
-              <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-wider text-zinc-500">AI OCR Text Extract</label>
-                <div className="h-40 bg-zinc-900 border border-zinc-850 rounded-2xl p-4 overflow-y-auto text-xs font-semibold text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                  {ocrModalFile.extractedText || "No text available."}
-                </div>
+              {/* Extracted Text Area */}
+              <div className="space-y-2 text-left">
+                <label className="text-[9px] font-black uppercase tracking-wider text-zinc-500">AI OCR Text / Syllabus Context</label>
+                <textarea
+                  value={modalExtractedText}
+                  onChange={(e) => setModalExtractedText(e.target.value)}
+                  rows={4}
+                  className="w-full bg-zinc-900 border border-zinc-850 rounded-2xl p-4 text-xs font-semibold text-zinc-300 leading-relaxed outline-none focus:border-purple-500/50 resize-y"
+                  placeholder="Type or paste syllabus topics matching this file..."
+                />
               </div>
 
               <div className="flex gap-2 justify-end">
                 <button
-                  onClick={() => {
-                    playClick();
-                    // Auto feed to chat input
-                    setChatInput(`Explain this: ${ocrModalFile.extractedText}`);
-                    setActiveTab("AI Chat");
-                    setOcrModalFile(null);
-                  }}
-                  className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                  onClick={saveOcrModalFileDetails}
+                  className="px-4 py-2 bg-purple-500 hover:bg-purple-650 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
                 >
-                  Ask Tutor About File
+                  Save Extraction Details
+                </button>
+                <button
+                  onClick={() => {
+                    // Save and ask tutor
+                    if (ocrModalFile) {
+                      const updated: StudyFile = {
+                        ...ocrModalFile,
+                        name: modalFileName,
+                        category: modalCategory,
+                        subject: modalSubject,
+                        diagramsCount: modalDiagrams,
+                        equationsCount: modalEquations,
+                        extractedText: modalExtractedText
+                      };
+                      setFiles(prev => prev.map(f => f.id === ocrModalFile.id ? updated : f));
+                      setChatInput(`Explain this: ${modalExtractedText}`);
+                      setActiveTab("AI Chat");
+                      setOcrModalFile(null);
+                      playSuccess();
+                    }
+                  }}
+                  className="px-4 py-2 bg-indigo-500 hover:bg-indigo-650 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                >
+                  Ask AI Tutor
                 </button>
                 <button
                   onClick={() => { playClick(); setOcrModalFile(null); }}
                   className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-350 hover:text-zinc-200 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
                 >
-                  Close Desk
+                  Cancel
                 </button>
               </div>
             </motion.div>

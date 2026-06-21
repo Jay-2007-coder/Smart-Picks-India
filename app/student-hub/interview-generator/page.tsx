@@ -783,21 +783,20 @@ export default function InterviewGenerator() {
                 <span>{user.name.charAt(0).toUpperCase()}</span>
               )}
             </div>
-
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 relative z-10 space-y-8">
-
         {/* Hero Section */}
         <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
           
           {/* Readiness Score */}
-          <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 flex items-center gap-4 relative overflow-hidden shadow-2xl">
+          <div className="bg-neutral-900/35 backdrop-blur-xl border border-white/5 rounded-3xl p-5 flex items-center gap-4 relative overflow-hidden shadow-2xl group hover:border-orange-500/20 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/10 transition-all duration-300" />
             <div className="relative h-20 w-20 flex items-center justify-center shrink-0">
               <svg className="w-full h-full transform -rotate-90">
-                <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="transparent" />
+                <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.03)" strokeWidth="6" fill="transparent" />
                 <circle
                   cx="40"
                   cy="40"
@@ -821,8 +820,8 @@ export default function InterviewGenerator() {
                 <span className="text-lg font-black text-white">{readinessScore}%</span>
               </div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-xs font-black uppercase text-neutral-400 tracking-wider">Interview Readiness</h3>
+            <div className="space-y-1 relative z-10">
+              <h3 className="text-xs font-black uppercase text-neutral-450 tracking-wider">Interview Readiness</h3>
               <p className="text-[11px] leading-relaxed text-neutral-500">
                 Score increases as you solve hard questions and hit 80+ mock values.
               </p>
@@ -830,32 +829,34 @@ export default function InterviewGenerator() {
           </div>
 
           {/* Solved Stat */}
-          <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 flex flex-col justify-between shadow-2xl">
-            <div className="flex justify-between items-start">
+          <div className="bg-neutral-900/35 backdrop-blur-xl border border-white/5 rounded-3xl p-5 flex flex-col justify-between shadow-2xl group hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:bg-red-500/10 transition-all duration-300" />
+            <div className="flex justify-between items-start relative z-10">
               <BookOpenCheck className="h-5 w-5 text-orange-400" />
               <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Questions Done</span>
             </div>
-            <div className="mt-3">
+            <div className="mt-3 relative z-10">
               <span className="text-3xl font-black text-white">{solvedCount}</span>
-              <span className="text-xs text-neutral-500 font-bold ml-1.5">
+              <span className="text-xs text-neutral-550 font-bold ml-1.5">
                 / {questions.length > 0 ? questions.length : 0} solved
               </span>
             </div>
-            <div className="w-full bg-neutral-950/60 rounded-full h-1 mt-2 overflow-hidden">
+            <div className="w-full bg-neutral-950/80 rounded-full h-1.5 mt-2 overflow-hidden border border-neutral-900 relative z-10">
               <div 
-                className="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-500" 
+                className="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]" 
                 style={{ width: `${questions.length > 0 ? (solvedCount / questions.length) * 100 : 0}%` }}
               />
             </div>
           </div>
 
           {/* Current multiplier / streak details */}
-          <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 flex flex-col justify-between shadow-2xl">
-            <div className="flex justify-between items-start">
+          <div className="bg-neutral-900/35 backdrop-blur-xl border border-white/5 rounded-3xl p-5 flex flex-col justify-between shadow-2xl group hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/10 transition-all duration-300" />
+            <div className="flex justify-between items-start relative z-10">
               <Flame className="h-5 w-5 text-red-500 animate-pulse" />
               <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Active Streak</span>
             </div>
-            <div className="mt-3">
+            <div className="mt-3 relative z-10">
               <span className="text-3xl font-black text-white">{streak} Days</span>
               <span className={`text-[10px] block font-black uppercase tracking-wider mt-1 ${streak > 0 ? "text-green-400" : "text-neutral-500"}`}>
                 {streak > 0 ? "🔥 1.5x XP Boost Active" : "⚡ Practice daily to build streak"}
@@ -864,12 +865,12 @@ export default function InterviewGenerator() {
           </div>
 
           {/* AI Recommendations */}
-          <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-3 opacity-10">
+          <div className="bg-neutral-900/35 backdrop-blur-xl border border-white/5 rounded-3xl p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-orange-500/20 transition-all duration-300">
+            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-all">
               <Brain className="h-20 w-20 text-orange-500" />
             </div>
-            <div className="space-y-2">
-              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-full border border-orange-500/10">
+            <div className="space-y-2 relative z-10">
+              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-full border border-orange-500/20">
                 <Sparkles className="h-3 w-3" /> System Recommendation
               </span>
               <p className="text-xs font-bold text-white leading-snug">
@@ -890,7 +891,7 @@ export default function InterviewGenerator() {
                 setStudyMode("company");
                 handleGenerateQuestions();
               }}
-              className="mt-3 text-[10px] font-black text-orange-500 hover:text-orange-400 flex items-center gap-1 cursor-pointer self-start"
+              className="mt-3 text-[10px] font-black text-orange-500 hover:text-orange-400 flex items-center gap-1 cursor-pointer self-start relative z-10"
             >
               Start Practice <ChevronRight className="h-3 w-3" />
             </button>
@@ -903,8 +904,8 @@ export default function InterviewGenerator() {
 
           {/* LEFT SIDEBAR: Setup Parameters (Col-Span 3) */}
           <aside className="lg:col-span-3 space-y-6">
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 shadow-2xl space-y-5">
-              <div className="border-b border-neutral-800 pb-3">
+            <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-5 shadow-2xl space-y-5">
+              <div className="border-b border-neutral-800/80 pb-3">
                 <h2 className="text-sm font-black text-white flex items-center gap-2">
                   <Compass className="h-4.5 w-4.5 text-orange-500" /> Parametric Filters
                 </h2>
@@ -913,7 +914,7 @@ export default function InterviewGenerator() {
 
               {/* Study Mode Picker */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Study Mode</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500">Study Mode</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: "study", label: "Study Mode", icon: BookOpen },
@@ -928,8 +929,8 @@ export default function InterviewGenerator() {
                       onClick={() => setStudyMode(mode.id as any)}
                       className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-[10px] font-extrabold gap-1.5 transition-all cursor-pointer ${
                         studyMode === mode.id
-                          ? "bg-orange-500/10 border-orange-500 text-orange-400"
-                          : "bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
+                          ? "bg-gradient-to-br from-orange-500/15 to-red-500/5 border-orange-500/60 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
+                          : "bg-neutral-950/30 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-750 hover:bg-neutral-900/20"
                       }`}
                     >
                       <mode.icon className="h-4 w-4 shrink-0" />
@@ -941,11 +942,11 @@ export default function InterviewGenerator() {
 
               {/* Target Role Dropdown */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Target Role</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500">Target Role</label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-neutral-950/60 border border-neutral-850 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:outline-none"
+                  className="w-full bg-neutral-950/50 border border-neutral-800/80 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-205 focus:outline-none focus:border-orange-500/50 transition-colors backdrop-blur-md"
                 >
                   <option value="Frontend Engineer">Frontend Engineer</option>
                   <option value="Backend Developer">Backend Developer</option>
@@ -961,28 +962,28 @@ export default function InterviewGenerator() {
 
               {/* Target Company input */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Company Target</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500">Company Target</label>
                 <input
                   type="text"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="e.g. Amazon, Google, TCS"
-                  className="w-full rounded-xl border border-neutral-850 bg-neutral-950/60 px-3 py-2 text-xs font-semibold text-slate-200 placeholder:text-neutral-600 outline-none"
+                  className="w-full rounded-xl border border-neutral-800/80 bg-neutral-950/50 px-3 py-2.5 text-xs font-semibold text-slate-205 placeholder:text-neutral-600 outline-none focus:border-orange-500/50 transition-colors backdrop-blur-md"
                 />
               </div>
 
               {/* Difficulty badge selectors */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Difficulty Grade</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-550">Difficulty Grade</label>
                 <div className="flex gap-2">
                   {["All", "Easy", "Medium", "Hard"].map((d) => (
                     <button
                       key={d}
                       onClick={() => setDifficulty(d as any)}
-                      className={`flex-1 py-1.5 rounded-xl border text-[10px] font-black tracking-wider uppercase transition-all cursor-pointer ${
+                      className={`flex-1 py-2 rounded-xl border text-[10px] font-black tracking-wider uppercase transition-all cursor-pointer ${
                         difficulty === d
                           ? "bg-gradient-to-r from-orange-500 to-red-600 border-transparent text-white shadow-lg shadow-orange-500/20"
-                          : "bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-white"
+                          : "bg-neutral-950/50 border-neutral-800 text-neutral-400 hover:text-white"
                       }`}
                     >
                       {d}
@@ -993,23 +994,23 @@ export default function InterviewGenerator() {
 
               {/* Custom Target Skills input tags */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Target Skills</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-550">Target Skills</label>
                 <form onSubmit={handleAddSkill} className="flex gap-1.5">
                   <input
                     type="text"
                     value={customSkill}
                     onChange={(e) => setCustomSkill(e.target.value)}
                     placeholder="Add Skill tag..."
-                    className="flex-1 rounded-lg border border-neutral-850 bg-neutral-950/60 px-2.5 py-1 text-[11px] font-semibold text-slate-200 outline-none"
+                    className="flex-1 rounded-lg border border-neutral-800/80 bg-neutral-950/50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-205 outline-none focus:border-orange-500/50"
                   />
-                  <button type="submit" className="px-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-black cursor-pointer">+</button>
+                  <button type="submit" className="px-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-black cursor-pointer">+</button>
                 </form>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {skills.map(s => (
                     <span 
                       key={s} 
                       onClick={() => handleRemoveSkill(s)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-800 text-[10px] font-extrabold text-neutral-400 hover:bg-red-500/20 hover:text-red-400 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-800/60 border border-neutral-700/50 text-[10px] font-extrabold text-neutral-400 hover:bg-red-500/20 hover:text-red-400 transition-colors cursor-pointer"
                     >
                       {s} <X className="h-2.5 w-2.5" />
                     </span>
@@ -1019,17 +1020,17 @@ export default function InterviewGenerator() {
 
               {/* Resume Drag & Drop Zone */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Resume Upload (ATS alignment)</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-550">Resume Upload (ATS alignment)</label>
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`border border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-2 ${
+                  className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center space-y-2 relative overflow-hidden group ${
                     isDragging 
-                      ? "border-orange-500 bg-orange-500/5 shadow-inner" 
+                      ? "border-orange-500 bg-orange-500/10 shadow-[0_0_15px_rgba(249,115,22,0.1)]" 
                       : resumeName 
-                        ? "border-green-500/50 bg-green-500/5" 
-                        : "border-neutral-850 hover:border-neutral-700 bg-neutral-950/20"
+                        ? "border-green-500/40 bg-green-500/5" 
+                        : "border-neutral-800 bg-neutral-950/40 hover:border-orange-500/30"
                   }`}
                 >
                   <FileText className={`h-8 w-8 ${resumeName ? "text-green-400" : "text-neutral-500 animate-pulse"}`} />
@@ -1139,26 +1140,26 @@ export default function InterviewGenerator() {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05, duration: 0.4 }}
-                      className={`bg-neutral-900/40 backdrop-blur-xl border rounded-3xl overflow-hidden transition-all duration-300 shadow-2xl ${
+                      className={`bg-neutral-900/35 backdrop-blur-xl border rounded-3xl overflow-hidden transition-all duration-300 shadow-2xl ${
                         isExpanded 
-                          ? "border-orange-500/50 shadow-[0_0_30px_rgba(249,115,22,0.1)]" 
-                          : "border-neutral-800/80 hover:border-neutral-700"
+                          ? "border-orange-500/40 shadow-[0_0_30px_rgba(249,115,22,0.06)] bg-neutral-900/45" 
+                          : "border-neutral-800/80 hover:border-neutral-700/80 hover:bg-neutral-900/30"
                       }`}
                     >
                       
                       {/* Card Header Accordion trigger */}
                       <div
                         onClick={() => setActiveQuestionId(isExpanded ? null : q.id)}
-                        className="p-5 flex items-start justify-between gap-4 cursor-pointer hover:bg-neutral-800/20 transition-colors"
+                        className="p-5 flex items-start justify-between gap-4 cursor-pointer hover:bg-neutral-800/10 transition-colors"
                       >
                         <div className="space-y-2.5 flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             {/* Topic tag */}
-                            <span className={`inline-flex items-center px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md border ${getTopicBadgeStyle(q.topic)}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md border ${getTopicBadgeStyle(q.topic)}`}>
                               {q.topic}
                             </span>
                             {/* Difficulty tag */}
-                            <span className={`inline-flex items-center px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md border ${getDifficultyColor(q.difficulty)}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md border ${getDifficultyColor(q.difficulty)}`}>
                               {q.difficulty}
                             </span>
                             {/* Estimated read time */}
@@ -1178,7 +1179,7 @@ export default function InterviewGenerator() {
                               e.stopPropagation();
                               toggleBookmark(q.id);
                             }}
-                            className="p-1.5 rounded-lg bg-neutral-950/60 border border-neutral-800 text-neutral-500 hover:text-orange-400 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-neutral-950/60 border border-neutral-850 text-neutral-550 hover:text-orange-400 transition-colors cursor-pointer"
                           >
                             <Bookmark className={`h-3.5 w-3.5 ${q.bookmarked ? "fill-orange-400 text-orange-400" : ""}`} />
                           </button>
@@ -1191,7 +1192,7 @@ export default function InterviewGenerator() {
                             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                               q.solved 
                                 ? "bg-green-500/10 border-green-500/30 text-green-400" 
-                                : "bg-neutral-950/60 border-neutral-800 text-neutral-500 hover:text-green-400"
+                                : "bg-neutral-950/60 border-neutral-850 text-neutral-550 hover:text-green-400"
                             }`}
                           >
                             <Check className="h-3.5 w-3.5" />
@@ -1215,11 +1216,11 @@ export default function InterviewGenerator() {
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.28, ease: "easeInOut" }}
-                            className="border-t border-neutral-850 bg-neutral-950/40 overflow-hidden"
+                            className="border-t border-neutral-800/60 bg-neutral-950/30 overflow-hidden"
                           >
                             
                             {/* Inner Tabs Menu header */}
-                            <div className="flex items-center justify-between border-b border-neutral-850 px-5 bg-neutral-950/80">
+                            <div className="flex items-center justify-between border-b border-neutral-900 px-5 bg-neutral-950/60">
                               <div className="flex gap-4">
                                 {[
                                   { id: "answer", label: "Model Answer", icon: Sparkles },
@@ -1230,14 +1231,21 @@ export default function InterviewGenerator() {
                                   <button
                                     key={tab.id}
                                     onClick={() => setActiveTabMap(prev => ({ ...prev, [q.id]: tab.id as any }))}
-                                    className={`py-3 text-[10px] font-black uppercase tracking-wider border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+                                    className={`relative py-3 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                                       activeTab === tab.id
-                                        ? "border-orange-500 text-orange-400 font-extrabold"
-                                        : "border-transparent text-neutral-500 hover:text-neutral-300"
+                                        ? "text-orange-400 font-extrabold"
+                                        : "text-neutral-500 hover:text-neutral-300"
                                     }`}
                                   >
                                     <tab.icon className="h-3.5 w-3.5" />
                                     <span>{tab.label}</span>
+                                    {activeTab === tab.id && (
+                                      <motion.div
+                                        layoutId={`activeTab-${q.id}`}
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
+                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                      />
+                                    )}
                                   </button>
                                 ))}
                               </div>
@@ -1431,13 +1439,13 @@ export default function InterviewGenerator() {
           <aside className="lg:col-span-3 space-y-6">
 
             {/* AI Assistant Chat Console */}
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 shadow-2xl flex flex-col h-[380px]">
+            <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-5 shadow-2xl flex flex-col h-[380px] hover:border-orange-500/10 transition-colors duration-305 relative group">
               <div className="border-b border-neutral-850 pb-3 flex justify-between items-center">
                 <div>
                   <h3 className="text-xs font-black text-white flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-orange-500 animate-pulse" /> Placement Assistant
                   </h3>
-                  <p className="text-[9px] text-neutral-500">Ask coding or resume queries</p>
+                  <p className="text-[9px] text-neutral-550">Ask coding or resume queries</p>
                 </div>
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-ping" />
               </div>
@@ -1452,8 +1460,8 @@ export default function InterviewGenerator() {
                     <div
                       className={`max-w-[85%] rounded-2xl p-2.5 text-[10px] leading-relaxed font-semibold ${
                         msg.sender === "user"
-                          ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-none"
-                          : "bg-neutral-950 border border-neutral-800 text-neutral-300 rounded-tl-none whitespace-pre-line"
+                          ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-none shadow-md shadow-orange-500/5"
+                          : "bg-neutral-950 border border-neutral-850 text-neutral-350 rounded-tl-none whitespace-pre-line shadow-sm"
                       }`}
                     >
                       {msg.text}
@@ -1475,7 +1483,7 @@ export default function InterviewGenerator() {
                     onClick={() => {
                       setChatInput(s.value);
                     }}
-                    className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-850 text-[8px] font-black text-neutral-500 hover:text-white cursor-pointer"
+                    className="px-2 py-1 rounded bg-neutral-950 border border-neutral-850 text-[8px] font-black text-neutral-555 hover:text-white cursor-pointer hover:border-orange-500/20 transition-all hover:scale-[1.02]"
                   >
                     {s.text}
                   </button>
@@ -1490,11 +1498,11 @@ export default function InterviewGenerator() {
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
                   placeholder="Ask Assistant..."
-                  className="flex-1 bg-neutral-950 border border-neutral-850 rounded-xl px-3 py-1.5 text-[11px] font-semibold text-slate-200 outline-none"
+                  className="flex-1 bg-neutral-950 border border-neutral-850 rounded-xl px-3 py-2 text-[11px] font-semibold text-slate-200 outline-none focus:border-orange-500/50 transition-colors"
                 />
                 <button
                   onClick={handleSendChatMessage}
-                  className="p-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 cursor-pointer"
+                  className="p-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5" />
                 </button>
@@ -1503,25 +1511,25 @@ export default function InterviewGenerator() {
             </div>
 
             {/* Topic Progress Analytics */}
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 shadow-2xl space-y-4">
+            <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-5 shadow-2xl space-y-4 hover:border-orange-500/10 transition-colors duration-305">
               <div className="border-b border-neutral-800 pb-2">
                 <h4 className="text-xs font-black text-white">Placement Topic Analytics</h4>
               </div>
               <div className="space-y-3.5">
                 {[
-                  { name: "Algorithms & DSA", progress: getTopicProgress("dsa"), color: "bg-violet-500" },
-                  { name: "Object Oriented Design", progress: getTopicProgress("oop"), color: "bg-teal-500" },
-                  { name: "DBMS & SQL Querying", progress: getTopicProgress("dbms"), color: "bg-blue-500" },
-                  { name: "Operating Systems / UNIX", progress: getTopicProgress("os"), color: "bg-slate-500" },
-                  { name: "HR & Behavioral round", progress: getTopicProgress("hr"), color: "bg-pink-500" }
+                  { name: "Algorithms & DSA", progress: getTopicProgress("dsa"), color: "bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-[0_0_8px_rgba(139,92,246,0.2)]" },
+                  { name: "Object Oriented Design", progress: getTopicProgress("oop"), color: "bg-gradient-to-r from-teal-500 to-emerald-500 shadow-[0_0_8px_rgba(20,184,166,0.2)]" },
+                  { name: "DBMS & SQL Querying", progress: getTopicProgress("dbms"), color: "bg-gradient-to-r from-blue-500 to-sky-500 shadow-[0_0_8px_rgba(59,130,246,0.2)]" },
+                  { name: "Operating Systems / UNIX", progress: getTopicProgress("os"), color: "bg-gradient-to-r from-slate-500 to-zinc-500 shadow-[0_0_8px_rgba(100,116,139,0.2)]" },
+                  { name: "HR & Behavioral round", progress: getTopicProgress("hr"), color: "bg-gradient-to-r from-pink-500 to-rose-500 shadow-[0_0_8px_rgba(236,72,153,0.2)]" }
                 ].map((topic, i) => (
                   <div key={i} className="space-y-1.5">
-                    <div className="flex justify-between text-[9px] font-black uppercase text-neutral-400">
+                    <div className="flex justify-between text-[9px] font-black uppercase text-neutral-450">
                       <span>{topic.name}</span>
                       <span>{topic.progress}%</span>
                     </div>
-                    <div className="w-full bg-neutral-950 rounded-full h-1 overflow-hidden border border-neutral-850/30">
-                      <div className={`h-full rounded-full ${topic.color}`} style={{ width: `${topic.progress}%` }} />
+                    <div className="w-full bg-neutral-950 rounded-full h-2 overflow-hidden border border-neutral-900">
+                      <div className={`h-full rounded-full transition-all duration-1000 ${topic.color}`} style={{ width: `${topic.progress}%` }} />
                     </div>
                   </div>
                 ))}
@@ -1529,7 +1537,7 @@ export default function InterviewGenerator() {
             </div>
 
             {/* Quick Revision saved items */}
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 shadow-2xl space-y-3">
+            <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-5 shadow-2xl space-y-3 hover:border-orange-500/10 transition-colors duration-305">
               <h4 className="text-xs font-black text-white">Bookmarks &amp; Saved Cards</h4>
               <div className="space-y-2">
                 {questions.filter(q => q.bookmarked).length === 0 ? (
@@ -1539,7 +1547,7 @@ export default function InterviewGenerator() {
                     <div
                       key={q.id}
                       onClick={() => setActiveQuestionId(q.id)}
-                      className="p-2 rounded-xl bg-neutral-950/60 border border-neutral-850 text-[10px] text-slate-300 hover:text-white truncate cursor-pointer hover:border-orange-500/20"
+                      className="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-850 text-[10px] text-slate-300 hover:text-white truncate cursor-pointer hover:border-orange-500/20 transition-all hover:scale-[1.01]"
                     >
                       ⭐ <span className="font-extrabold">{q.topic}:</span> {q.question}
                     </div>
@@ -1549,7 +1557,7 @@ export default function InterviewGenerator() {
             </div>
 
             {/* Study Scratchpad quick logs */}
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-5 shadow-2xl space-y-3">
+            <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-5 shadow-2xl space-y-3 hover:border-orange-500/10 transition-colors duration-305">
               <div className="flex justify-between items-center">
                 <h4 className="text-xs font-black text-white flex items-center gap-1">
                   <ClipboardList className="h-4 w-4 text-orange-500" /> Revision Notes Pad
@@ -1559,10 +1567,9 @@ export default function InterviewGenerator() {
                 value={scratchNotes}
                 onChange={(e) => handleScratchpadChange(e.target.value)}
                 placeholder="Write quick codes, review targets, or copy formulas for rapid access... Auto-saved locally."
-                className="w-full h-28 bg-neutral-950 border border-neutral-850 rounded-xl p-3 text-[10px] text-slate-300 outline-none placeholder:text-neutral-600 font-medium"
+                className="w-full h-28 bg-neutral-950 border border-neutral-855 rounded-xl p-3 text-[10px] text-slate-350 outline-none placeholder:text-neutral-600 font-medium focus:border-orange-500/50 transition-colors"
               />
             </div>
-
           </aside>
 
         </div>

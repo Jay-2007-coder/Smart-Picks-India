@@ -1021,36 +1021,37 @@ export default function AptitudePractice() {
             {/* HEROS SECTIONS */}
             <section className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Placement Readiness Card */}
-              <div className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl p-6 flex flex-col justify-between h-40 group hover:border-orange-500/30 transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-2xl group-hover:bg-orange-600/15 transition-all" />
-                <div className="flex justify-between items-start">
+              <div className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-white/5 bg-neutral-900/35 backdrop-blur-xl p-6 flex flex-col justify-between h-40 group hover:border-orange-500/20 transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/5 rounded-full blur-2xl group-hover:bg-orange-600/10 transition-all duration-300" />
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Readiness Score</h4>
                     <p className="text-3xl font-black text-zinc-100 mt-1">{readinessIndex}%</p>
                   </div>
-                  <Activity className="h-5 w-5 text-orange-500" />
+                  <Activity className="h-5 w-5 text-orange-500 animate-pulse" />
                 </div>
-                <div className="w-full">
+                <div className="w-full relative z-10">
                   <div className="flex justify-between text-[10px] font-bold text-zinc-500 mb-1">
                     <span>Target readiness: 90%+</span>
                     <span>{user ? (readinessIndex >= 90 ? "Ready for placement" : "Keep practicing") : "Sign in to calculate"}</span>
                   </div>
-                  <div className="w-full bg-zinc-850 rounded-full h-2 overflow-hidden border border-zinc-800">
+                  <div className="w-full bg-zinc-950/80 rounded-full h-2 overflow-hidden border border-zinc-900">
                     <div className="bg-gradient-to-r from-orange-500 to-red-600 h-full rounded-full" style={{ width: `${readinessIndex}%` }} />
                   </div>
                 </div>
               </div>
 
               {/* Accuracy Rate */}
-              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl p-6 flex flex-col justify-between h-40 hover:border-orange-500/30 transition-all duration-300">
-                <div className="flex justify-between items-start">
+              <div className="rounded-3xl border border-white/5 bg-neutral-900/35 backdrop-blur-xl p-6 flex flex-col justify-between h-40 group hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all duration-300" />
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Average Accuracy</h4>
                     <p className="text-3xl font-black text-zinc-100 mt-1">{overallAccuracy}%</p>
                   </div>
                   <Award className="h-5 w-5 text-yellow-500" />
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 relative z-10">
                   {user ? (
                     <>
                       <TrendingUp className="h-3.5 w-3.5" /> +2.4% than last week
@@ -1062,29 +1063,31 @@ export default function AptitudePractice() {
               </div>
 
               {/* Solved Questions */}
-              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl p-6 flex flex-col justify-between h-40 hover:border-orange-500/30 transition-all duration-300">
-                <div className="flex justify-between items-start">
+              <div className="rounded-3xl border border-white/5 bg-neutral-900/35 backdrop-blur-xl p-6 flex flex-col justify-between h-40 group hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all duration-300" />
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Solved / Total</h4>
                     <p className="text-3xl font-black text-zinc-100 mt-1">{questionsSolved}</p>
                   </div>
                   <CheckCircle className="h-5 w-5 text-emerald-500" />
                 </div>
-                <div className="text-[10px] font-bold text-zinc-500">
+                <div className="text-[10px] font-bold text-zinc-500 relative z-10">
                   {user ? "Goal: solve 250 problems" : "Sign in to track progress"}
                 </div>
               </div>
 
               {/* Daily Goal progress */}
-              <div className="rounded-3xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl p-6 flex flex-col justify-between h-40 hover:border-orange-500/30 transition-all duration-300">
-                <div className="flex justify-between items-start">
+              <div className="rounded-3xl border border-white/5 bg-neutral-900/35 backdrop-blur-xl p-6 flex flex-col justify-between h-40 group hover:border-orange-500/20 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-300" />
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Daily Goal</h4>
                     <p className="text-3xl font-black text-zinc-100 mt-1">{dailyGoalSolved} / 10</p>
                   </div>
                   <Target className="h-5 w-5 text-blue-500" />
                 </div>
-                <div className="text-[10px] font-bold text-zinc-500">
+                <div className="text-[10px] font-bold text-zinc-500 relative z-10">
                   {user ? `${dailyGoalPercentage}% completed today` : "Sign in to set goals"}
                 </div>
               </div>
@@ -1094,8 +1097,8 @@ export default function AptitudePractice() {
             <div className="grid lg:grid-cols-4 gap-8">
               {/* LEFT SIDEBAR (CONFIGURATIONS) */}
               <div className="lg:col-span-1 space-y-6">
-                <div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-5 space-y-5">
-                  <h3 className="text-xs font-black uppercase text-orange-500 tracking-wider flex items-center gap-1.5 pb-3 border-b border-zinc-800">
+                <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-5 space-y-5">
+                  <h3 className="text-xs font-black uppercase text-orange-500 tracking-wider flex items-center gap-1.5 pb-3 border-b border-zinc-800/80">
                     <Settings className="h-4 w-4" /> Config board
                   </h3>
 
@@ -1109,8 +1112,8 @@ export default function AptitudePractice() {
                           onClick={() => { playClick(); setMode(cat); setSelectedCompany(null); }}
                           className={`py-2 px-1 text-[10px] font-extrabold rounded-xl border text-center transition-all cursor-pointer ${
                             mode === cat && !selectedCompany
-                              ? "bg-gradient-to-r from-orange-500 to-red-600 border-orange-500 text-white shadow-lg shadow-orange-500/10"
-                              : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
+                              ? "bg-gradient-to-br from-orange-500/15 to-red-500/5 border-orange-500/60 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
+                              : "bg-zinc-950/40 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
                           }`}
                         >
                           {cat}
@@ -1129,8 +1132,8 @@ export default function AptitudePractice() {
                           onClick={() => { playClick(); setDifficulty(lvl); }}
                           className={`py-2 px-1 text-[10px] font-extrabold rounded-xl border text-center transition-all cursor-pointer ${
                             difficulty === lvl
-                              ? "bg-gradient-to-r from-orange-500 to-red-600 border-orange-500 text-white shadow-lg shadow-orange-500/10"
-                              : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
+                              ? "bg-gradient-to-br from-orange-500/15 to-red-500/5 border-orange-500/60 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
+                              : "bg-zinc-950/40 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
                           }`}
                         >
                           {lvl}
@@ -1150,7 +1153,7 @@ export default function AptitudePractice() {
                           className={`py-1.5 text-[10px] font-extrabold rounded-lg border text-center transition-all cursor-pointer ${
                             quizSize === sz
                               ? "bg-zinc-100 border-zinc-100 text-zinc-950"
-                              : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
+                              : "bg-zinc-950/40 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
                           }`}
                         >
                           {sz}
@@ -1174,7 +1177,7 @@ export default function AptitudePractice() {
                           className={`py-1.5 text-[9px] font-extrabold rounded-lg border text-center transition-all cursor-pointer ${
                             timeLimit === t.value
                               ? "bg-zinc-100 border-zinc-100 text-zinc-950"
-                              : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
+                              : "bg-zinc-950/40 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
                           }`}
                         >
                           {t.label}
@@ -1610,15 +1613,31 @@ export default function AptitudePractice() {
               {/* Timer & Submit */}
               <div className="flex items-center gap-4">
                 {timeLimit > 0 ? (
-                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-extrabold text-xs border ${
-                    timeLeft <= 8 
-                      ? "text-red-500 bg-red-500/10 border-red-500/20 animate-pulse" 
-                      : "text-orange-500 bg-orange-500/10 border-orange-500/20"
-                  }`}>
-                    <Clock className="h-4 w-4" /> {timeLeft}s remaining
+                  <div className="flex items-center gap-2.5 bg-zinc-950/60 border border-zinc-800/80 px-3.5 py-1.5 rounded-2xl relative z-10 shadow-sm">
+                    <div className="relative h-7 w-7 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="14" cy="14" r="10" stroke="rgba(255,255,255,0.03)" strokeWidth="2.5" fill="transparent" />
+                        <circle
+                          cx="14"
+                          cy="14"
+                          r="10"
+                          stroke={timeLeft <= 8 ? "#ef4444" : timeLeft <= 15 ? "#f59e0b" : "#10b981"}
+                          strokeWidth="2.5"
+                          fill="transparent"
+                          strokeDasharray={`${2 * Math.PI * 10}`}
+                          strokeDashoffset={`${2 * Math.PI * 10 * (1 - timeLeft / timeLimit)}`}
+                          strokeLinecap="round"
+                          className="transition-all duration-1000"
+                        />
+                      </svg>
+                      <div className="absolute flex items-center justify-center">
+                        <span className={`text-[10px] font-black ${timeLeft <= 8 ? "text-red-400 animate-pulse" : "text-zinc-200"}`}>{timeLeft}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Sec remaining</span>
                   </div>
                 ) : (
-                  <div className="px-3 py-1.5 rounded-xl font-extrabold text-xs text-zinc-400 bg-zinc-900 border border-zinc-850">
+                  <div className="px-3.5 py-2 rounded-2xl font-black text-[10px] uppercase tracking-wider text-zinc-400 bg-zinc-950/60 border border-zinc-850">
                     Study Mode (No limit)
                   </div>
                 )}
@@ -1785,9 +1804,9 @@ export default function AptitudePractice() {
                       const isSelected = selectedAnswer === opt;
                       const hasSubmitted = selectedAnswer !== null;
 
-                      let blockStyle = "bg-zinc-900/40 border-zinc-850 hover:border-zinc-700 hover:bg-zinc-900/60";
+                      let blockStyle = "bg-neutral-900/35 border-white/5 hover:border-orange-500/30 hover:bg-neutral-900/45";
                       if (isSelected) {
-                        blockStyle = "border-orange-500 bg-orange-500/10 text-orange-500 shadow-lg shadow-orange-500/5";
+                        blockStyle = "border-orange-500/50 bg-orange-500/10 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.06)]";
                       }
 
                       return (
@@ -1795,15 +1814,15 @@ export default function AptitudePractice() {
                           key={opt}
                           onClick={() => handleAnswerSelect(opt)}
                           disabled={hasSubmitted}
-                          className={`p-5 text-left text-xs sm:text-sm font-extrabold rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-pointer ${blockStyle}`}
+                          className={`p-5 text-left text-xs sm:text-sm font-extrabold rounded-2xl border backdrop-blur-md transition-all duration-300 flex items-center justify-between gap-3 cursor-pointer ${blockStyle}`}
                         >
                           <div className="flex items-center gap-3">
-                            <span className={`h-6 w-6 rounded-lg flex items-center justify-center font-black text-xs ${
-                              isSelected ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-500"
+                            <span className={`h-6 w-6 rounded-lg flex items-center justify-center font-black text-xs transition-colors ${
+                              isSelected ? "bg-orange-500 text-white" : "bg-neutral-950/80 border border-neutral-900 text-zinc-500"
                             }`}>
                               {String.fromCharCode(65 + oIdx)}
                             </span>
-                            <span>{opt}</span>
+                            <span className={isSelected ? "text-white" : "text-zinc-300"}>{opt}</span>
                           </div>
                           {isSelected && <Check className="h-4.5 w-4.5 text-orange-500" />}
                         </button>
@@ -1871,8 +1890,8 @@ export default function AptitudePractice() {
             className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
           >
             {/* Main Score panel board */}
-            <div className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-8 text-center relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-yellow-500 to-red-600" />
+            <div className="bg-neutral-900/35 border border-white/5 backdrop-blur-xl rounded-3xl p-8 text-center relative overflow-hidden shadow-2xl hover:border-orange-500/10 transition-colors duration-300">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-yellow-500 to-red-600" />
               <div className="absolute -top-12 -right-12 w-48 h-48 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
 
               <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest block">
@@ -1883,7 +1902,7 @@ export default function AptitudePractice() {
                 <h2 className="text-6xl font-black text-orange-500 tracking-tighter">
                   {score}
                 </h2>
-                <span className="text-2xl font-black text-zinc-500">/ {questionsPool.length}</span>
+                <span className="text-2xl font-black text-zinc-550">/ {questionsPool.length}</span>
               </div>
 
               <div className="space-y-1.5 max-w-md mx-auto mt-4">
@@ -1900,7 +1919,7 @@ export default function AptitudePractice() {
               </div>
 
               {/* Statistics grid */}
-              <div className="grid grid-cols-3 gap-4 border-y border-zinc-800/80 py-4 max-w-lg mx-auto mt-6">
+              <div className="grid grid-cols-3 gap-4 border-y border-neutral-800/50 py-5 max-w-lg mx-auto mt-6">
                 <div>
                   <span className="text-[8px] font-black uppercase text-zinc-500">Accuracy rate</span>
                   <p className="text-lg font-black text-zinc-200 mt-0.5 flex items-center justify-center gap-1">
