@@ -94,8 +94,6 @@ export default function InterviewGenerator() {
   // Streak & gamification state
   const [xp, setXp] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [solvedCount, setSolvedCount] = useState(0);
-  const [readinessScore, setReadinessScore] = useState(0);
   const [showXpToast, setShowXpToast] = useState(false);
   const [xpGainedAmount, setXpGainedAmount] = useState(0);
 
@@ -149,15 +147,18 @@ export default function InterviewGenerator() {
     spotlightContainerRef.current.style.setProperty("--mouse-y", `${y}px`);
   };
 
+  // Pure dynamic stats computed directly from active questions state
+  const solvedCount = questions.length > 0 ? questions.filter(q => q.solved).length : 0;
+  const readinessScore = questions.length > 0 ? Math.round((solvedCount / questions.length) * 100) : 0;
+
   // Sync state values on initial boot
   useEffect(() => {
     if (typeof window !== "undefined") {
       synthesisRef.current = window.speechSynthesis;
       const savedXp = localStorage.getItem("smartpicks_student_xp");
       const savedStreak = localStorage.getItem("smartpicks_student_streak");
-      const savedSolved = localStorage.getItem("smartpicks_student_solved");
-      const savedReadiness = localStorage.getItem("smartpicks_student_readiness");
       const savedScratch = localStorage.getItem("smartpicks_student_scratch");
+      const savedQs = localStorage.getItem("smartpicks_student_questions");
       
       if (savedXp) {
         setXp(parseInt(savedXp));
@@ -165,11 +166,31 @@ export default function InterviewGenerator() {
         setXp(user.xp);
       }
       if (savedStreak) setStreak(parseInt(savedStreak));
-      if (savedSolved) setSolvedCount(parseInt(savedSolved));
-      if (savedReadiness) setReadinessScore(parseInt(savedReadiness));
       if (savedScratch) setScratchNotes(savedScratch);
+
+      if (savedQs) {
+        try {
+          const parsed = JSON.parse(savedQs);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setQuestions(parsed);
+          }
+        } catch (e) {
+          console.error("Failed to parse saved questions", e);
+        }
+      }
     }
   }, [user]);
+
+  // Persist generated questions in localStorage when they change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (questions.length > 0) {
+        localStorage.setItem("smartpicks_student_questions", JSON.stringify(questions));
+      } else {
+        localStorage.removeItem("smartpicks_student_questions");
+      }
+    }
+  }, [questions]);
 
   // Keep XP in sync with user state
   useEffect(() => {
@@ -215,21 +236,6 @@ export default function InterviewGenerator() {
     }
   }, []);
 
-  // Update dynamic readiness score based on question metrics
-  const recalculateReadiness = (qs: Question[]) => {
-    if (qs.length === 0) {
-      setReadinessScore(0);
-      localStorage.setItem("smartpicks_student_readiness", "0");
-      return;
-    }
-    const total = qs.length;
-    const solved = qs.filter(q => q.solved).length;
-    
-    // Pure dynamic calculation of solved questions percentage
-    const baseScore = Math.round((solved / total) * 100);
-    setReadinessScore(baseScore);
-    localStorage.setItem("smartpicks_student_readiness", baseScore.toString());
-  };
 
   const getTopicProgress = (topicKey: string) => {
     if (questions.length === 0) return 0;
@@ -382,7 +388,6 @@ export default function InterviewGenerator() {
         });
 
         setQuestions(enriched);
-        recalculateReadiness(enriched);
         
         // Update total XP from backend response if provided, else award local XP
         if (data.totalXp) {
@@ -453,23 +458,26 @@ export default function InterviewGenerator() {
           const nextSolved = !q.solved;
           if (nextSolved) {
             addXp(20);
-            setSolvedCount(c => {
-              const nextC = c + 1;
-              localStorage.setItem("smartpicks_student_solved", nextC.toString());
-              return nextC;
-            });
+            if (typeof window !== "undefined") {
+              const currentGlobalSolved = parseInt(localStorage.getItem("smartpicks_student_solved") || "0");
+              localStorage.setItem("smartpicks_student_solved", (currentGlobalSolved + 1).toString());
+            }
             // Update streak daily
             setStreak(s => {
               const nextS = s + 1;
               localStorage.setItem("smartpicks_student_streak", nextS.toString());
               return nextS;
             });
+          } else {
+            if (typeof window !== "undefined") {
+              const currentGlobalSolved = parseInt(localStorage.getItem("smartpicks_student_solved") || "0");
+              localStorage.setItem("smartpicks_student_solved", Math.max(0, currentGlobalSolved - 1).toString());
+            }
           }
           return { ...q, solved: nextSolved };
         }
         return q;
       });
-      recalculateReadiness(updated);
       return updated;
     });
   };
@@ -536,16 +544,14 @@ export default function InterviewGenerator() {
           }
           return q;
         });
-        recalculateReadiness(updated);
         return updated;
       });
 
       addXp(35);
-      setSolvedCount(c => {
-        const nextC = c + 1;
-        localStorage.setItem("smartpicks_student_solved", nextC.toString());
-        return nextC;
-      });
+      if (typeof window !== "undefined") {
+        const currentGlobalSolved = parseInt(localStorage.getItem("smartpicks_student_solved") || "0");
+        localStorage.setItem("smartpicks_student_solved", (currentGlobalSolved + 1).toString());
+      }
       setVoiceTargetQuestionId(null);
     }, 1500);
   };
@@ -831,12 +837,14 @@ export default function InterviewGenerator() {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-white">{solvedCount}</span>
-              <span className="text-xs text-neutral-500 font-bold ml-1.5">/ 40 solved</span>
+              <span className="text-xs text-neutral-500 font-bold ml-1.5">
+                / {questions.length > 0 ? questions.length : 0} solved
+              </span>
             </div>
             <div className="w-full bg-neutral-950/60 rounded-full h-1 mt-2 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-500" 
-                style={{ width: `${(solvedCount / 40) * 100}%` }}
+                style={{ width: `${questions.length > 0 ? (solvedCount / questions.length) * 100 : 0}%` }}
               />
             </div>
           </div>
@@ -971,9 +979,9 @@ export default function InterviewGenerator() {
                     <button
                       key={d}
                       onClick={() => setDifficulty(d as any)}
-                      className={`flex-1 py-1 rounded-lg border text-[10px] font-black tracking-wider uppercase transition-colors cursor-pointer ${
+                      className={`flex-1 py-1.5 rounded-xl border text-[10px] font-black tracking-wider uppercase transition-all cursor-pointer ${
                         difficulty === d
-                          ? "bg-orange-500/10 text-orange-400 border-orange-500"
+                          ? "bg-gradient-to-r from-orange-500 to-red-600 border-transparent text-white shadow-lg shadow-orange-500/20"
                           : "bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-white"
                       }`}
                     >

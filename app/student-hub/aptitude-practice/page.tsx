@@ -508,6 +508,72 @@ export default function AptitudePractice() {
   const [xpFeedback, setXpFeedback] = useState<{ baseXp: number; bonusXp: number; totalXp: number } | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  // Dynamic stats states
+  const [overallAccuracy, setOverallAccuracy] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [questionsSolved, setQuestionsSolved] = useState(0);
+  const [readinessIndex, setReadinessIndex] = useState(0);
+  const [dailyGoalSolved, setDailyGoalSolved] = useState(0);
+
+  const loadStats = () => {
+    if (typeof window !== "undefined") {
+      const savedStreak = localStorage.getItem("smartpicks_student_streak");
+      if (savedStreak) {
+        setCurrentStreak(parseInt(savedStreak));
+      } else if (user && user.xp !== undefined) {
+        setCurrentStreak(Math.min(30, Math.floor(user.xp / 100)));
+      }
+
+      const savedSolved = localStorage.getItem("smartpicks_student_solved");
+      if (savedSolved) {
+        setQuestionsSolved(parseInt(savedSolved));
+      } else if (user && user.xp !== undefined) {
+        setQuestionsSolved(Math.floor(user.xp / 8));
+      }
+
+      const savedHistory = localStorage.getItem("smartpicks_aptitude_history");
+      if (savedHistory) {
+        try {
+          const history = JSON.parse(savedHistory);
+          if (Array.isArray(history) && history.length > 0) {
+            const totalAcc = history.reduce((sum, item) => sum + (item.accuracy || 0), 0);
+            const avgAcc = Math.round(totalAcc / history.length);
+            setOverallAccuracy(avgAcc);
+
+            const totalSolved = history.reduce((sum, item) => sum + (item.score || 0), 0);
+            setQuestionsSolved(totalSolved);
+
+            const readiness = Math.min(98, Math.round(avgAcc * 0.7 + Math.min(30, (totalSolved / 10) * 30)));
+            setReadinessIndex(readiness);
+
+            const todayStr = new Date().toDateString();
+            const todaySolved = history
+              .filter(item => new Date(item.date).toDateString() === todayStr)
+              .reduce((sum, item) => sum + (item.score || 0), 0);
+            setDailyGoalSolved(Math.min(10, todaySolved));
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to parse history", e);
+        }
+      }
+      
+      if (user && user.xp !== undefined) {
+        setOverallAccuracy(user.xp > 0 ? Math.min(96, 72 + Math.floor((user.xp % 250) / 10)) : 0);
+        setReadinessIndex(user.xp > 0 ? Math.min(98, Math.round((user.xp > 0 ? Math.min(96, 72 + Math.floor((user.xp % 250) / 10)) : 0) * 0.7 + (Math.floor(user.xp / 8) / 300) * 30)) : 0);
+        setDailyGoalSolved(Math.min(10, Math.floor((user.xp % 100) / 10)));
+      } else {
+        setOverallAccuracy(0);
+        setReadinessIndex(0);
+        setDailyGoalSolved(0);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, [user]);
+
   // Custom spotlight tracking
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -730,6 +796,39 @@ export default function AptitudePractice() {
       }
     }
 
+    // Save test results to localStorage history
+    if (typeof window !== "undefined") {
+      const savedHistory = localStorage.getItem("smartpicks_aptitude_history");
+      let history = [];
+      if (savedHistory) {
+        try { history = JSON.parse(savedHistory); } catch {}
+      }
+      const actualScore = Math.max(0, score - penalties);
+      const testAccuracy = Math.round((actualScore / questionsPool.length) * 100);
+      
+      history.push({
+        score: actualScore,
+        total: questionsPool.length,
+        accuracy: testAccuracy,
+        date: new Date().toISOString()
+      });
+      localStorage.setItem("smartpicks_aptitude_history", JSON.stringify(history));
+
+      // Update global solved count in localStorage
+      const currentGlobalSolved = parseInt(localStorage.getItem("smartpicks_student_solved") || "0");
+      const nextGlobalSolved = currentGlobalSolved + actualScore;
+      localStorage.setItem("smartpicks_student_solved", nextGlobalSolved.toString());
+
+      // Update global streak if score is non-zero
+      if (actualScore > 0) {
+        const currentGlobalStreak = parseInt(localStorage.getItem("smartpicks_student_streak") || "0");
+        const nextGlobalStreak = currentGlobalStreak + 1;
+        localStorage.setItem("smartpicks_student_streak", nextGlobalStreak.toString());
+      }
+      
+      loadStats();
+    }
+
     if (!user) return;
     
     setSubmittingScore(true);
@@ -782,11 +881,6 @@ export default function AptitudePractice() {
   };
 
   // Statistics Computations
-  const overallAccuracy = user ? (user.xp > 0 ? Math.min(96, 72 + Math.floor((user.xp % 250) / 10)) : 0) : 0;
-  const currentStreak = user ? (user.xp > 0 ? Math.min(30, Math.floor(user.xp / 100) + 1) : 0) : 0;
-  const questionsSolved = user ? (user.xp > 0 ? Math.floor(user.xp / 8) : 0) : 0;
-  const readinessIndex = user ? (questionsSolved > 0 ? Math.min(98, Math.round(overallAccuracy * 0.7 + (questionsSolved / 300) * 30)) : 0) : 0;
-  const dailyGoalSolved = user ? Math.min(10, Math.floor((user.xp % 100) / 10)) : 0;
   const dailyGoalPercentage = dailyGoalSolved * 10;
 
   const pathD = user 
@@ -868,8 +962,8 @@ export default function AptitudePractice() {
               </Link>
             )}
             <div className="flex flex-col">
-              <span className="text-xs font-black uppercase text-orange-500 tracking-widest flex items-center gap-1">
-                <Sparkles className="h-3 w-3 fill-orange-500 animate-pulse" /> Placement Hub
+              <span className="text-xs font-black uppercase text-orange-500 tracking-widest">
+                Placement Hub
               </span>
               <span className="text-sm font-extrabold text-zinc-100">Aptitude Practice OS</span>
             </div>

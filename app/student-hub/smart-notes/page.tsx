@@ -401,9 +401,18 @@ export default function SmartNotesGenerator() {
   ]);
 
   // Streak & Savings Stats
-  const streakDays = user ? (user.xp > 0 ? Math.min(30, Math.floor(user.xp / 150) + 1) : 0) : 0;
-  const timeSavedHours = user ? (user.xp > 0 ? Math.min(100, Math.round((user.xp / 12) * 10) / 10) : 0) : 0;
-  const subjectProgress = user ? (user.xp > 0 ? Math.min(98, 40 + Math.floor((user.xp % 300) / 6)) : 0) : 0;
+  const [streakDays, setStreakDays] = useState(0);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedStreak = localStorage.getItem("smartpicks_student_streak");
+      if (savedStreak) setStreakDays(parseInt(savedStreak));
+    }
+  }, []);
+
+  const timeSavedHours = Math.round(((files.length * 0.5) + (generatedNotes.length * 0.8)) * 10) / 10;
+  const subjectProgress = files.length > 0 
+    ? Math.min(100, Math.round((generatedNotes.length / (files.length * 2)) * 100)) 
+    : 0;
 
   // Semantic Search spotlight pos
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -676,8 +685,8 @@ export default function SmartNotesGenerator() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div className="flex flex-col">
-              <span className="text-xs font-black uppercase text-purple-500 tracking-widest flex items-center gap-1">
-                <Sparkles className="h-3 w-3 fill-purple-500 animate-pulse" /> AI Workspace
+              <span className="text-xs font-black uppercase text-purple-500 tracking-widest">
+                AI Workspace
               </span>
               <span className="text-sm font-extrabold text-zinc-100">Smart Notes OS</span>
             </div>
