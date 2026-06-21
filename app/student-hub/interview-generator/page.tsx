@@ -92,10 +92,10 @@ export default function InterviewGenerator() {
   const [activeTabMap, setActiveTabMap] = useState<Record<string, "answer" | "voice" | "notes" | "hints">>({});
 
   // Streak & gamification state
-  const [xp, setXp] = useState(1240);
-  const [streak, setStreak] = useState(7);
-  const [solvedCount, setSolvedCount] = useState(12);
-  const [readinessScore, setReadinessScore] = useState(72);
+  const [xp, setXp] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [solvedCount, setSolvedCount] = useState(0);
+  const [readinessScore, setReadinessScore] = useState(0);
   const [showXpToast, setShowXpToast] = useState(false);
   const [xpGainedAmount, setXpGainedAmount] = useState(0);
 
@@ -133,8 +133,8 @@ export default function InterviewGenerator() {
 
   // Notification badge logic
   const [notifications, setNotifications] = useState<string[]>([
-    "🎉 Placement session started! Complete 3 questions to lock in today's multiplier.",
-    "🔥 7-Day Streak Active! Keep up the daily placement prep."
+    "🎉 Placement session started! Complete questions to earn XP.",
+    "🔥 Keep up the daily placement prep to build your streak!"
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -159,13 +159,24 @@ export default function InterviewGenerator() {
       const savedReadiness = localStorage.getItem("smartpicks_student_readiness");
       const savedScratch = localStorage.getItem("smartpicks_student_scratch");
       
-      if (savedXp) setXp(parseInt(savedXp));
+      if (savedXp) {
+        setXp(parseInt(savedXp));
+      } else if (user && user.xp !== undefined) {
+        setXp(user.xp);
+      }
       if (savedStreak) setStreak(parseInt(savedStreak));
       if (savedSolved) setSolvedCount(parseInt(savedSolved));
       if (savedReadiness) setReadinessScore(parseInt(savedReadiness));
       if (savedScratch) setScratchNotes(savedScratch);
     }
-  }, []);
+  }, [user]);
+
+  // Keep XP in sync with user state
+  useEffect(() => {
+    if (user && user.xp !== undefined) {
+      setXp(user.xp);
+    }
+  }, [user]);
 
   // Sync chat auto-scrolling
   useEffect(() => {
@@ -843,8 +854,8 @@ export default function InterviewGenerator() {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-white">{streak} Days</span>
-              <span className="text-[10px] block text-green-400 font-black uppercase tracking-wider mt-1">
-                🔥 1.5x XP Boost Active
+              <span className={`text-[10px] block font-black uppercase tracking-wider mt-1 ${streak > 0 ? "text-green-400" : "text-neutral-500"}`}>
+                {streak > 0 ? "🔥 1.5x XP Boost Active" : "⚡ Practice daily to build streak"}
               </span>
             </div>
           </div>
@@ -859,7 +870,14 @@ export default function InterviewGenerator() {
                 <Sparkles className="h-3 w-3" /> System Recommendation
               </span>
               <p className="text-xs font-bold text-white leading-snug">
-                "Practice DBMS transactions &amp; B-Trees matching Google targets."
+                {role.toLowerCase().includes("frontend") 
+                  ? "Practice React component reconciliation and browser paint engine rules."
+                  : role.toLowerCase().includes("backend") 
+                    ? "Practice DBMS indexes tuning and SQL transaction isolation limits."
+                    : role.toLowerCase().includes("devops") 
+                      ? "Configure multi-container Docker Compose networks and CI/CD parameters."
+                      : "Practice DBMS transactions & B-Trees matching Google targets."
+                }
               </p>
             </div>
             <button

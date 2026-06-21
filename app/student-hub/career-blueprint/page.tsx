@@ -554,9 +554,9 @@ export default function CareerBlueprintHub() {
   const [compareRoleB, setCompareRoleB] = useState("AI Agent Engineer");
 
   // Dynamic user gamified metrics
-  const [xp, setXp] = useState(2450);
-  const [streak, setStreak] = useState(12);
-  const [unlockedBadges, setUnlockedBadges] = useState<string[]>(["Pioneer", "Skill Builder"]);
+  const [xp, setXp] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
   const [completedNodesMap, setCompletedNodesMap] = useState<Record<string, boolean>>({});
   const [selectedQuizNodeId, setSelectedQuizNodeId] = useState<string | null>(null);
   const [quizAnswerIndex, setQuizAnswerIndex] = useState<number | null>(null);
@@ -581,8 +581,7 @@ export default function CareerBlueprintHub() {
 
   // Notification state (alerts shown inline, no bell UI)
   const [notifications, setNotifications] = useState<string[]>([
-    "🎉 Career blueprint loaded. Complete milestones to earn XP!",
-    "🔥 12-Day Streak active."
+    "🎉 Career blueprint loaded. Complete milestones to earn XP!"
   ]);
 
   // Local Storage synchronizer
@@ -593,12 +592,40 @@ export default function CareerBlueprintHub() {
       const savedBadges = localStorage.getItem("smartpicks_blueprint_badges");
       const savedNodes = localStorage.getItem("smartpicks_blueprint_completed_nodes");
       
-      if (savedXp) setXp(parseInt(savedXp));
-      if (savedStreak) setStreak(parseInt(savedStreak));
-      if (savedBadges) setUnlockedBadges(JSON.parse(savedBadges));
+      if (savedXp) {
+        setXp(parseInt(savedXp));
+      } else if (user && user.xp !== undefined) {
+        setXp(user.xp);
+      }
+      if (savedStreak) {
+        const parsedStreak = parseInt(savedStreak);
+        setStreak(parsedStreak);
+        if (parsedStreak > 0) {
+          setNotifications(prev => {
+            if (!prev.some(n => n.includes("Streak active"))) {
+              return [...prev, `🔥 ${parsedStreak}-Day Streak active.`];
+            }
+            return prev;
+          });
+        }
+      }
+      if (savedBadges) {
+        setUnlockedBadges(JSON.parse(savedBadges));
+      } else {
+        const defaultBadges = ["Pioneer"];
+        setUnlockedBadges(defaultBadges);
+        localStorage.setItem("smartpicks_blueprint_badges", JSON.stringify(defaultBadges));
+      }
       if (savedNodes) setCompletedNodesMap(JSON.parse(savedNodes));
     }
-  }, []);
+  }, [user]);
+
+  // Keep XP in sync with user state
+  useEffect(() => {
+    if (user && user.xp !== undefined) {
+      setXp(user.xp);
+    }
+  }, [user]);
 
   // Update chat layout scroll bounds
   useEffect(() => {
