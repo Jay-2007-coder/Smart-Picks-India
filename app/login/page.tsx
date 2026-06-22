@@ -194,7 +194,7 @@ function EmailLogin({ isPending, onSubmit }: { isPending: boolean, onSubmit: (da
       >
         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
         <span className="relative flex items-center justify-center gap-2">
-          {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In to OS"}
+          {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
           {!isPending && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
         </span>
       </motion.button>
@@ -403,7 +403,7 @@ function LoginFormContent() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-pink-500/20 border border-white/10 mb-4">
             <Zap className="w-6 h-6 text-violet-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Sign in to OS</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Sign in to SmartPicks</h2>
           <p className="text-sm text-slate-400 font-medium">Access your AI-powered ecosystem.</p>
         </div>
 
