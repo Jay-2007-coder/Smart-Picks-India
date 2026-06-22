@@ -103,9 +103,13 @@ app.use(cookieParser());
 
 // Trust proxy (required for secure cookies and accurate rate limiter IP tracking in production)
 app.set("trust proxy", 1);
-
 // Apply general API rate limiter
 app.use("/api", apiLimiter);
+
+app.use((req, res, next) => {
+  console.log(`[API Request]: ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // ──────────────────────────────────────────────────────────────────────────────
 // ROUTES
