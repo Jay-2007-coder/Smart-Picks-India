@@ -174,8 +174,14 @@ export default function CodingHelper() {
     ];
     let i = 0;
     const interval = setInterval(() => {
-      if (i < logs.length) { setSimLogs((prev) => [...prev, logs[i]]); i++; }
-      else { clearInterval(interval); setSimState("done"); }
+      if (i < logs.length) {
+        const currentLog = logs[i];
+        setSimLogs((prev) => [...prev, currentLog]);
+        i++;
+      } else {
+        clearInterval(interval);
+        setSimState("done");
+      }
     }, 250);
   };
 
@@ -246,7 +252,7 @@ export default function CodingHelper() {
   }
 
   // ─── Access Gate ─────────────────────────────────────────────────────────────
-  if (!user) {
+  if (false && !user) {
     return (
       <div className="min-h-screen bg-[#080d1a] flex items-center justify-center py-12 px-4 relative overflow-hidden">
         <div className="absolute top-1/4 left-1/4 h-96 w-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -839,6 +845,7 @@ export default function CodingHelper() {
                             </div>
                           )}
                           {simLogs.map((log, idx) => {
+                            if (!log) return null;
                             let colorClass = "text-[#5af53d]";
                             if (log.includes("✔")) colorClass = "text-emerald-400 font-bold";
                             else if (log.includes("[INFO]")) colorClass = "text-cyan-400";

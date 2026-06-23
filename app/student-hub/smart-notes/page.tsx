@@ -12,6 +12,8 @@ import {
   FileCode, Layers, UserCheck, Settings, Database, ArrowRight, Lightbulb
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // ==============================================================================
 // 1. DATA MODELS & SEED DATA
@@ -22,7 +24,7 @@ interface StudyFile {
   name: string;
   size: string;
   type: string;
-  category: "Textbook" | "Lecture Slides" | "Handwritten Note" | "Lecture Audio" | "PYQ Paper";
+  category: string;
   subject: string;
   dateUploaded: string;
   extractedText?: string;
@@ -235,9 +237,10 @@ export default function SmartNotesGenerator() {
   const [selectedSubject, setSelectedSubject] = useState<string>("All");
 
   // Drag and Drop Upload States
-  const [files, setFiles] = useState<StudyFile[]>([]);
+  const [files, setFiles] = useState<StudyFile[]>(SAMPLE_FILES);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
+  const [fileParseMsg, setFileParseMsg] = useState("");
   const [ocrModalFile, setOcrModalFile] = useState<StudyFile | null>(null);
 
   // Syllabus & Custom target states
@@ -306,9 +309,11 @@ export default function SmartNotesGenerator() {
   // Notes Config Generator States
   const [noteStyle, setNoteStyle] = useState<string>("One-Night Revision Notes");
   const [noteMode, setNoteMode] = useState<string>("University Exam Mode");
-  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>([]);
+  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>(SAMPLE_NOTES);
   const [activeNoteIdx, setActiveNoteIdx] = useState(0);
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
+  const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState(false);
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
 
   // Note editing states
   const [isEditingNote, setIsEditingNote] = useState(false);
@@ -550,6 +555,15 @@ export default function SmartNotesGenerator() {
     { subject: "Computer Networks", days: 12, progress: 20 }
   ]);
 
+  // Dynamic Subject List computation
+  const subjectList = useMemo(() => {
+    const defaults = ["Operating Systems", "Database Management", "Computer Networks"];
+    const fromFiles = files.map(f => f.subject).filter(Boolean);
+    const fromRevisions = revisionCountdowns.map(r => r.subject).filter(Boolean);
+    const set = new Set([...defaults, ...fromFiles, ...fromRevisions]);
+    return Array.from(set);
+  }, [files, revisionCountdowns]);
+
   // Streak & Savings Stats
   const [streakDays, setStreakDays] = useState(0);
   useEffect(() => {
@@ -622,102 +636,149 @@ export default function SmartNotesGenerator() {
     e.preventDefault();
     const droppedFiles = e.dataTransfer.files;
     if (droppedFiles && droppedFiles.length > 0) {
-      simulateFileUpload(droppedFiles[0].name, droppedFiles[0].size);
+      handleFileUpload(droppedFiles[0]);
     }
   };
 
   const triggerLocalUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files;
     if (selected && selected.length > 0) {
-      simulateFileUpload(selected[0].name, selected[0].size);
+      handleFileUpload(selected[0]);
     }
   };
 
-  const simulateFileUpload = (name: string, sizeBytes: number) => {
+  const handleFileUpload = async (file: File) => {
     playClick();
-    setUploadedFileName(name);
-    setUploadProgress(0);
-    const sizeStr = (sizeBytes / (1024 * 1024)).toFixed(1) + " MB";
+    setUploadedFileName(file.name);
+    setUploadProgress(10);
+    setFileParseMsg("Reading file contents...");
 
-    let current = 0;
-    const interval = setInterval(() => {
-      current += 20;
-      setUploadProgress(current);
-      if (current >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          const newFile: StudyFile = {
-            id: `file-${Date.now()}`,
-            name,
-            size: sizeStr,
-            type: "application/pdf",
-            category: "Lecture Slides",
-            subject: selectedSubject === "All" ? "Operating Systems" : selectedSubject,
-            dateUploaded: new Date().toISOString().split("T")[0],
-            extractedText: "Auto-extracted AI context from " + name + ": Sample syllabus modules, Deadlocks conditions review, CPU caching algorithms, key terms analysis.",
-            diagramsCount: Math.floor(Math.random() * 3) + 1,
-            equationsCount: Math.floor(Math.random() * 5)
-          };
-          setFiles((prev) => [newFile, ...prev]);
-          setUploadProgress(null);
-          setUploadedFileName("");
-          playSuccess();
-        }, 300);
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+    let extracted = "";
+
+    try {
+      if (ext === "txt") {
+        setUploadProgress(40);
+        extracted = await file.text();
+        setUploadProgress(80);
+      } else if (ext === "pdf") {
+        setUploadProgress(30);
+        setFileParseMsg("Loading PDF engine...");
+        const pdfjsLib = await import("pdfjs-dist");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+        
+        const buf = await file.arrayBuffer();
+        setUploadProgress(50);
+        setFileParseMsg("Parsing PDF text...");
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        let full = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          setFileParseMsg(`Parsing page ${i}/${pdf.numPages}...`);
+          const pg = await pdf.getPage(i);
+          const ct = await pg.getTextContent();
+          full += ct.items.map((x: any) => x.str).join(" ") + "\n";
+          setUploadProgress(50 + Math.floor((i / pdf.numPages) * 40));
+        }
+        extracted = full.trim();
+      } else if (ext === "docx") {
+        setUploadProgress(30);
+        setFileParseMsg("Loading DOCX engine...");
+        const mammoth = await import("mammoth");
+        const buf = await file.arrayBuffer();
+        setUploadProgress(60);
+        setFileParseMsg("Parsing Word document...");
+        const out = await mammoth.extractRawText({ arrayBuffer: buf });
+        extracted = out.value.trim();
+        setUploadProgress(90);
+      } else {
+        extracted = `Non-text file context: ${file.name}. (Check OCR or type content outline manually).`;
+        setUploadProgress(80);
       }
-    }, 150);
+
+      setUploadProgress(100);
+      setTimeout(() => {
+        const newFile: StudyFile = {
+          id: `file-${Date.now()}`,
+          name: file.name,
+          size: sizeStr,
+          type: file.type || `application/${ext}`,
+          category: ext === "pdf" ? "Reference PDF" : "Lecture Slides",
+          subject: selectedSubject === "All" ? "General Study" : selectedSubject,
+          dateUploaded: new Date().toISOString().split("T")[0],
+          extractedText: extracted || `Empty text extracted from ${file.name}`,
+          diagramsCount: Math.floor(Math.random() * 3),
+          equationsCount: Math.floor(Math.random() * 4)
+        };
+        setFiles(prev => [newFile, ...prev]);
+        setUploadProgress(null);
+        setUploadedFileName("");
+        setFileParseMsg("");
+        setOcrModalFile(newFile);
+        playSuccess();
+      }, 400);
+    } catch (err: any) {
+      console.error(err);
+      setUploadProgress(null);
+      setUploadedFileName("");
+      setFileParseMsg("");
+      alert("Failed to parse file: " + (err.message || err));
+    }
   };
 
-  // Notes generator mock function
-  const triggerNotesGeneration = () => {
+  const triggerNotesGeneration = async () => {
     if (isGeneratingNotes) return;
     playClick();
     setIsGeneratingNotes(true);
-    setTimeout(() => {
-      // Gather any syllabus or text context from files
+
+    try {
       const filesContext = files
         .filter(f => selectedSubject === "All" || f.subject === selectedSubject)
         .map(f => f.extractedText)
         .filter(Boolean)
-        .join("\n");
+        .join("\n\n")
+        .substring(0, 15000);
 
-      const hasSyllabus = customSyllabusText.trim().length > 0;
-      const hasFiles = filesContext.trim().length > 0;
+      const response = await fetch("/api/v1/student-hub/smart-notes/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: selectedSubject === "All" ? "General Study" : selectedSubject,
+          style: noteStyle,
+          mode: noteMode,
+          filesContext,
+          customSyllabusText
+        })
+      });
 
-      let syllabusSummary = "";
-      if (hasSyllabus && hasFiles) {
-        syllabusSummary = `Generated strictly using syllabus focus: "${customSyllabusText}" along with context from files: "${filesContext.substring(0, 100)}..."`;
-      } else if (hasSyllabus) {
-        syllabusSummary = `Generated strictly using syllabus focus: "${customSyllabusText}"`;
-      } else if (hasFiles) {
-        syllabusSummary = `Generated using context from uploaded files: "${filesContext.substring(0, 150)}..."`;
+      const data = await response.json();
+      if (response.ok && data.success) {
+        const newNote: GeneratedNote = {
+          id: `note-${Date.now()}`,
+          title: data.note.title || `${selectedSubject} Revision Notes`,
+          style: noteStyle,
+          mode: noteMode,
+          subject: selectedSubject === "All" ? "General Study" : selectedSubject,
+          content: data.note.content,
+          keyTakeaways: data.note.keyTakeaways || [],
+          formulas: data.note.formulas || []
+        };
+        setGeneratedNotes(prev => [newNote, ...prev]);
+        setActiveNoteIdx(0);
+        setIsEditingNote(false);
+        playSuccess();
       } else {
-        syllabusSummary = `Detailed notes generated using AI extraction on subject "${selectedSubject === "All" ? "Operating Systems" : selectedSubject}".`;
+        alert(data.message || "Failed to generate AI notes. Please try again.");
       }
-
-      const newNote: GeneratedNote = {
-        id: `note-${Date.now()}`,
-        title: `${selectedSubject === "All" ? "Operating Systems" : selectedSubject} - Generated Notes`,
-        style: noteStyle,
-        mode: noteMode,
-        subject: selectedSubject === "All" ? "Operating Systems" : selectedSubject,
-        content: `${syllabusSummary}\n\nThis revision guide matches style "${noteStyle}" in Mode "${noteMode}". Deadlocks conditions check: Hold and Wait, Mutual Exclusion, No Preemption, Circular Wait. Database level: 3NF functional dependencies superkey determinant BCNF. Core TCP flow control.`,
-        keyTakeaways: [
-          hasSyllabus ? `Focus: ${customSyllabusText.substring(0, 50)}` : "Study pattern matched with " + noteMode,
-          "Optimal revision focus for college/competitive preparation.",
-          "Deadlock algorithms Banker's safety vector matrices check.",
-          "Auto generated under " + noteStyle
-        ],
-        formulas: ["Need = Max - Allocation", "BCNF Determinant functional mappings superkey"]
-      };
-      setGeneratedNotes((prev) => [newNote, ...prev]);
-      setActiveNoteIdx(0);
+    } catch (err: any) {
+      console.error(err);
+      alert("Network error: " + (err.message || err));
+    } finally {
       setIsGeneratingNotes(false);
-      playSuccess();
-    }, 1800);
+    }
   };
 
-  // Chat conversation
-  const sendChatMessage = (textStr?: string) => {
+  const sendChatMessage = async (textStr?: string) => {
     const targetText = textStr || chatInput;
     if (!targetText.trim() || chatIsTyping) return;
     playClick();
@@ -727,24 +788,145 @@ export default function SmartNotesGenerator() {
     setChatInput("");
     setChatIsTyping(true);
 
-    setTimeout(() => {
-      let aiResponse = "I have scanned your uploaded files. What specific topic would you like to review?";
-      const lower = targetText.toLowerCase();
+    try {
+      const filesContext = files
+        .filter(f => selectedSubject === "All" || f.subject === selectedSubject)
+        .map(f => f.extractedText)
+        .filter(Boolean)
+        .join("\n\n")
+        .substring(0, 15000);
 
-      if (lower.includes("deadlock") && lower.includes("10")) {
-        aiResponse = "Imagine you and your friend are coloring. You have the blue crayon but need the red one. Your friend has the red crayon but needs the blue one. Neither of you will let go of what you have, so both of you are stuck forever! In computers, we call this a Deadlock.";
-      } else if (lower.includes("summarize") || lower.includes("5 points")) {
-        aiResponse = "Here is the summary in 5 bullet points:\n1. Deadlock is a blocked state with resources.\n2. Needs 4 simultaneous conditions.\n3. Banker's Algorithm avoids deadlock dynamically.\n4. Database 3NF removes transitive partial relations.\n5. BCNF determinants must be superkeys.";
-      } else if (lower.includes("paging") || lower.includes("segmentation")) {
-        aiResponse = "Paging divides memory into fixed-size blocks (called frames/pages) which avoids external fragmentation. Segmentation divides memory into variable-size logical parts based on modules (code, stack, data), which matches logical structures but can cause external fragmentation.";
-      } else if (lower.includes("example") || lower.includes("real-world")) {
-        aiResponse = "A real-world example of Deadlock is a narrow bridge where two cars enter from opposite directions. Neither car can move forward because the bridge is single-lane, and neither wants to back up. They are blocked indefinitely!";
+      const history = chatMessages.map(m => ({
+        sender: m.sender,
+        text: m.text
+      }));
+
+      const response = await fetch("/api/v1/student-hub/smart-notes/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: targetText,
+          history,
+          filesContext,
+          subject: selectedSubject === "All" ? "General Study" : selectedSubject
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setChatMessages(prev => [...prev, { sender: "ai" as const, text: data.reply, time: "Now" }]);
+        playSuccess();
+      } else {
+        setChatMessages(prev => [...prev, { sender: "ai" as const, text: "⚠️ " + (data.message || "Failed to receive AI response."), time: "Now" }]);
       }
-
-      setChatMessages((prev) => [...prev, { sender: "ai" as const, text: aiResponse, time: "Now" }]);
+    } catch (err: any) {
+      console.error(err);
+      setChatMessages(prev => [...prev, { sender: "ai" as const, text: "⚠️ Network error connecting to AI tutor.", time: "Now" }]);
+    } finally {
       setChatIsTyping(false);
-      playSuccess();
-    }, 1200);
+    }
+  };
+
+  const generateAiFlashcards = async () => {
+    if (isGeneratingFlashcards) return;
+    playClick();
+    setIsGeneratingFlashcards(true);
+
+    try {
+      const filesContext = files
+        .filter(f => selectedSubject === "All" || f.subject === selectedSubject)
+        .map(f => f.extractedText)
+        .filter(Boolean)
+        .join("\n\n")
+        .substring(0, 15000);
+
+      const response = await fetch("/api/v1/student-hub/smart-notes/flashcards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: selectedSubject === "All" ? "General Study" : selectedSubject,
+          filesContext
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        if (data.flashcards && data.flashcards.length > 0) {
+          const cards = data.flashcards.map((c: any, index: number) => ({
+            id: `flash-${Date.now()}-${index}`,
+            front: c.front,
+            back: c.back,
+            difficulty: c.difficulty || "Medium",
+            bookmarked: false
+          }));
+          setFlashcards(cards);
+          setFlashcardIdx(0);
+          setIsFlipped(false);
+          playSuccess();
+        } else {
+          alert("No flashcards returned from AI.");
+        }
+      } else {
+        alert(data.message || "Failed to generate flashcards.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("Network error: " + (err.message || err));
+    } finally {
+      setIsGeneratingFlashcards(false);
+    }
+  };
+
+  const generateAiQuiz = async () => {
+    if (isGeneratingQuiz) return;
+    playClick();
+    setIsGeneratingQuiz(true);
+
+    try {
+      const filesContext = files
+        .filter(f => selectedSubject === "All" || f.subject === selectedSubject)
+        .map(f => f.extractedText)
+        .filter(Boolean)
+        .join("\n\n")
+        .substring(0, 15000);
+
+      const response = await fetch("/api/v1/student-hub/smart-notes/quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: selectedSubject === "All" ? "General Study" : selectedSubject,
+          filesContext
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        if (data.quiz && data.quiz.length > 0) {
+          const questions = data.quiz.map((q: any, index: number) => ({
+            id: `q-${Date.now()}-${index}`,
+            type: q.type || "MCQ",
+            question: q.question,
+            options: q.options || (q.type === "TrueFalse" ? ["True", "False"] : undefined),
+            answer: q.answer,
+            explanation: q.explanation || "No explanation provided."
+          }));
+          setQuizQuestions(questions);
+          setQuizAnswers({});
+          setQuizSubmitted(false);
+          setQuizRunning(false);
+          playSuccess();
+        } else {
+          alert("No quiz questions returned from AI.");
+        }
+      } else {
+        alert(data.message || "Failed to generate quiz.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("Network error: " + (err.message || err));
+    } finally {
+      setIsGeneratingQuiz(false);
+    }
   };
 
   // Quiz Timer control
@@ -992,14 +1174,14 @@ export default function SmartNotesGenerator() {
               </h3>
 
               {/* Subject Tag Selector */}
-              <div className="space-y-2">
+              <div className="space-y-2 text-left">
                 <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Select Subject Filter</label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {["All", "Operating Systems", "Database Management", "Computer Networks"].map((sub) => (
+                <div className="flex flex-wrap gap-1.5">
+                  {["All", ...subjectList].map((sub) => (
                     <button
                       key={sub}
                       onClick={() => { playClick(); setSelectedSubject(sub); }}
-                      className={`py-1.5 px-2 text-[9px] font-black rounded-lg border text-center transition-all cursor-pointer truncate ${
+                      className={`py-1 px-2 text-[9px] font-black rounded-lg border transition-all cursor-pointer truncate max-w-[120px] ${
                         selectedSubject === sub
                           ? "bg-gradient-to-r from-purple-500 to-indigo-600 border-purple-500 text-white shadow-lg shadow-purple-500/10"
                           : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 text-zinc-400"
@@ -1041,7 +1223,7 @@ export default function SmartNotesGenerator() {
                     <div className="w-full bg-zinc-850 rounded-full h-2 overflow-hidden border border-zinc-800">
                       <div className="bg-purple-500 h-full rounded-full transition-all duration-150" style={{ width: `${uploadProgress}%` }} />
                     </div>
-                    <span className="text-[8px] text-zinc-500 font-semibold">AI Extracting OCR & Audio timestamps...</span>
+                    <span className="text-[8px] text-zinc-500 font-semibold">{fileParseMsg || "AI Extracting OCR & Audio timestamps..."}</span>
                   </div>
                 )}
               </div>
@@ -1438,25 +1620,42 @@ export default function SmartNotesGenerator() {
                             </span>
                           </div>
 
-                          <p className="text-xs text-zinc-350 leading-relaxed font-semibold whitespace-pre-wrap animate-none">
-                            {generatedNotes[activeNoteIdx].content}
-                          </p>
+                          <div className="prose prose-invert max-w-none text-xs text-zinc-300 leading-relaxed font-semibold space-y-3 text-left">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h1: ({ children }) => <h1 className="text-sm font-black mt-4 mb-2 text-white uppercase tracking-wide border-b border-zinc-850 pb-1">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-xs font-black mt-3 mb-1.5 text-white uppercase tracking-wide">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-xs font-bold mt-2.5 mb-1 text-purple-400">{children}</h3>,
+                                p: ({ children }) => <p className="mb-2.5 last:mb-0 leading-relaxed text-zinc-300">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc pl-4 mb-2.5 space-y-1 text-zinc-300">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-4 mb-2.5 space-y-1 text-zinc-300">{children}</ol>,
+                                li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                                strong: ({ children }) => <strong className="font-black text-white">{children}</strong>,
+                                code: ({ children }) => <code className="bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded text-[11px] font-mono text-purple-400">{children}</code>
+                              }}
+                            >
+                              {generatedNotes[activeNoteIdx].content}
+                            </ReactMarkdown>
+                          </div>
 
                           {/* Key takeaways list */}
-                          <div className="p-4 bg-zinc-950/60 border border-zinc-855 rounded-2xl space-y-2">
-                            <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
-                              <CheckCircle className="h-3.5 w-3.5" /> Key Takeaways
-                            </strong>
-                            <ul className="list-disc list-inside text-[10px] text-zinc-400 font-semibold space-y-1.5 pl-1">
-                              {generatedNotes[activeNoteIdx].keyTakeaways.map((take, idx) => (
-                                <li key={idx}>{take}</li>
-                              ))}
-                            </ul>
-                          </div>
+                          {generatedNotes[activeNoteIdx].keyTakeaways && generatedNotes[activeNoteIdx].keyTakeaways.length > 0 && (
+                            <div className="p-4 bg-zinc-950/60 border border-zinc-855 rounded-2xl space-y-2 text-left">
+                              <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
+                                <CheckCircle className="h-3.5 w-3.5" /> Key Takeaways
+                              </strong>
+                              <ul className="list-disc list-inside text-[10px] text-zinc-400 font-semibold space-y-1.5 pl-1">
+                                {generatedNotes[activeNoteIdx].keyTakeaways.map((take, idx) => (
+                                  <li key={idx}>{take}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
 
                           {/* Equations / formulas if present */}
                           {generatedNotes[activeNoteIdx].formulas && generatedNotes[activeNoteIdx].formulas.length > 0 && (
-                            <div className="p-4 bg-purple-500/[0.02] border border-purple-500/10 rounded-2xl space-y-2">
+                            <div className="p-4 bg-purple-500/[0.02] border border-purple-500/10 rounded-2xl space-y-2 text-left">
                               <strong className="text-[10px] font-black uppercase text-purple-500 tracking-wider flex items-center gap-1">
                                 <Database className="h-3.5 w-3.5" /> Equations & Concepts
                               </strong>
@@ -1506,12 +1705,33 @@ export default function SmartNotesGenerator() {
                   <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
                     {chatMessages.map((msg, idx) => (
                       <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"} animate-fadeIn`}>
-                        <div className={`max-w-[85%] rounded-2xl p-3.5 text-xs font-semibold leading-relaxed ${
+                        <div className={`max-w-[85%] rounded-2xl p-3.5 text-xs font-semibold leading-relaxed text-left ${
                           msg.sender === "user"
                             ? "bg-purple-500 text-white"
                             : "bg-zinc-950 border border-zinc-850 text-zinc-300"
                         }`}>
-                          {msg.text}
+                          {msg.sender === "user" ? (
+                            <div className="whitespace-pre-wrap">{msg.text}</div>
+                          ) : (
+                            <div className="prose prose-invert max-w-none space-y-2">
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  h1: ({ children }) => <h1 className="text-xs font-black mt-2 mb-1 text-white uppercase tracking-wide">{children}</h1>,
+                                  h2: ({ children }) => <h2 className="text-xs font-black mt-2 mb-1 text-white uppercase tracking-wide">{children}</h2>,
+                                  h3: ({ children }) => <h3 className="text-xs font-bold mt-1.5 mb-1 text-purple-400">{children}</h3>,
+                                  p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed text-zinc-300">{children}</p>,
+                                  ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1 text-zinc-300">{children}</ul>,
+                                  ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1 text-zinc-300">{children}</ol>,
+                                  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                                  strong: ({ children }) => <strong className="font-black text-white">{children}</strong>,
+                                  code: ({ children }) => <code className="bg-zinc-900 border border-zinc-800 px-1 py-0.5 rounded text-[10px] font-mono text-purple-400">{children}</code>
+                                }}
+                              >
+                                {msg.text}
+                              </ReactMarkdown>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1576,9 +1796,26 @@ export default function SmartNotesGenerator() {
                     <div className="absolute -top-12 -right-12 w-48 h-48 bg-purple-650/5 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="flex justify-between items-start relative z-10">
-                      <span className="px-2.5 py-1 text-[8px] font-black uppercase tracking-wider text-purple-400 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                        Card {flashcardIdx + 1} / {flashcards.length}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-1 text-[8px] font-black uppercase tracking-wider text-purple-400 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                          Card {flashcardIdx + 1} / {flashcards.length}
+                        </span>
+                        <button
+                          onClick={generateAiFlashcards}
+                          disabled={isGeneratingFlashcards}
+                          className="px-2.5 py-1 text-[8px] font-black uppercase tracking-wider text-white bg-purple-500 hover:bg-purple-600 disabled:opacity-50 rounded-lg cursor-pointer flex items-center gap-1 transition-all"
+                        >
+                          {isGeneratingFlashcards ? (
+                            <>
+                              <RefreshCw className="h-2.5 w-2.5 animate-spin" /> Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-2.5 w-2.5 fill-white" /> Generate AI Flashcards
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <button
                         onClick={() => {
                           playClick();
@@ -1677,18 +1914,35 @@ export default function SmartNotesGenerator() {
                         <h2 className="text-base font-black text-zinc-100 tracking-tight pt-1">Solve Quiz</h2>
                       </div>
                       
-                      {quizRunning ? (
-                        <span className="text-[10px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-xl">
-                          Timer: {quizTimer}s
-                        </span>
-                      ) : (
+                      <div className="flex gap-2">
                         <button
-                          onClick={startQuiz}
-                          className="px-4 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer transition-colors"
+                          onClick={generateAiQuiz}
+                          disabled={isGeneratingQuiz || quizRunning}
+                          className="px-4 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 disabled:opacity-50 text-purple-450 text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer transition-colors flex items-center gap-1"
                         >
-                          {quizSubmitted ? "Retake Quiz" : "Start Quiz"}
+                          {isGeneratingQuiz ? (
+                            <>
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-3.5 w-3.5" /> Generate AI Quiz
+                            </>
+                          )}
                         </button>
-                      )}
+                        {quizRunning ? (
+                          <span className="text-[10px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-xl flex items-center">
+                            Timer: {quizTimer}s
+                          </span>
+                        ) : (
+                          <button
+                            onClick={startQuiz}
+                            className="px-4 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer transition-colors"
+                          >
+                            {quizSubmitted ? "Retake Quiz" : "Start Quiz"}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {quizRunning || quizSubmitted ? (

@@ -613,4 +613,210 @@ Ensure ideas are highly innovative and align with the provided tech stack.`;
   }
 });
 
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 7. SMART NOTES GENERATOR SUITE
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/smart-notes/generate", awardXp, async (req, res, next) => {
+  try {
+    const { subject, style, mode, filesContext, customSyllabusText } = req.body;
+
+    const systemPrompt = `You are a professional academic notes generator and study advisor.
+Generate rich, detailed, and highly structured study notes on the subject: "${subject || "General Study"}".
+Incorporate any provided file context or syllabus text.
+Your response MUST be a raw JSON object with NO markdown code block formatting (no backticks, no code fence blocks).
+JSON Schema:
+{
+  "title": "A precise and descriptive note title",
+  "content": "Comprehensive and detailed notes formatted in rich Markdown, including headings, lists, concepts, code examples, and theoretical walkthroughs. DO NOT summarize briefly; make it highly useful and educational.",
+  "keyTakeaways": ["Takeaway bullet point 1", "Takeaway bullet point 2", "Takeaway bullet point 3", "Takeaway bullet point 4"],
+  "formulas": ["Key equation, theorem, or functional law (optional)", "Another equation (optional)"]
+}`;
+
+    const userPrompt = `Subject: ${subject}
+Note Style: ${style}
+Study Mode: ${mode}
+Syllabus Focus: ${customSyllabusText || "None specified"}
+Uploaded File Text Context:
+${filesContext || "No files uploaded"}`;
+
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini smart-notes error:", aiErr.message);
+    }
+
+    if (!aiOutput) {
+      // Fallback
+      const fallbackResult = {
+        title: `${subject || "General"} - Study Notes`,
+        content: `### Summary of ${subject || "General Study"}\n\nThis note revision is matching the style **${style}** and study mode **${mode}**. \n\n* **Syllabus Focus:** ${customSyllabusText || "Standard Subject Curriculum"}\n\n* **Extracted File Context:** ${filesContext ? filesContext.substring(0, 150) + "..." : "No additional text files uploaded."}\n\n*(Note: This is a fallback note since AI credits are temporarily limited. Use the study buddy chat below to ask specific details).*`,
+        keyTakeaways: [
+          `Focusing on ${subject || "general study concepts"}.`,
+          "Structure aligns with academic guidelines.",
+          "Check the flashcards and quiz section for self-assessments."
+        ],
+        formulas: []
+      };
+      return res.status(200).json({ success: true, note: fallbackResult, isFallback: true });
+    }
+
+    try {
+      const note = cleanGeminiJson(aiOutput);
+      res.status(200).json({ success: true, note });
+    } catch (parseErr) {
+      console.error("Failed to parse smart-notes json:", parseErr.message, "\nRaw:", aiOutput);
+      res.status(500).json({ success: false, message: "AI notes output parsing failed. Try again." });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/smart-notes/chat", awardXp, async (req, res, next) => {
+  try {
+    const { message, history, filesContext, subject } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ success: false, message: "Message is required." });
+    }
+
+    const systemPrompt = `You are a helpful, professional, and smart AI Study Buddy and academic tutor.
+Answer the student's question about the notes or study materials.
+Use the provided extracted text context from their uploaded study files as the primary source of truth:
+[STUDY CONTEXT]
+${filesContext || "No files uploaded."}
+
+If the question is not directly related to the study context, use your general knowledge to answer clearly, step-by-step, using Markdown for formatting.`;
+
+    const contents = [];
+    if (history && Array.isArray(history)) {
+      for (const turn of history) {
+        contents.push({
+          role: turn.sender === "user" ? "user" : "model",
+          parts: [{ text: turn.text }],
+        });
+      }
+    }
+
+    contents.push({
+      role: "user",
+      parts: [{ text: message }],
+    });
+
+    let reply = null;
+    try {
+      reply = await callGemini(systemPrompt, contents);
+    } catch (aiErr) {
+      console.error("Gemini smart-notes chat error:", aiErr.message);
+    }
+
+    if (!reply) {
+      reply = "⚠️ **AI Quota Reached** — The generative AI models are temporarily rate-limited. Please try again in 1 minute.";
+    }
+
+    res.status(200).json({ success: true, reply });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/smart-notes/flashcards", awardXp, async (req, res, next) => {
+  try {
+    const { subject, filesContext } = req.body;
+
+    const systemPrompt = `You are a helpful study advisor.
+Generate exactly 4-6 high-yield flashcards (question and answer) based on the provided study subject and text context.
+Output MUST be a raw JSON array of objects with NO markdown formatting (no backticks, no code fence blocks).
+JSON Format:
+[
+  {
+    "front": "The concept question or key term",
+    "back": "Detailed but concise answer or definition",
+    "difficulty": "Easy" | "Medium" | "Hard"
+  }
+]`;
+
+    const userPrompt = `Subject: ${subject}
+Context:
+${filesContext || "No files uploaded."}`;
+
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini flashcard generator error:", aiErr.message);
+    }
+
+    if (!aiOutput) {
+      // Mock Fallback
+      const fallbackFlashcards = [
+        { front: `Explain the core concept of ${subject || "this topic"}.`, back: "This refers to the primary framework and foundational concepts outlined in the syllabus.", difficulty: "Medium" },
+        { front: "Why is self-testing effective?", back: "Active recall reinforces neural connections and strengthens memory retention.", difficulty: "Easy" }
+      ];
+      return res.status(200).json({ success: true, flashcards: fallbackFlashcards, isFallback: true });
+    }
+
+    try {
+      const flashcards = cleanGeminiJson(aiOutput);
+      res.status(200).json({ success: true, flashcards });
+    } catch (parseErr) {
+      console.error("Failed to parse flashcards json:", parseErr.message);
+      res.status(500).json({ success: false, message: "AI flashcard parsing failed. Try again." });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/smart-notes/quiz", awardXp, async (req, res, next) => {
+  try {
+    const { subject, filesContext } = req.body;
+
+    const systemPrompt = `You are an academic test generator.
+Generate exactly 3-5 quiz questions based on the study subject and text context.
+Include a mix of MCQs, True/False, and Fill-in-the-blank questions.
+Output MUST be a raw JSON array of objects with NO markdown formatting (no backticks, no code fence blocks).
+JSON Format:
+[
+  {
+    "type": "MCQ" | "TrueFalse" | "FillBlank",
+    "question": "The question description",
+    "options": ["Option A", "Option B", "Option C", "Option D"], // Only include for MCQ or True/False (e.g. ["True", "False"])
+    "answer": "The exact correct answer matching one of the options (or the exact fill-in value)",
+    "explanation": "Brief explanation of why this answer is correct."
+  }
+]`;
+
+    const userPrompt = `Subject: ${subject}
+Context:
+${filesContext || "No files uploaded."}`;
+
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini quiz generator error:", aiErr.message);
+    }
+
+    if (!aiOutput) {
+      const fallbackQuiz = [
+        { type: "TrueFalse", question: `Reviewing ${subject || "study subjects"} regularly increases exam scores.`, options: ["True", "False"], answer: "True", explanation: "Distributed practice is proven to boost performance." }
+      ];
+      return res.status(200).json({ success: true, quiz: fallbackQuiz, isFallback: true });
+    }
+
+    try {
+      const quiz = cleanGeminiJson(aiOutput);
+      res.status(200).json({ success: true, quiz });
+    } catch (parseErr) {
+      console.error("Failed to parse quiz json:", parseErr.message);
+      res.status(500).json({ success: false, message: "AI quiz parsing failed. Try again." });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
