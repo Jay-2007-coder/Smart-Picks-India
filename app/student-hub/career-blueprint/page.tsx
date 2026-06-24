@@ -578,6 +578,8 @@ export default function CareerBlueprintHub() {
     }
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [revealedQuestions, setRevealedQuestions] = useState<Record<string, boolean>>({});
 
   // Notification state (alerts shown inline, no bell UI)
   const [notifications, setNotifications] = useState<string[]>([
@@ -1818,6 +1820,7 @@ export default function CareerBlueprintHub() {
 
     setChatMessages(prev => [...prev, { id: `user-${Date.now()}`, sender: "user", text: textToSend }]);
     setChatInput("");
+    setIsTyping(true);
 
     setTimeout(() => {
       let reply = "";
@@ -1833,6 +1836,7 @@ export default function CareerBlueprintHub() {
         reply = `🤖 **AI Career Mentor**: To excel as a **${activeRoleDetails.role}**, I recommend focusing on the **${activeRoleDetails.roadmap[0]?.title || 'Web Foundations'}** phase. Spend roughly ${activeRoleDetails.roadmap[0]?.timeEstimate || '3 weeks'} building basic terminal and logic scripts before moving to advanced cloud pipelines.`;
       }
 
+      setIsTyping(false);
       setChatMessages(prev => [...prev, { id: `reply-${Date.now()}`, sender: "assistant", text: reply }]);
       addXp(10, "Interacted with AI Career Mentor");
     }, 1000);
@@ -1878,7 +1882,7 @@ export default function CareerBlueprintHub() {
     );
   }
 
-  return (
+    return (
     <div
       style={{ background: "#09090B" }}
       className="min-h-screen text-slate-100 relative overflow-hidden font-sans pb-12 select-none"
@@ -1902,40 +1906,79 @@ export default function CareerBlueprintHub() {
         ))}
       </div>
 
-      {/* Sticky Sub-Header — Blueprint Navigation Bar */}
+      {/* Sticky Header — Career Operating System */}
       <header className="sticky top-0 z-40 bg-[#09090b]/80 backdrop-blur-xl border-b border-neutral-800/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-          {/* Left: Back + Title */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/student-hub"
-              className="flex items-center justify-center h-8 w-8 rounded-xl bg-neutral-900 border border-neutral-800 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 transition-all cursor-pointer shrink-0"
+              className="flex items-center justify-center h-9 w-9 rounded-xl bg-neutral-900 border border-neutral-800 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 transition-all cursor-pointer shrink-0"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4.5 w-4.5" />
             </Link>
             <div className="flex flex-col min-w-0">
               <span className="text-[9px] uppercase tracking-widest font-black text-cyan-400 flex items-center gap-1">
-                <Compass className="h-2.5 w-2.5" /> Career Blueprint Hub
+                <Compass className="h-3 w-3" /> Career Blueprint Hub
               </span>
               <h1 className="text-sm font-black tracking-tight text-white leading-none truncate">Career Operating System</h1>
             </div>
           </div>
 
-          {/* Right: Stats + Compare */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Gamified stats & compare */}
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => setShowCompareModal(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 hover:border-cyan-500/50 hover:text-white text-[10px] font-black text-slate-400 transition-all uppercase tracking-wider cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-cyan-500/50 hover:text-white text-[10px] font-black text-slate-400 transition-all uppercase tracking-wider cursor-pointer"
             >
-              ⚖️ Compare
+              ⚖️ Compare Tracks
             </button>
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-extrabold text-[11px]">
-              <Trophy className="h-3 w-3" />
-              <span>{xp} XP</span>
+
+            {/* XP Progress Ring */}
+            <div className="flex items-center gap-2.5 bg-neutral-900/40 border border-neutral-800/80 px-3.5 py-1.5 rounded-xl">
+              <div className="relative h-9 w-9 flex items-center justify-center shrink-0">
+                <svg className="absolute inset-0 h-full w-full">
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="14"
+                    fill="transparent"
+                    stroke="rgba(255,255,255,0.05)"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="14"
+                    fill="transparent"
+                    stroke="url(#xpGrad)"
+                    strokeWidth="3"
+                    strokeDasharray="88"
+                    strokeDashoffset={88 - (Math.min(xp % 1000, 999) / 1000) * 88}
+                    strokeLinecap="round"
+                    className="progress-ring-circle"
+                  />
+                  <defs>
+                    <linearGradient id="xpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span className="text-[8px] font-black text-cyan-400 relative z-10">Lvl {Math.floor(xp / 1000) + 1}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] text-neutral-500 font-extrabold uppercase tracking-widest leading-none">Progress</span>
+                <span className="text-[11px] font-black text-white leading-tight">{xp} XP</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 font-extrabold text-[11px]">
-              <Flame className="h-3 w-3 fill-current" />
-              <span>{streak}d</span>
+
+            {/* Streak */}
+            <div className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 px-3.5 py-1.5 rounded-xl text-orange-400">
+              <Flame className="h-4 w-4 fill-current animate-pulse animate-duration-1000" />
+              <div className="flex flex-col">
+                <span className="text-[8px] text-orange-500/80 font-black uppercase tracking-widest leading-none">Streak</span>
+                <span className="text-[11px] font-black text-white leading-tight">{streak}d</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1946,55 +1989,64 @@ export default function CareerBlueprintHub() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
           {/* LEFT SIDEBAR: Domain Categories & Roles Menu */}
-          <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-[3.75rem]">
-            <div className="bg-neutral-900/50 backdrop-blur-xl border border-neutral-800/60 rounded-2xl overflow-hidden shadow-xl">
-              {/* Sidebar Header */}
-              <div className="px-4 pt-4 pb-3 border-b border-neutral-800/60">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[10px] font-black uppercase text-neutral-300 tracking-widest">Career Tracks</h3>
-                  <span className="text-[9px] font-black text-cyan-500 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.5 rounded">
-                    {DOMAINS.flatMap(d => d.roles).length} Paths
-                  </span>
-                </div>
-                <div className="relative flex items-center">
-                  <Search className="absolute left-2.5 h-3 w-3 text-neutral-500" />
-                  <input
-                    type="text"
-                    value={roleSearchQuery}
-                    onChange={(e) => setRoleSearchQuery(e.target.value)}
-                    placeholder="Search careers..."
-                    className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-[10px] font-bold text-slate-200 placeholder:text-neutral-600 outline-none focus:border-cyan-500/40 transition-colors"
-                  />
-                </div>
+          <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-[5.5rem]">
+            <div className="bg-neutral-900/50 backdrop-blur-xl border border-neutral-800/60 rounded-3xl overflow-hidden shadow-2xl p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase text-neutral-450 tracking-widest">Career Tracks</h3>
+                <span className="text-[9px] font-black text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-lg">
+                  {DOMAINS.flatMap(d => d.roles).length} Paths
+                </span>
+              </div>
+              
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                <input
+                  type="text"
+                  value={roleSearchQuery}
+                  onChange={(e) => setRoleSearchQuery(e.target.value)}
+                  placeholder="Search domains & roles..."
+                  className="w-full bg-neutral-950/80 border border-neutral-800 rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold text-slate-200 placeholder:text-neutral-600 outline-none focus:border-cyan-500/40 transition-colors focus:ring-1 focus:ring-cyan-500/20"
+                />
               </div>
 
-              {/* Scrollable Domain & Role list */}
-              <div className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto p-3 pr-2">
+              {/* Roles List */}
+              <div className="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
                 {filteredRolesByDomain.map((domain, i) => (
-                  <div key={i} className="space-y-1">
-                    <span className="text-[8px] font-black uppercase text-cyan-500/80 tracking-widest block px-1 pt-1">{domain.name}</span>
-                    <div className="space-y-0.5">
-                      {domain.roles.map(r => (
-                        <button
-                          key={r}
-                          onClick={() => {
-                            setSelectedRole(r);
-                            setSelectedDomain(domain.name);
-                            addXp(10, `Explored Career Path: ${r}`);
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between transition-all cursor-pointer ${
-                            selectedRole === r
-                              ? "bg-cyan-500/10 border border-cyan-500/25 text-cyan-300"
-                              : "text-neutral-400 hover:bg-neutral-800/50 hover:text-white border border-transparent"
-                          }`}
-                        >
-                          <span className="truncate">{r}</span>
-                          {selectedRole === r && <ChevronRight className="h-3 w-3 shrink-0 text-cyan-400" />}
-                        </button>
-                      ))}
+                  <div key={i} className="space-y-1.5">
+                    <div className="flex items-center gap-1.5 px-1.5 pt-1">
+                      <GraduationCap className="h-3.5 w-3.5 text-cyan-400" />
+                      <span className="text-[9px] font-black uppercase text-cyan-400/80 tracking-widest">{domain.name}</span>
+                    </div>
+                    <div className="space-y-1">
+                      {domain.roles.map(r => {
+                        const isSelected = selectedRole === r;
+                        return (
+                          <button
+                            key={r}
+                            onClick={() => {
+                              setSelectedRole(r);
+                              setSelectedDomain(domain.name);
+                              addXp(10, `Explored Career Path: ${r}`);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer border ${
+                              isSelected
+                                ? "bg-cyan-500/10 border-cyan-500/40 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
+                                : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-800/30 hover:text-white"
+                            }`}
+                          >
+                            <span className="truncate pr-2">{r}</span>
+                            {isSelected && <ChevronRight className="h-4 w-4 shrink-0 text-cyan-400" />}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
+                {filteredRolesByDomain.length === 0 && (
+                  <div className="text-center py-6 text-neutral-500 text-xs">
+                    No matching tracks found.
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -2004,78 +2056,77 @@ export default function CareerBlueprintHub() {
 
             {/* Role Hero Summary Card */}
             <div className="bg-neutral-900/50 backdrop-blur-xl border border-neutral-800/60 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-              {/* Decorative role icon watermark */}
-              <div className="absolute top-0 right-0 p-6 opacity-[0.04] pointer-events-none select-none">
-                <activeRoleDetails.icon className="h-36 w-36 text-cyan-400" />
+              {/* Decorative watermark */}
+              <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none select-none">
+                {activeRoleDetails.icon && <activeRoleDetails.icon className="h-40 w-40 text-cyan-400" />}
               </div>
 
-              {/* Meta Badges Row */}
               <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-black text-cyan-400 uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-black text-cyan-400 uppercase tracking-widest">
                   {activeRoleDetails.category}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-neutral-800 border border-neutral-700 text-[9px] font-black text-neutral-300 uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-neutral-850 border border-neutral-800 text-[9px] font-black text-neutral-300 uppercase tracking-widest">
                   {activeRoleDetails.level}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-green-500/10 border border-green-500/20 text-[9px] font-black text-green-400 uppercase tracking-widest">
-                  ⬬ {activeRoleDetails.demand} Demand
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-green-500/10 border border-green-500/20 text-[9px] font-black text-green-400 uppercase tracking-widest">
+                  ● {activeRoleDetails.demand} Demand
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[9px] font-black text-purple-400 uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[9px] font-black text-purple-400 uppercase tracking-widest">
                   ↑ {activeRoleDetails.growth} Growth
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-neutral-800 border border-neutral-700 text-[9px] font-black text-neutral-400 uppercase tracking-widest">
-                  {activeRoleDetails.difficulty} Difficulty
                 </span>
               </div>
 
               <h2 className="text-2xl font-black text-white tracking-tight">{activeRoleDetails.role}</h2>
-              <p className="text-[11px] text-neutral-400 mt-1.5 max-w-2xl leading-relaxed">{activeRoleDetails.about}</p>
+              <p className="text-xs text-neutral-450 mt-2 max-w-2xl leading-relaxed">{activeRoleDetails.about}</p>
 
-              {/* Quick Stats Row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-neutral-800/50">
-                <div className="text-center">
-                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Duration</span>
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-5 border-t border-neutral-800/60">
+                <div className="bg-neutral-950/40 p-3 rounded-2xl border border-neutral-850">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Est. Duration</span>
                   <span className="text-xs font-black text-white">{activeRoleDetails.duration}</span>
                 </div>
-                <div className="text-center">
+                <div className="bg-neutral-950/40 p-3 rounded-2xl border border-neutral-850">
                   <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Fresher CTC</span>
                   <span className="text-xs font-black text-green-400">₹{activeRoleDetails.salaries?.fresher} LPA</span>
                 </div>
-                <div className="text-center">
-                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Remote</span>
-                  <span className="text-xs font-black text-cyan-400">{activeRoleDetails.remoteWork}</span>
+                <div className="bg-neutral-950/40 p-3 rounded-2xl border border-neutral-850">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Work Mode</span>
+                  <span className="text-xs font-black text-cyan-400">{activeRoleDetails.remoteWork} Remote</span>
                 </div>
-                <div className="text-center">
-                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Skills Nodes</span>
-                  <span className="text-xs font-black text-white">{activeRoleDetails.skillsTree?.length || 0}</span>
+                <div className="bg-neutral-950/40 p-3 rounded-2xl border border-neutral-850">
+                  <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Milestones</span>
+                  <span className="text-xs font-black text-white">{activeRoleDetails.roadmap?.length || 0} Phases</span>
                 </div>
               </div>
 
               {/* Horizontal Workspace Tab Bar */}
-              <div className="flex items-center gap-0.5 border-t border-neutral-800/40 mt-5 pt-3 flex-wrap">
+              <div className="flex items-center gap-1 border-t border-neutral-800/40 mt-6 pt-4 flex-wrap overflow-x-auto">
                 {[
                   { id: "overview", label: "Overview", icon: "📁" },
-                  { id: "salaries", label: "Market & Salary", icon: "💰" },
+                  { id: "salaries", label: "Salary Hub", icon: "💰" },
                   { id: "technologies", label: "Tech Stack", icon: "⚡" },
                   { id: "roadmap", label: "Roadmap", icon: "🗺️" },
                   { id: "skills", label: "Skill Tree", icon: "🌳" },
                   { id: "projects", label: "Projects", icon: "🛠️" },
                   { id: "placement", label: "Placement Prep", icon: "🏆" },
                   { id: "mentor", label: "AI Mentor", icon: "🤖" }
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer ${
-                      activeTab === tab.id
-                        ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25"
-                        : "text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/40"
-                    }`}
-                  >
-                    <span>{tab.icon}</span>
-                    <span className="hidden md:inline">{tab.label}</span>
-                  </button>
-                ))}
+                ].map(tab => {
+                  const isSelected = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
+                          : "text-neutral-500 hover:text-neutral-200 hover:bg-neutral-855"
+                      }`}
+                    >
+                      <span>{tab.icon}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -2084,46 +2135,46 @@ export default function CareerBlueprintHub() {
               
               {/* Tab: Overview details */}
               {activeTab === "overview" && (
-                <div className="space-y-5">
-
+                <div className="space-y-6 animate-tab-in">
                   {/* Top Row: Relevance + Problems Solved */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     {/* Industry Relevance Card */}
-                    <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-2xl p-5 shadow-xl space-y-3">
-                      <div className="flex items-center gap-2 border-b border-neutral-800/50 pb-2.5">
-                        <div className="h-6 w-6 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
-                          <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+                    <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4 blueprint-glow-card">
+                      <div className="flex items-center gap-3 border-b border-neutral-800/65 pb-3">
+                        <div className="h-8 w-8 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0">
+                          <TrendingUp className="h-4 w-4 text-cyan-400" />
                         </div>
-                        <h3 className="text-[10px] font-black uppercase text-cyan-400 tracking-widest">Industry Relevance</h3>
+                        <h3 className="text-xs font-black uppercase text-cyan-400 tracking-widest">Industry Relevance</h3>
                       </div>
-                      <p className="text-[11px] text-slate-300 leading-relaxed font-semibold">{activeRoleDetails.importance}</p>
-                      <div className="pt-2 border-t border-neutral-800/40">
+                      <p className="text-xs text-slate-350 leading-relaxed font-medium">{activeRoleDetails.importance}</p>
+                      
+                      <div className="pt-4 border-t border-neutral-800/50">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="h-5 w-5 rounded bg-orange-500/10 flex items-center justify-center shrink-0">
-                            <Zap className="h-3 w-3 text-orange-400" />
+                          <div className="h-6 w-6 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                            <Zap className="h-3.5 w-3.5 text-orange-400" />
                           </div>
-                          <h4 className="text-[9px] font-black uppercase text-neutral-400 tracking-widest">Problems Solved Daily</h4>
+                          <h4 className="text-[10px] font-black uppercase text-neutral-455 tracking-widest">Daily Focus Problems</h4>
                         </div>
-                        <p className="text-[11px] text-neutral-400 leading-relaxed">{activeRoleDetails.problemsSolved}</p>
+                        <p className="text-xs text-neutral-400 leading-relaxed">{activeRoleDetails.problemsSolved}</p>
                       </div>
                     </div>
 
                     {/* Core Responsibilities Card */}
-                    <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-2xl p-5 shadow-xl space-y-3">
-                      <div className="flex items-center gap-2 border-b border-neutral-800/50 pb-2.5">
-                        <div className="h-6 w-6 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-                          <ListTodo className="h-3.5 w-3.5 text-purple-400" />
+                    <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4 blueprint-glow-card">
+                      <div className="flex items-center gap-3 border-b border-neutral-800/65 pb-3">
+                        <div className="h-8 w-8 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                          <ListTodo className="h-4 w-4 text-purple-400" />
                         </div>
-                        <h3 className="text-[10px] font-black uppercase text-purple-400 tracking-widest">Core Responsibilities</h3>
+                        <h3 className="text-xs font-black uppercase text-purple-400 tracking-widest">Core Responsibilities</h3>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {activeRoleDetails.responsibilities.map((res, i) => (
-                          <div key={i} className="flex gap-2.5 items-start">
-                            <span className="h-4 w-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[8px] font-black text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <div key={i} className="flex gap-3 items-start">
+                            <span className="h-5 w-5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-[10px] font-black text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
                               {i + 1}
                             </span>
-                            <span className="text-[11px] text-neutral-400 leading-relaxed">{res}</span>
+                            <span className="text-xs text-neutral-400 leading-relaxed">{res}</span>
                           </div>
                         ))}
                       </div>
@@ -2131,83 +2182,82 @@ export default function CareerBlueprintHub() {
                   </div>
 
                   {/* Bottom Row: Active Hiring Sectors */}
-                  <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-2xl p-5 shadow-xl space-y-4">
-                    <div className="flex items-center gap-2 border-b border-neutral-800/50 pb-2.5">
-                      <div className="h-6 w-6 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
-                        <Building className="h-3.5 w-3.5 text-green-400" />
+                  <div className="bg-neutral-900/50 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4">
+                    <div className="flex items-center gap-3 border-b border-neutral-800/65 pb-3">
+                      <div className="h-8 w-8 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                        <Building className="h-4 w-4 text-green-400" />
                       </div>
-                      <h3 className="text-[10px] font-black uppercase text-green-400 tracking-widest">Active Hiring Sectors</h3>
-                      <span className="ml-auto text-[9px] font-black text-neutral-500 uppercase">{activeRoleDetails.industries.length} Sectors</span>
+                      <h3 className="text-xs font-black uppercase text-green-400 tracking-widest">Active Hiring Sectors</h3>
+                      <span className="ml-auto text-[10px] font-black text-neutral-500 uppercase">{activeRoleDetails.industries.length} Sectors</span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {activeRoleDetails.industries.map((ind, i) => (
-                        <div key={i} className="bg-neutral-950/60 p-3.5 rounded-xl border border-neutral-800/50 space-y-1.5 hover:border-neutral-700 transition-colors">
-                          <div className="flex justify-between items-start gap-2">
-                            <span className="text-[11px] font-black text-white leading-tight">{ind.name}</span>
-                            <span className="text-[8px] font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/15 px-1.5 py-0.5 rounded shrink-0">
-                              {ind.growthPotential}
-                            </span>
+                        <div key={i} className="bg-neutral-950/70 p-4 rounded-2xl border border-neutral-850 space-y-3 hover:border-neutral-700 transition-all flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start gap-2">
+                              <span className="text-xs font-black text-white leading-tight">{ind.name}</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg shrink-0">
+                                {ind.growthPotential} Growth
+                              </span>
+                            </div>
+                            <p className="text-xs text-neutral-450 leading-relaxed">{ind.howUsed}</p>
                           </div>
-                          <p className="text-[10px] text-neutral-400 leading-relaxed">{ind.howUsed}</p>
-                          <div className="flex items-center gap-1 pt-1 border-t border-neutral-800/40">
-                            <Building className="h-2.5 w-2.5 text-neutral-600 shrink-0" />
-                            <p className="text-[9px] text-neutral-500 font-semibold truncate">{ind.example}</p>
+                          <div className="flex items-center gap-2 pt-2 border-t border-neutral-800/60">
+                            <Building className="h-3 w-3 text-neutral-600 shrink-0" />
+                            <p className="text-[10px] text-neutral-500 font-semibold truncate">Target: {ind.example}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
-
                 </div>
               )}
 
               {/* Tab: Market & Salary details */}
               {activeTab === "salaries" && (
-                <div className="space-y-6">
-                  
-                  {/* Custom SVG Bar Chart */}
-                  <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-4">
-                    <div className="flex justify-between items-center border-b border-neutral-800 pb-3">
+                <div className="space-y-6 animate-tab-in">
+                  {/* Compensation Index */}
+                  <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4">
+                    <div className="flex justify-between items-center border-b border-neutral-800/65 pb-3">
                       <div>
-                        <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-cyan-400" /> CTC Compensation Index (LPA)
                         </h3>
-                        <p className="text-[10px] text-neutral-500 mt-0.5">Average salary trends within Indian IT markets</p>
+                        <p className="text-[10px] text-neutral-500 mt-0.5">Average salary standards within the Indian technology sector</p>
                       </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-black uppercase tracking-widest">
-                        India Trends
+                      <span className="text-[9px] px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-black uppercase tracking-widest">
+                        India Region
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-5 pt-3">
+                    <div className="flex flex-col gap-6 pt-3">
                       {[
                         { label: "Internship (Stipend/mo)", value: activeRoleDetails.salaries.internship, isMonthly: true },
-                        { label: "Fresher / Entry Grade", value: activeRoleDetails.salaries.fresher, isLpa: true },
+                        { label: "Fresher / Entry Level", value: activeRoleDetails.salaries.fresher, isLpa: true },
                         { label: "Mid-Level Professional", value: activeRoleDetails.salaries.mid, isLpa: true },
-                        { label: "Senior Staff / Lead", value: activeRoleDetails.salaries.senior, isLpa: true }
+                        { label: "Senior Staff / Principal", value: activeRoleDetails.salaries.senior, isLpa: true }
                       ].map((sal, i) => {
                         const maxValue = 40; // Max ceiling for LPA index scaling
-                        // Stipend relative scaling
                         const relativePercent = sal.isMonthly 
                           ? (sal.value / 60000) * 100 
                           : (sal.value / maxValue) * 100;
                         
                         return (
-                          <div key={i} className="space-y-1.5">
+                          <div key={i} className="space-y-2">
                             <div className="flex justify-between items-center text-xs">
                               <span className="font-extrabold text-neutral-300">{sal.label}</span>
-                              <span className="font-black text-white">
+                              <span className="font-black text-white bg-neutral-950 px-2 py-0.5 rounded-lg border border-neutral-850">
                                 {sal.isMonthly 
-                                  ? `₹${(sal.value).toLocaleString()}/mo` 
+                                  ? `₹${(sal.value).toLocaleString()} / mo` 
                                   : `₹${sal.value} LPA`}
                               </span>
                             </div>
-                            <div className="w-full bg-neutral-950 rounded-full h-3.5 overflow-hidden border border-neutral-850 relative">
+                            <div className="w-full bg-neutral-950 rounded-full h-4 overflow-hidden border border-neutral-850 relative">
                               <motion.div
                                 initial={{ width: 0 }}
-                                animate={{ width: `${relativePercent}%` }}
+                                animate={{ width: `${Math.min(relativePercent, 100)}%` }}
                                 transition={{ duration: 1, ease: "easeOut" }}
-                                className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full"
+                                className="h-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500 rounded-full"
                               />
                             </div>
                           </div>
@@ -2216,24 +2266,23 @@ export default function CareerBlueprintHub() {
                     </div>
                   </div>
 
-                  {/* Global and remote trends cards */}
+                  {/* Offshore & Freelance trends */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-2">
-                      <h4 className="text-xs font-black uppercase text-cyan-400 tracking-wider">Global Offshore Market</h4>
-                      <p className="text-xs text-neutral-300 leading-relaxed">{activeRoleDetails.salaries.globalTrend}</p>
+                    <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-2.5 blueprint-glow-card">
+                      <h4 className="text-xs font-black uppercase text-cyan-400 tracking-wider">Global Offshoring & Remote Market</h4>
+                      <p className="text-xs text-neutral-450 leading-relaxed">{activeRoleDetails.salaries.globalTrend}</p>
                     </div>
-                    <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-2">
-                      <h4 className="text-xs font-black uppercase text-cyan-400 tracking-wider">Remote Freelancing Opportunities</h4>
-                      <p className="text-xs text-neutral-300 leading-relaxed">{activeRoleDetails.salaries.remoteTrend}</p>
+                    <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-2.5 blueprint-glow-card">
+                      <h4 className="text-xs font-black uppercase text-purple-400 tracking-wider">Remote Freelancing Opportunities</h4>
+                      <p className="text-xs text-neutral-450 leading-relaxed">{activeRoleDetails.salaries.remoteTrend}</p>
                     </div>
                   </div>
-
                 </div>
               )}
 
               {/* Tab: Technologies Used Card list */}
               {activeTab === "technologies" && (
-                <div className="space-y-4">
+                <div className="space-y-6 animate-tab-in">
                   {(() => {
                     const groups: Record<string, TechCard[]> = {};
                     activeRoleDetails.technologies.forEach(tech => {
@@ -2249,7 +2298,7 @@ export default function CareerBlueprintHub() {
                             <div className="flex items-center gap-3">
                               <h3 className="text-xs font-black uppercase tracking-wider text-cyan-400">{catName}</h3>
                               <div className="h-[1px] bg-neutral-800/60 flex-1" />
-                              <span className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-widest">{techList.length} Tools</span>
+                              <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">{techList.length} Technologies</span>
                             </div>
                             <div className="space-y-3">
                               {techList.map((tech) => {
@@ -2257,17 +2306,29 @@ export default function CareerBlueprintHub() {
                                 return (
                                   <div
                                     key={tech.name}
-                                    className="bg-neutral-900/40 border border-neutral-850 rounded-3xl overflow-hidden shadow-xl"
+                                    className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl overflow-hidden shadow-2xl transition-all"
                                   >
                                     <button
                                       onClick={() => setExpandedTechCard(isOpen ? null : tech.name)}
-                                      className="w-full p-5 text-left flex justify-between items-center gap-4 cursor-pointer hover:bg-neutral-800/10"
+                                      className="w-full p-5 text-left flex justify-between items-center gap-4 cursor-pointer hover:bg-neutral-850/30"
                                     >
-                                      <div className="space-y-1">
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500">{tech.category || "Tech Stack Core"}</span>
+                                      <div className="space-y-1.5">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400">{tech.category || "Core Technology"}</span>
                                         <h3 className="text-sm font-black text-white">{tech.name}</h3>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                                          <span className="text-[8px] font-black px-2 py-0.5 rounded bg-neutral-950 border border-neutral-850 text-neutral-400 uppercase tracking-wider">
+                                            🕒 {tech.learningTime} Learn
+                                          </span>
+                                          <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
+                                            tech.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border border-green-500/20" :
+                                            tech.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                            "bg-red-500/10 text-red-400 border border-red-500/20"
+                                          }`}>
+                                            Difficulty: {tech.difficulty}
+                                          </span>
+                                        </div>
                                       </div>
-                                      <ChevronDown className={`h-4 w-4 text-neutral-500 transform transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                                      <ChevronDown className={`h-4.5 w-4.5 text-neutral-500 transform transition-transform duration-350 ${isOpen ? "rotate-180 text-cyan-400" : ""}`} />
                                     </button>
 
                                     <AnimatePresence>
@@ -2276,50 +2337,70 @@ export default function CareerBlueprintHub() {
                                           initial={{ height: 0, opacity: 0 }}
                                           animate={{ height: "auto", opacity: 1 }}
                                           exit={{ height: 0, opacity: 0 }}
-                                          className="border-t border-neutral-850 bg-neutral-950/40 p-5 space-y-5"
+                                          className="border-t border-neutral-800/60 bg-neutral-950/60 p-5 space-y-5"
                                         >
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                            <div className="space-y-3">
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
                                               <div>
-                                                <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">What is it?</span>
-                                                <p className="text-xs text-neutral-300 leading-relaxed font-semibold">{tech.whatIsIt}</p>
+                                                <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">What is it?</span>
+                                                <p className="text-xs text-slate-350 leading-relaxed font-semibold">{tech.whatIsIt}</p>
                                               </div>
                                               <div>
-                                                <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Why do we use it?</span>
+                                                <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">Why do we use it?</span>
                                                 <p className="text-xs text-neutral-400 leading-relaxed">{tech.whyUsed}</p>
                                               </div>
                                               <div>
-                                                <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Analogy</span>
-                                                <p className="text-xs text-neutral-400 leading-relaxed italic">" {tech.analogy} "</p>
+                                                <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">Core Analogy</span>
+                                                <p className="text-xs text-cyan-400/90 leading-relaxed italic bg-cyan-500/5 p-3 rounded-xl border border-cyan-500/10">
+                                                  💡 "{tech.analogy}"
+                                                </p>
                                               </div>
                                             </div>
 
-                                            <div className="space-y-3 bg-neutral-900/60 p-4 rounded-2xl border border-neutral-850">
-                                              <div className="flex justify-between text-[10px] text-neutral-400 font-extrabold uppercase">
-                                                <span>Learn Time: {tech.learningTime}</span>
-                                                <span>Level: {tech.difficulty}</span>
-                                              </div>
-                                              <div>
-                                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Beginner Concept</span>
-                                                <p className="text-[11px] text-neutral-300 leading-relaxed mt-0.5">{tech.beginnerDesc}</p>
-                                              </div>
-                                              <div>
-                                                <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">Advanced Pipeline</span>
-                                                <p className="text-[11px] text-neutral-400 leading-relaxed mt-0.5">{tech.advancedDesc}</p>
+                                            <div className="space-y-4 bg-neutral-900/60 p-5 rounded-2xl border border-neutral-850 flex flex-col justify-between">
+                                              <div className="space-y-3">
+                                                <div className="border-b border-neutral-800 pb-2">
+                                                  <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest block">Prerequisites</span>
+                                                  <div className="flex flex-wrap gap-1.5 mt-1">
+                                                    {tech.prerequisites?.length > 0 ? (
+                                                      tech.prerequisites.map(prereq => (
+                                                        <span key={prereq} className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-850 text-[8px] font-black text-neutral-450 uppercase">
+                                                          {prereq}
+                                                        </span>
+                                                      ))
+                                                    ) : (
+                                                      <span className="text-[9px] text-neutral-500">None — Beginner Friendly</span>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                                <div>
+                                                  <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest block">Beginner Objective</span>
+                                                  <p className="text-xs text-neutral-350 leading-relaxed mt-0.5">{tech.beginnerDesc}</p>
+                                                </div>
+                                                <div>
+                                                  <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest block">Advanced Objective</span>
+                                                  <p className="text-xs text-neutral-400 leading-relaxed mt-0.5">{tech.advancedDesc}</p>
+                                                </div>
                                               </div>
                                             </div>
                                           </div>
 
-                                          <div className="border-t border-neutral-850 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="bg-neutral-900/20 p-3 rounded-xl border border-neutral-850 space-y-1">
-                                              <span className="text-[9px] font-black uppercase text-amber-500">Interview QA Check</span>
-                                              <p className="text-xs font-bold text-white">Q: {tech.interviewQuestion.q}</p>
-                                              <p className="text-[11px] text-neutral-400 leading-relaxed mt-1">A: {tech.interviewQuestion.a}</p>
+                                          <div className="border-t border-neutral-800/60 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="bg-neutral-900/40 p-4 rounded-2xl border border-neutral-850 space-y-1.5">
+                                              <div className="flex items-center gap-1.5">
+                                                <HelpCircle className="h-4 w-4 text-amber-500" />
+                                                <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Interview Question Check</span>
+                                              </div>
+                                              <p className="text-xs font-black text-white">Q: {tech.interviewQuestion.q}</p>
+                                              <p className="text-xs text-neutral-400 leading-relaxed mt-1">A: {tech.interviewQuestion.a}</p>
                                             </div>
-                                            <div className="bg-neutral-900/20 p-3 rounded-xl border border-neutral-850 space-y-1">
-                                              <span className="text-[9px] font-black uppercase text-green-500">Suggested Build Checkpoint</span>
-                                              <p className="text-xs font-bold text-white">Project: {tech.miniProject.title}</p>
-                                              <p className="text-[11px] text-neutral-400 leading-relaxed mt-1">{tech.miniProject.desc}</p>
+                                            <div className="bg-neutral-900/40 p-4 rounded-2xl border border-neutral-850 space-y-1.5">
+                                              <div className="flex items-center gap-1.5">
+                                                <Code className="h-4 w-4 text-green-500" />
+                                                <span className="text-[9px] font-black uppercase text-green-500 tracking-wider">Suggested Build Checkpoint</span>
+                                              </div>
+                                              <p className="text-xs font-black text-white">Project: {tech.miniProject.title}</p>
+                                              <p className="text-xs text-neutral-455 leading-relaxed mt-1">{tech.miniProject.desc}</p>
                                             </div>
                                           </div>
                                         </motion.div>
@@ -2339,76 +2420,100 @@ export default function CareerBlueprintHub() {
 
               {/* Tab: Learning Roadmap Flow */}
               {activeTab === "roadmap" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-tab-in">
                   
-                  {/* SVG Nodes diagram list (Col-Span 7) */}
-                  <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-6 flex flex-col items-center">
-                    <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Click node to inspect milestone</span>
+                  {/* Visual Vertical Timeline Node list (Col-Span 7) */}
+                  <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl relative">
+                    <div className="flex justify-between items-center border-b border-neutral-800 pb-3 mb-5">
+                      <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Milestone Flow Roadmap</h3>
+                      <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">
+                        {Object.keys(completedNodesMap).length} / {activeRoleDetails.roadmap.length} Completed
+                      </span>
+                    </div>
                     
-                    <div className="relative w-full flex flex-col items-center gap-8 pt-4">
-                      {/* Vertical connector line */}
-                      <div className="absolute top-0 bottom-0 w-0.5 bg-neutral-800 left-1/2 transform -translate-x-1/2 z-0" />
+                    <div className="relative w-full pl-6 space-y-6 pt-2">
+                      <div className="blueprint-timeline-line" />
 
                       {activeRoleDetails.roadmap.map((node, idx) => {
                         const isSelected = selectedRoadmapNode === node.id;
                         const isCompleted = completedNodesMap[node.id];
                         
                         return (
-                          <div key={node.id} className="relative z-10 flex flex-col items-center">
+                          <div key={node.id} className="relative flex items-start gap-4">
+                            <div
+                              className={`absolute left-[-26px] h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all z-10 ${
+                                isSelected
+                                  ? "bg-cyan-500 border-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.6)]"
+                                  : isCompleted
+                                    ? "bg-green-500 border-green-400"
+                                    : "bg-neutral-950 border-neutral-800"
+                              }`}
+                              style={{ top: "10px" }}
+                            >
+                              {isCompleted ? (
+                                <Check className="h-3 w-3 text-white shrink-0" />
+                              ) : (
+                                <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : "bg-neutral-600"}`} />
+                              )}
+                            </div>
+
                             <button
                               onClick={() => {
                                 setSelectedRoadmapNode(node.id);
                                 setQuizSubmitted(false);
                                 setQuizAnswerIndex(null);
                               }}
-                              className={`h-11 w-44 rounded-2xl border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                              className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center gap-3 ${
                                 isSelected
-                                  ? "bg-cyan-500 text-white border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] scale-105"
+                                  ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.06)]"
                                   : isCompleted
-                                    ? "bg-green-500/10 border-green-500/40 text-green-400 hover:bg-green-500/20"
-                                    : "bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-white"
+                                    ? "bg-green-500/5 border-green-500/20 text-neutral-300"
+                                    : "bg-neutral-950/80 border-neutral-850 text-neutral-450 hover:border-neutral-800 hover:text-neutral-250"
                               }`}
                             >
-                              {isCompleted ? <Check className="h-4.5 w-4.5 text-green-400" /> : <Map className="h-4.5 w-4.5" />}
-                              <span>{node.title}</span>
+                              <div className="space-y-1">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400/90">{node.phase} Phase</span>
+                                <h4 className="text-xs font-black text-white">{node.title}</h4>
+                                <p className="text-[9px] text-neutral-500 font-semibold uppercase tracking-wider">Est. Time: {node.timeEstimate}</p>
+                              </div>
+                              <ChevronRight className={`h-4.5 w-4.5 text-neutral-555 shrink-0 transform transition-transform ${isSelected ? "rotate-90 text-cyan-400" : ""}`} />
                             </button>
-                            <span className="text-[8px] text-neutral-500 font-bold uppercase tracking-widest mt-1.5">{node.phase}</span>
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Node Inspect details & mini quiz (Col-Span 5) */}
+                  {/* Detail inspector card & quiz (Col-Span 5) */}
                   <div className="lg:col-span-5">
                     {selectedRoadmapNodeDetails ? (
-                      <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-5">
-                        <div className="border-b border-neutral-800 pb-3">
-                          <span className="text-[9px] font-black uppercase text-cyan-400 tracking-wider block">{selectedRoadmapNodeDetails.phase} Phase</span>
+                      <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-5">
+                        <div className="border-b border-neutral-800 pb-3.5">
+                          <span className="text-[9px] font-black uppercase text-cyan-400 tracking-wider block">{selectedRoadmapNodeDetails.phase} Phase Details</span>
                           <h3 className="text-sm font-black text-white">{selectedRoadmapNodeDetails.title}</h3>
-                          <p className="text-[10px] text-neutral-500 mt-1">Est. Duration: {selectedRoadmapNodeDetails.timeEstimate}</p>
+                          <p className="text-[10px] text-neutral-500 mt-1">Suggested Duration: {selectedRoadmapNodeDetails.timeEstimate}</p>
                         </div>
 
-                        <p className="text-xs text-neutral-300 leading-relaxed font-semibold">{selectedRoadmapNodeDetails.explanation}</p>
+                        <p className="text-xs text-neutral-355 leading-relaxed font-semibold">{selectedRoadmapNodeDetails.explanation}</p>
 
-                        <div className="space-y-1.5">
-                          <h4 className="text-[10px] font-black uppercase text-neutral-450 tracking-wider">Objectives Checklist</h4>
-                          <div className="space-y-1">
+                        <div className="space-y-2">
+                          <h4 className="text-[9px] font-black uppercase text-neutral-500 tracking-wider">Milestone Objectives</h4>
+                          <div className="space-y-1.5">
                             {selectedRoadmapNodeDetails.objectives.map((obj, i) => (
-                              <div key={i} className="flex gap-2 text-[10px] text-neutral-400">
-                                <Check className="h-3.5 w-3.5 text-cyan-500 shrink-0" />
+                              <div key={i} className="flex gap-2 text-[11px] text-neutral-400 leading-relaxed">
+                                <Check className="h-4 w-4 text-cyan-500 shrink-0 mt-0.5" />
                                 <span>{obj}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        {/* Interactive Quiz Node */}
-                        <div className="bg-neutral-950/80 p-4 rounded-2xl border border-neutral-850 space-y-3">
-                          <span className="text-[9px] font-black uppercase text-orange-400 flex items-center gap-1">
-                            <HelpCircle className="h-3.5 w-3.5" /> Milestone Quiz assessment (+30 XP)
+                        {/* Milestone quiz block */}
+                        <div className="bg-neutral-950/70 p-4 rounded-2xl border border-neutral-850 space-y-3.5">
+                          <span className="text-[9px] font-black uppercase text-orange-400 flex items-center gap-1.5">
+                            <HelpCircle className="h-4 w-4" /> Quick Checkpoint Quiz (+30 XP)
                           </span>
-                          <p className="text-xs font-bold text-slate-200">{selectedRoadmapNodeDetails.quiz.question}</p>
+                          <p className="text-xs font-black text-slate-200 leading-snug">{selectedRoadmapNodeDetails.quiz.question}</p>
                           
                           <div className="space-y-2 pt-1.5">
                             {selectedRoadmapNodeDetails.quiz.options.map((opt, i) => (
@@ -2417,10 +2522,10 @@ export default function CareerBlueprintHub() {
                                 onClick={() => {
                                   if (!quizSubmitted) setQuizAnswerIndex(i);
                                 }}
-                                className={`w-full text-left p-2.5 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${
+                                className={`w-full text-left p-3 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${
                                   quizAnswerIndex === i
                                     ? "bg-cyan-500/10 border-cyan-500 text-cyan-400"
-                                    : "bg-neutral-900 border-neutral-850 text-neutral-400 hover:text-white"
+                                    : "bg-neutral-900 border-neutral-855 text-neutral-400 hover:text-white hover:border-neutral-700"
                                 }`}
                               >
                                 {opt}
@@ -2432,27 +2537,28 @@ export default function CareerBlueprintHub() {
                             <button
                               onClick={handleSubmitQuiz}
                               disabled={quizAnswerIndex === null}
-                              className="w-full py-2 bg-cyan-500 hover:bg-cyan-600 disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer mt-1.5"
+                              className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer mt-2"
                             >
-                              Submit Quiz Verification
+                              Submit Checkpoint Answer
                             </button>
                           ) : (
-                            <div className="pt-2 text-[10px] space-y-2">
+                            <div className="pt-3 text-xs space-y-2.5 border-t border-neutral-800/60">
                               {quizSuccess ? (
-                                <p className="text-green-400 font-extrabold flex items-center gap-1">🎉 Correct answer! XP awarded.</p>
+                                <p className="text-green-400 font-extrabold flex items-center gap-1.5">🎉 Correct! Milestone checked & +30 XP awarded.</p>
                               ) : (
-                                <p className="text-red-400 font-extrabold flex items-center gap-1">❌ Incorrect. Try checking the answer key details.</p>
+                                <p className="text-red-400 font-extrabold flex items-center gap-1.5">❌ Incorrect. Try checking the correct answer check.</p>
                               )}
-                              <p className="text-neutral-500 leading-relaxed">{selectedRoadmapNodeDetails.quiz.explanation}</p>
+                              <p className="text-neutral-500 leading-relaxed font-semibold">{selectedRoadmapNodeDetails.quiz.explanation}</p>
                             </div>
                           )}
                         </div>
-
                       </div>
                     ) : (
                       <div className="bg-neutral-900/20 border border-neutral-800 border-dashed rounded-3xl p-12 text-center text-neutral-500 shadow-xl">
-                        <Map className="h-10 w-10 text-neutral-700 mx-auto mb-2.5 animate-pulse" />
-                        <p className="text-xs font-bold text-neutral-400">Select a roadmap checkpoint node to inspect lessons and complete quizzes.</p>
+                        <Map className="h-10 w-10 text-neutral-700 mx-auto mb-3 animate-pulse" />
+                        <p className="text-xs font-black text-neutral-450 leading-relaxed">
+                          Select a learning roadmap node on the left to verify milestones and take topic checks.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -2462,12 +2568,12 @@ export default function CareerBlueprintHub() {
 
               {/* Tab: Skill Trees */}
               {activeTab === "skills" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-tab-in">
                   
                   {/* Skill Node Grid (Col-Span 7) */}
-                  <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-6">
-                    <div className="border-b border-neutral-800 pb-3 flex justify-between items-center">
-                      <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Unlockable Skill Tree Matrix</h3>
+                  <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-6">
+                    <div className="border-b border-neutral-850 pb-3">
+                      <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Skill Nodes Progression Matrix</h3>
                     </div>
 
                     <div className="space-y-6">
@@ -2477,25 +2583,34 @@ export default function CareerBlueprintHub() {
                         
                         return (
                           <div key={tier} className="space-y-2">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500 block">{tier} Tier</span>
-                            <div className="grid grid-cols-2 gap-3">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400 block px-1">{tier} Stage</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               {tierNodes.map(node => {
                                 const isSelected = selectedSkillNode === node.id;
                                 return (
                                   <button
                                     key={node.id}
                                     onClick={() => setSelectedSkillNode(node.id)}
-                                    className={`p-3 text-left rounded-2xl border transition-all cursor-pointer flex justify-between items-start gap-2 ${
+                                    className={`p-4 text-left rounded-2xl border transition-all cursor-pointer flex justify-between items-start gap-2 ${
                                       isSelected
-                                        ? "bg-cyan-500/10 border-cyan-500"
-                                        : "bg-neutral-950 border-neutral-850 hover:border-neutral-700"
+                                        ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.05)]"
+                                        : "bg-neutral-950 border-neutral-850 hover:border-neutral-750"
                                     }`}
                                   >
                                     <div className="space-y-1">
-                                      <span className="text-[10px] font-black text-slate-200 block truncate max-w-[140px]">{node.name}</span>
-                                      <span className="text-[8px] text-neutral-500 font-bold block">{node.hours} hrs</span>
+                                      <span className="text-xs font-black text-slate-200 block truncate max-w-[160px]">{node.name}</span>
+                                      <div className="flex gap-2">
+                                        <span className="text-[9px] text-neutral-500 font-extrabold block">🕒 {node.hours} Hours</span>
+                                        <span className={`text-[9px] font-black uppercase ${
+                                          node.importance === "High" ? "text-red-400" :
+                                          node.importance === "Medium" ? "text-amber-400" :
+                                          "text-green-400"
+                                        }`}>
+                                          {node.importance} Priority
+                                        </span>
+                                      </div>
                                     </div>
-                                    <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-md" />
+                                    <span className="h-2 w-2 rounded-full bg-cyan-400 shrink-0 mt-1 shadow-glow-cyan" />
                                   </button>
                                 );
                               })}
@@ -2514,20 +2629,22 @@ export default function CareerBlueprintHub() {
                         if (!sDetails) return null;
                         
                         return (
-                          <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-4">
-                            <div className="border-b border-neutral-850 pb-2">
-                              <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest block">{sDetails.tier} node</span>
-                              <h3 className="text-xs font-black text-white">{sDetails.name}</h3>
-                              <span className="text-[9px] text-neutral-500">Prerequisites: {sDetails.dependencies.join(", ") || "None"}</span>
+                          <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4">
+                            <div className="border-b border-neutral-800 pb-3">
+                              <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest block">{sDetails.tier} Tier Node</span>
+                              <h3 className="text-sm font-black text-white">{sDetails.name}</h3>
+                              <span className="text-[10px] text-neutral-500 font-semibold block mt-0.5">
+                                Prerequisites: {sDetails.dependencies.join(", ") || "None"}
+                              </span>
                             </div>
 
-                            <p className="text-[11px] text-neutral-300 leading-relaxed font-semibold">{sDetails.whyMatters}</p>
+                            <p className="text-xs text-neutral-355 leading-relaxed font-semibold">{sDetails.whyMatters}</p>
 
-                            <div className="space-y-1">
-                              <span className="text-[8px] font-black uppercase text-neutral-500 tracking-wider block">Target Stack tools</span>
+                            <div className="space-y-2 pt-2 border-t border-neutral-800/50">
+                              <span className="text-[9px] font-black uppercase text-neutral-500 tracking-wider block">Target Stack tools</span>
                               <div className="flex flex-wrap gap-1.5">
                                 {sDetails.techs.map(t => (
-                                  <span key={t} className="px-2 py-0.5 rounded bg-neutral-950 text-[9px] text-cyan-400 border border-neutral-850 font-bold">
+                                  <span key={t} className="px-2.5 py-1 rounded bg-neutral-950 text-[9px] text-cyan-400 border border-neutral-850 font-bold uppercase tracking-wider">
                                     {t}
                                   </span>
                                 ))}
@@ -2538,8 +2655,10 @@ export default function CareerBlueprintHub() {
                       })()
                     ) : (
                       <div className="bg-neutral-900/20 border border-neutral-800 border-dashed rounded-3xl p-12 text-center text-neutral-500 shadow-xl">
-                        <Award className="h-10 w-10 text-neutral-700 mx-auto mb-2.5 animate-pulse" />
-                        <p className="text-xs font-bold text-neutral-400">Click a Skill Node to inspect dependancy structures and hourly targets.</p>
+                        <Award className="h-10 w-10 text-neutral-700 mx-auto mb-3 animate-pulse" />
+                        <p className="text-xs font-black text-neutral-450 leading-relaxed">
+                          Click any skill node map on the left to verify objectives, stack targets, and learning hour estimates.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -2549,53 +2668,61 @@ export default function CareerBlueprintHub() {
 
               {/* Tab: Project roadmap cards */}
               {activeTab === "projects" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-tab-in">
                   {activeRoleDetails.projects.map((proj, i) => (
                     <div
                       key={i}
-                      className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4"
+                      className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl flex flex-col justify-between space-y-4 blueprint-glow-card"
                     >
-                      <div className="space-y-2.5">
+                      <div className="space-y-3.5">
                         <div className="flex justify-between items-center">
-                          <span className="px-2.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[8px] font-black uppercase tracking-widest">
-                            {proj.level}
+                          <span className="px-3 py-1 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[9px] font-black uppercase tracking-widest">
+                            {proj.level} Build
                           </span>
-                          <div className="flex gap-1.5">
+                          <div className="flex gap-1">
                             {[...Array(proj.resumeValue)].map((_, idx) => (
-                              <Star key={idx} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                              <Star key={idx} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                            ))}
+                            {[...Array(5 - proj.resumeValue)].map((_, idx) => (
+                              <Star key={idx} className="h-3.5 w-3.5 text-neutral-800" />
                             ))}
                           </div>
                         </div>
 
-                        <h3 className="text-xs font-black text-white leading-snug">{proj.title}</h3>
-                        <p className="text-[11px] text-neutral-400 leading-relaxed font-semibold">Problem: {proj.problemStatement}</p>
+                        <h3 className="text-sm font-black text-white leading-tight">{proj.title}</h3>
+                        <p className="text-xs text-neutral-350 leading-relaxed font-semibold bg-neutral-950/40 p-3 rounded-xl border border-neutral-850">
+                          <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-0.5">Problem Statement</span>
+                          {proj.problemStatement}
+                        </p>
                         
-                        <div className="space-y-1">
-                          <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">Features Checklist</span>
+                        <div className="space-y-1.5">
+                          <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">Feature Guidelines</span>
                           <div className="space-y-1">
                             {proj.features.map((feat, idx) => (
-                              <div key={idx} className="flex gap-2 text-[10px] text-neutral-300">
-                                <CheckSquare className="h-3.5 w-3.5 text-cyan-500 shrink-0" />
+                              <div key={idx} className="flex gap-2.5 text-xs text-neutral-400 leading-relaxed">
+                                <CheckSquare className="h-4 w-4 text-cyan-500 shrink-0 mt-0.5" />
                                 <span>{feat}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="text-[10px] font-bold text-neutral-500">
-                          Architecture: <span className="text-neutral-300 font-semibold">{proj.architecture}</span>
+                        <div className="pt-2 border-t border-neutral-850 text-xs font-bold text-neutral-500">
+                          Architecture System: <span className="text-neutral-300 font-semibold">{proj.architecture}</span>
                         </div>
                       </div>
 
-                      <div className="flex justify-between items-center border-t border-neutral-850 pt-3 flex-wrap gap-2">
+                      <div className="flex justify-between items-center border-t border-neutral-800/60 pt-4 flex-wrap gap-2.5">
                         <div className="flex flex-wrap gap-1.5">
                           {proj.techStack.map(t => (
-                            <span key={t} className="px-1.5 py-0.5 rounded bg-neutral-950 text-[8px] text-slate-400 border border-neutral-850 font-bold">
+                            <span key={t} className="px-2 py-0.5 rounded bg-neutral-950 text-[9px] text-slate-400 border border-neutral-850 font-bold uppercase">
                               {t}
                             </span>
                           ))}
                         </div>
-                        <span className="text-[9px] text-cyan-500 font-black uppercase tracking-widest">Est. {proj.completionTime}</span>
+                        <span className="text-[10px] text-cyan-400 font-black uppercase tracking-widest">
+                          Est. {proj.completionTime}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -2604,26 +2731,28 @@ export default function CareerBlueprintHub() {
 
               {/* Tab: Placement Prep & mock questions */}
               {activeTab === "placement" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-tab-in">
                   
                   {/* Guidelines checklist (Col-Span 6) */}
-                  <div className="lg:col-span-6 bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-5">
-                    <h3 className="text-xs font-black uppercase text-cyan-500 tracking-wider">Placement Readiness Checklist</h3>
+                  <div className="lg:col-span-6 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-5">
+                    <h3 className="text-xs font-black uppercase text-cyan-500 tracking-wider pb-2 border-b border-neutral-800">
+                      Placement Readiness Guidelines
+                    </h3>
 
-                    <div className="space-y-3.5">
+                    <div className="space-y-4">
                       <div>
-                        <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">DSA Requirements</span>
-                        <p className="text-[11px] text-slate-300 leading-relaxed font-semibold">{activeRoleDetails.placementPrep.dsa}</p>
+                        <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">DSA Requirements</span>
+                        <p className="text-xs text-slate-350 leading-relaxed font-semibold mt-0.5">{activeRoleDetails.placementPrep.dsa}</p>
                       </div>
                       <div>
-                        <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">System Design Checklist</span>
-                        <p className="text-[11px] text-slate-300 leading-relaxed">{activeRoleDetails.placementPrep.systemDesign}</p>
+                        <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">System Design Checklist</span>
+                        <p className="text-xs text-slate-350 leading-relaxed mt-0.5">{activeRoleDetails.placementPrep.systemDesign}</p>
                       </div>
-                      <div>
-                        <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest block">Core Subjects</span>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                      <div className="pt-2 border-t border-neutral-800/60">
+                        <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block mb-1">Target Core Subjects</span>
+                        <div className="flex flex-wrap gap-1.5">
                           {activeRoleDetails.placementPrep.coreSubjects.map(sub => (
-                            <span key={sub} className="px-2 py-0.5 rounded bg-neutral-950 text-[9px] text-cyan-400 border border-neutral-850 font-bold">
+                            <span key={sub} className="px-2.5 py-1 rounded bg-neutral-950 text-[9px] text-cyan-400 border border-neutral-850 font-bold uppercase tracking-wider">
                               {sub}
                             </span>
                           ))}
@@ -2633,16 +2762,20 @@ export default function CareerBlueprintHub() {
                   </div>
 
                   {/* Interview QA (Col-Span 6) */}
-                  <div className="lg:col-span-6 bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-xl space-y-4">
-                    <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider">Target Mock Interview Questions</h3>
-                    <div className="space-y-3">
+                  <div className="lg:col-span-6 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4">
+                    <h3 className="text-xs font-black uppercase text-neutral-300 tracking-wider pb-2 border-b border-neutral-800">
+                      Target Mock Interview Questions
+                    </h3>
+                    <div className="space-y-3.5">
                       {activeRoleDetails.placementPrep.mockQuestions.map((mq, idx) => (
-                        <div key={idx} className="bg-neutral-950/40 p-3.5 rounded-2xl border border-neutral-850 space-y-1.5">
-                          <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-wider text-cyan-500">
-                            <span>Q{idx + 1}</span>
-                            <span>Topic: {mq.topic}</span>
+                        <div key={idx} className="bg-neutral-950/70 p-4 rounded-2xl border border-neutral-850 space-y-2 hover:border-neutral-700 transition-colors">
+                          <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-cyan-400">
+                            <span>Question {idx + 1}</span>
+                            <span className="px-2 py-0.5 rounded bg-cyan-500/5 text-cyan-400 border border-cyan-500/10">
+                              {mq.topic}
+                            </span>
                           </div>
-                          <p className="text-xs font-bold text-slate-300">{mq.q}</p>
+                          <p className="text-xs font-black text-slate-200 leading-snug">{mq.q}</p>
                         </div>
                       ))}
                     </div>
@@ -2653,25 +2786,28 @@ export default function CareerBlueprintHub() {
 
               {/* Tab: AI Mentor Chat console */}
               {activeTab === "mentor" && (
-                <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-6 shadow-2xl flex flex-col h-[400px] justify-between">
-                  <div className="border-b border-neutral-850 pb-2 flex justify-between items-center">
-                    <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl flex flex-col h-[480px] justify-between animate-tab-in">
+                  <div className="border-b border-neutral-800 pb-3 flex justify-between items-center">
+                    <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" /> AI Career Mentor
                     </h3>
-                    <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
+                      <span className="text-[9px] font-black uppercase text-neutral-500 tracking-widest">Active Chat</span>
+                    </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
+                  <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-1 scrollbar-thin">
                     {chatMessages.map(msg => (
                       <div
                         key={msg.id}
                         className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
                       >
                         <div
-                          className={`max-w-[85%] rounded-2xl p-3 text-[10px] leading-relaxed font-semibold ${
+                          className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed font-semibold ${
                             msg.sender === "user"
-                              ? "bg-cyan-500 text-white rounded-tr-none"
-                              : "bg-neutral-950 border border-neutral-800 text-neutral-300 rounded-tl-none whitespace-pre-line"
+                              ? "bg-cyan-500 text-white rounded-tr-none shadow-[0_4px_12px_rgba(6,182,212,0.15)]"
+                              : "bg-neutral-950 border border-neutral-855 text-neutral-300 rounded-tl-none whitespace-pre-line"
                           }`}
                         >
                           {msg.text}
@@ -2682,7 +2818,7 @@ export default function CareerBlueprintHub() {
                   </div>
 
                   {/* Preloaded suggestion query list */}
-                  <div className="flex gap-1.5 pb-2 flex-wrap border-t border-neutral-850 pt-2">
+                  <div className="flex gap-2 pb-2 flex-wrap border-t border-neutral-800 pt-3">
                     {[
                       { text: "Estimate Salary?", msg: "What salary can I expect for this role in India?" },
                       { text: "Suggested Projects?", msg: "Suggest high-yield portfolio projects for this track" },
@@ -2691,7 +2827,7 @@ export default function CareerBlueprintHub() {
                       <button
                         key={idx}
                         onClick={() => handleSendMentorMessage(s.msg)}
-                        className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-850 text-[8px] font-black text-neutral-500 hover:text-white cursor-pointer"
+                        className="px-3 py-1 rounded-xl bg-neutral-950 border border-neutral-850 text-[9px] font-black text-neutral-500 hover:text-white hover:border-neutral-700 transition-colors cursor-pointer"
                       >
                         {s.text}
                       </button>
@@ -2699,20 +2835,20 @@ export default function CareerBlueprintHub() {
                   </div>
 
                   {/* Chat input form */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-neutral-850">
+                  <div className="flex items-center gap-2 pt-3 border-t border-neutral-800">
                     <input
                       type="text"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSendMentorMessage()}
-                      placeholder="Ask AI Career Mentor..."
-                      className="flex-1 bg-neutral-950 border border-neutral-850 rounded-xl px-3 py-2 text-[10px] text-slate-200 outline-none placeholder:text-neutral-600 font-bold"
+                      placeholder="Ask AI Career Mentor a question..."
+                      className="flex-1 bg-neutral-950 border border-neutral-855 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none placeholder:text-neutral-600 font-bold focus:border-cyan-500/40 transition-colors"
                     />
                     <button
                       onClick={() => handleSendMentorMessage()}
-                      className="p-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl cursor-pointer"
+                      className="p-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition-colors cursor-pointer flex items-center justify-center shrink-0"
                     >
-                      <ChevronRight className="h-4.5 w-4.5" />
+                      <ChevronRight className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
@@ -2742,37 +2878,37 @@ export default function CareerBlueprintHub() {
             >
               
               <div className="flex justify-between items-center border-b border-neutral-800 pb-3">
-                <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   ⚖️ Career Comparison Matrix
                 </h3>
                 <button 
                   onClick={() => setShowCompareModal(false)}
-                  className="text-neutral-500 hover:text-white cursor-pointer"
+                  className="text-neutral-500 hover:text-white cursor-pointer transition-colors p-1.5 hover:bg-neutral-850 rounded-xl"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              {/* Selector selectors */}
+              {/* Selectors */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[9px] font-black uppercase text-neutral-500">Track A</label>
                   <select
                     value={compareRoleA}
                     onChange={(e) => setCompareRoleA(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs font-bold text-slate-200 focus:outline-none"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-xs font-bold text-slate-200 focus:outline-none focus:border-cyan-500/40"
                   >
                     {DOMAINS.flatMap(d => d.roles).map(role => (
                       <option key={role} value={role}>{role}</option>
                     ))}
                   </select>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[9px] font-black uppercase text-neutral-500">Track B</label>
                   <select
                     value={compareRoleB}
                     onChange={(e) => setCompareRoleB(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs font-bold text-slate-200 focus:outline-none"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-xs font-bold text-slate-200 focus:outline-none focus:border-cyan-500/40"
                   >
                     {DOMAINS.flatMap(d => d.roles).map(role => (
                       <option key={role} value={role}>{role}</option>
@@ -2781,41 +2917,41 @@ export default function CareerBlueprintHub() {
                 </div>
               </div>
 
-              {/* Table details comparison matrix */}
-              <div className="border border-neutral-800 rounded-2xl overflow-hidden text-[11px] font-semibold">
-                <div className="grid grid-cols-3 bg-neutral-950 p-3 text-neutral-450 border-b border-neutral-800">
+              {/* Comparison table */}
+              <div className="border border-neutral-800 rounded-2xl overflow-hidden text-xs font-semibold">
+                <div className="grid grid-cols-3 bg-neutral-950 p-4 text-neutral-455 border-b border-neutral-850 text-[10px] font-black uppercase tracking-wider">
                   <span>Parameter</span>
                   <span>{compareRoleA}</span>
                   <span>{compareRoleB}</span>
                 </div>
-                <div className="divide-y divide-neutral-800">
-                  <div className="grid grid-cols-3 p-3">
-                    <span className="text-neutral-500">Target Level</span>
+                <div className="divide-y divide-neutral-850">
+                  <div className="grid grid-cols-3 p-4 items-center">
+                    <span className="text-neutral-500 uppercase text-[9px] tracking-wider font-black">Target Level</span>
                     <span className="text-white font-extrabold">{roleADetails.level}</span>
                     <span className="text-white font-extrabold">{roleBDetails.level}</span>
                   </div>
-                  <div className="grid grid-cols-3 p-3">
-                    <span className="text-neutral-500">Difficulty Rating</span>
+                  <div className="grid grid-cols-3 p-4 items-center">
+                    <span className="text-neutral-500 uppercase text-[9px] tracking-wider font-black">Difficulty</span>
                     <span className="text-white font-extrabold">{roleADetails.difficulty}</span>
                     <span className="text-white font-extrabold">{roleBDetails.difficulty}</span>
                   </div>
-                  <div className="grid grid-cols-3 p-3">
-                    <span className="text-neutral-500">Est. Learn Duration</span>
+                  <div className="grid grid-cols-3 p-4 items-center">
+                    <span className="text-neutral-500 uppercase text-[9px] tracking-wider font-black">Est. Duration</span>
                     <span className="text-white font-extrabold">{roleADetails.duration}</span>
                     <span className="text-white font-extrabold">{roleBDetails.duration}</span>
                   </div>
-                  <div className="grid grid-cols-3 p-3">
-                    <span className="text-neutral-500">India Fresher CTC</span>
+                  <div className="grid grid-cols-3 p-4 items-center">
+                    <span className="text-neutral-500 uppercase text-[9px] tracking-wider font-black">Fresher CTC</span>
                     <span className="text-green-400 font-extrabold">₹{roleADetails.salaries.fresher} LPA</span>
                     <span className="text-green-400 font-extrabold">₹{roleBDetails.salaries.fresher} LPA</span>
                   </div>
-                  <div className="grid grid-cols-3 p-3">
-                    <span className="text-neutral-500">Mid-Level Salary</span>
+                  <div className="grid grid-cols-3 p-4 items-center">
+                    <span className="text-neutral-500 uppercase text-[9px] tracking-wider font-black">Mid-Level CTC</span>
                     <span className="text-green-400 font-extrabold">₹{roleADetails.salaries.mid} LPA</span>
                     <span className="text-green-400 font-extrabold">₹{roleBDetails.salaries.mid} LPA</span>
                   </div>
-                  <div className="grid grid-cols-3 p-3">
-                    <span className="text-neutral-500">SaaS Demand Potential</span>
+                  <div className="grid grid-cols-3 p-4 items-center">
+                    <span className="text-neutral-500 uppercase text-[9px] tracking-wider font-black">Demand Growth</span>
                     <span className="text-white font-extrabold">{roleADetails.demand}</span>
                     <span className="text-white font-extrabold">{roleBDetails.demand}</span>
                   </div>
@@ -2826,6 +2962,30 @@ export default function CareerBlueprintHub() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Notifications (Toasts) */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full">
+        <AnimatePresence>
+          {notifications.slice(0, 3).map((notif, idx) => (
+            <motion.div
+              key={`${notif}-${idx}`}
+              initial={{ opacity: 0, x: 50, y: 0 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              className="pointer-events-auto bg-neutral-900/95 backdrop-blur-md border border-cyan-500/30 text-slate-100 rounded-xl p-3.5 shadow-xl flex items-center gap-2.5 text-xs font-semibold animate-toast-slide-in"
+            >
+              <span className="text-cyan-400">🔔</span>
+              <span>{notif}</span>
+              <button
+                onClick={() => setNotifications(prev => prev.filter((_, i) => i !== idx))}
+                className="ml-auto text-neutral-500 hover:text-white shrink-0 cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
     </div>
   );
