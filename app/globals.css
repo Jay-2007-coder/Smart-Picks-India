@@ -65,20 +65,47 @@
   --animate-shimmer: shimmer 1.5s infinite linear;
 
   @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
   }
+
   @keyframes slideUp {
-    0% { transform: translateY(20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
+
   @keyframes bounceGentle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
   }
+
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
   }
 }
 
@@ -141,7 +168,12 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display font-bold tracking-tight;
   }
 }
@@ -157,11 +189,11 @@
 
   .card {
     @apply rounded-2xl border border-border bg-card transition-all duration-300;
-    box-shadow: 0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
   }
-  
+
   .card:hover {
-    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.15), 0 20px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   }
 
   .badge {
@@ -203,19 +235,20 @@
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-none {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Shimmer skeleton animation */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    hsl(var(--muted)) 25%,
-    hsl(var(--border)) 50%,
-    hsl(var(--muted)) 75%
-  );
+  background: linear-gradient(90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--border)) 50%,
+      hsl(var(--muted)) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -230,20 +263,39 @@
 
 /* Text shimmer: used on hero gradient headline */
 @keyframes shimmer {
-  0% { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% {
+    background-position: 200% center;
+  }
+
+  100% {
+    background-position: -200% center;
+  }
 }
 
 /* Floating: used on newsletter mail icon */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 /* Pulse scale: badge pulse effect */
 @keyframes pulse-scale {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.07); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.07);
+  }
 }
 
 .animate-float {
@@ -258,9 +310,7 @@
 .group:hover .group-hover\:scale-115 {
   --tw-scale-x: 1.15;
   --tw-scale-y: 1.15;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y))
-    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
-    scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 /* Smooth page transitions */
@@ -274,6 +324,7 @@
 .glow-accent {
   text-shadow: 0 0 12px hsla(var(--primary) / 0.2);
 }
+
 .dark .glow-accent {
   text-shadow: 0 0 15px hsla(var(--primary) / 0.4), 0 0 30px hsla(var(--primary) / 0.1);
 }
@@ -283,6 +334,7 @@
   position: relative;
   overflow: hidden;
 }
+
 .btn-shiny::after {
   content: "";
   position: absolute;
@@ -290,16 +342,15 @@
   left: -60%;
   width: 25%;
   height: 200%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.28) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.28) 50%,
+      rgba(255, 255, 255, 0) 100%);
   transform: rotate(25deg);
   opacity: 0;
   pointer-events: none;
 }
+
 .btn-shiny:hover::after {
   left: 140%;
   opacity: 1;
@@ -327,15 +378,16 @@
 .glow-card-hover {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .glow-card-hover:hover {
-  box-shadow: 
+  box-shadow:
     0 20px 30px -10px rgba(0, 0, 0, 0.12),
     0 0 25px 2px rgba(212, 63, 54, 0.12);
   border-color: rgba(212, 63, 54, 0.3);
 }
 
 .dark .glow-card-hover:hover {
-  box-shadow: 
+  box-shadow:
     0 20px 40px -15px rgba(0, 0, 0, 0.5),
     0 0 30px 4px rgba(212, 63, 54, 0.18);
   border-color: rgba(212, 63, 54, 0.4);
@@ -348,7 +400,9 @@
 }
 
 /* Premium active inputs glow */
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: hsl(var(--primary) / 0.5) !important;
   box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15) !important;
 }
@@ -358,6 +412,7 @@ input:focus, select:focus, textarea:focus {
   position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .btn-premium-glow::before {
   content: "";
   position: absolute;
@@ -371,6 +426,7 @@ input:focus, select:focus, textarea:focus {
   opacity: 0.4;
   transition: opacity 0.3s ease;
 }
+
 .btn-premium-glow:hover::before {
   opacity: 1;
 }
@@ -379,49 +435,101 @@ input:focus, select:focus, textarea:focus {
 
 /* Timeline connector draw animation */
 @keyframes timeline-draw {
-  0% { height: 0; opacity: 0; }
-  100% { height: 100%; opacity: 1; }
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+
+  100% {
+    height: 100%;
+    opacity: 1;
+  }
 }
 
 /* Counter number animation */
 @keyframes counter-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Confetti burst for quiz success */
 @keyframes confetti-fall {
-  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(80px) rotate(720deg); opacity: 0; }
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(80px) rotate(720deg);
+    opacity: 0;
+  }
 }
 
 /* XP gain floating text */
 @keyframes xp-float {
-  0% { transform: translateY(0) scale(1); opacity: 1; }
-  100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-40px) scale(1.2);
+    opacity: 0;
+  }
 }
 
 /* Glow pulse for active nodes */
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(6, 182, 212, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 40px rgba(6, 182, 212, 0.15); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 40px rgba(6, 182, 212, 0.15);
+  }
 }
 
 /* Progress ring fill */
 @keyframes ring-fill {
-  from { stroke-dashoffset: 283; }
+  from {
+    stroke-dashoffset: 283;
+  }
 }
 
 /* Slide tab content */
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(12px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes slide-in-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Blueprint timeline line */
@@ -440,6 +548,7 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
 .blueprint-glow-card:hover {
   border-color: rgba(6, 182, 212, 0.25);
   box-shadow: 0 8px 30px -8px rgba(6, 182, 212, 0.12), 0 0 1px rgba(6, 182, 212, 0.3);
@@ -452,6 +561,7 @@ input:focus, select:focus, textarea:focus {
   gap: 3px;
   align-items: center;
 }
+
 .difficulty-meter .segment {
   width: 24px;
   height: 6px;
@@ -459,9 +569,18 @@ input:focus, select:focus, textarea:focus {
   background: rgba(255, 255, 255, 0.08);
   transition: background 0.3s ease;
 }
-.difficulty-meter .segment.active-easy { background: #10b981; }
-.difficulty-meter .segment.active-medium { background: #f59e0b; }
-.difficulty-meter .segment.active-hard { background: #ef4444; }
+
+.difficulty-meter .segment.active-easy {
+  background: #10b981;
+}
+
+.difficulty-meter .segment.active-medium {
+  background: #f59e0b;
+}
+
+.difficulty-meter .segment.active-hard {
+  background: #ef4444;
+}
 
 /* Animated tab slide indicator */
 .tab-slide-indicator {
@@ -486,6 +605,7 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.2s ease;
   cursor: pointer;
 }
+
 .quiz-option:hover:not(.quiz-locked) {
   border-color: rgba(6, 182, 212, 0.4);
   background: rgba(6, 182, 212, 0.05);
@@ -511,9 +631,18 @@ input:focus, select:focus, textarea:focus {
 
 /* Typing indicator dots */
 @keyframes typing-bounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-4px); }
+
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+
+  30% {
+    transform: translateY(-4px);
+  }
 }
+
 .typing-dot {
   width: 5px;
   height: 5px;
@@ -522,16 +651,36 @@ input:focus, select:focus, textarea:focus {
   display: inline-block;
   animation: typing-bounce 1.2s ease-in-out infinite;
 }
-.typing-dot:nth-child(2) { animation-delay: 0.15s; }
-.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 /* Toast notification */
 @keyframes toast-slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes toast-slide-out {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
+@keyframes toast-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

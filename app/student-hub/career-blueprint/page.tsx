@@ -299,7 +299,7 @@ function getTechCard(name: string, category: string): TechCard {
     };
   }
 
-  const difficulty: "Easy" | "Medium" | "Hard" = 
+  const difficulty: "Easy" | "Medium" | "Hard" =
     ["Cypress", "Kubernetes", "Microservices", "System Design", "Kafka", "PyTorch", "TensorFlow", "Kubeflow", "Multi-Agent Systems", "Terraform", "Ansible", "ELK Stack"].some(x => name.includes(x))
       ? "Hard"
       : ["React", "Next.js", "Spring Boot", "Redux", "Zustand", "PostgreSQL", "Docker", "GitLab CI", "LangChain", "LangGraph", "LlamaIndex", "FastAPI", "MLflow", "Airflow", "Mockito", "Hibernate", "JPA"].some(x => name.includes(x))
@@ -307,7 +307,7 @@ function getTechCard(name: string, category: string): TechCard {
         : "Easy";
 
   const learningTime = difficulty === "Hard" ? "4-6 Weeks" : difficulty === "Medium" ? "2-3 Weeks" : "1 Week";
-  
+
   return {
     name,
     category,
@@ -335,7 +335,7 @@ function getTechCard(name: string, category: string): TechCard {
 
 function getRoleTechnologies(role: string, domain: string, difficulty: string): TechCard[] {
   const normalizedRole = role.toLowerCase();
-  
+
   if (normalizedRole.includes("mern")) {
     return [
       getTechCard("HTML", "Languages"),
@@ -420,7 +420,7 @@ function getRoleTechnologies(role: string, domain: string, difficulty: string): 
       getTechCard("GitHub", "Version Control"),
     ];
   }
-  
+
   if (normalizedRole.includes("java")) {
     return [
       getTechCard("Java", "Languages"),
@@ -451,7 +451,7 @@ function getRoleTechnologies(role: string, domain: string, difficulty: string): 
       getTechCard("Gradle", "Build Tools"),
     ];
   }
-  
+
   if (normalizedRole.includes("agent")) {
     return [
       getTechCard("Python", "Languages"),
@@ -479,7 +479,7 @@ function getRoleTechnologies(role: string, domain: string, difficulty: string): 
       getTechCard("AWS (ECS, Lambda)", "DevOps & Hosting"),
     ];
   }
-  
+
   if (normalizedRole.includes("ai") || normalizedRole.includes("machine learning") || normalizedRole.includes("deep learning") || normalizedRole.includes("data scientist")) {
     return [
       getTechCard("Python", "Languages"),
@@ -507,7 +507,7 @@ function getRoleTechnologies(role: string, domain: string, difficulty: string): 
       getTechCard("Kubeflow", "DevOps/MLOps"),
     ];
   }
-  
+
   if (normalizedRole.includes("devops") || normalizedRole.includes("sre") || normalizedRole.includes("cloud") || normalizedRole.includes("platform")) {
     return [
       getTechCard("Linux Fundamentals", "Operating System & Networking"),
@@ -544,10 +544,10 @@ export default function CareerBlueprintHub() {
   const [selectedRole, setSelectedRole] = useState("Full Stack MERN Developer");
   const [selectedDomain, setSelectedDomain] = useState("Software Development");
   const [activeTab, setActiveTab] = useState<"overview" | "salaries" | "technologies" | "roadmap" | "skills" | "projects" | "placement" | "mentor">("overview");
-  
+
   // Navigation sidebar search query
   const [roleSearchQuery, setRoleSearchQuery] = useState("");
-  
+
   // Comparative analysis state
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [compareRoleA, setCompareRoleA] = useState("Full Stack MERN Developer");
@@ -562,7 +562,7 @@ export default function CareerBlueprintHub() {
   const [quizAnswerIndex, setQuizAnswerIndex] = useState<number | null>(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizSuccess, setQuizSuccess] = useState(false);
-  
+
   // Dynamic card expands
   const [expandedTechCard, setExpandedTechCard] = useState<string | null>(null);
   const [selectedRoadmapNode, setSelectedRoadmapNode] = useState<string | null>(null);
@@ -593,7 +593,7 @@ export default function CareerBlueprintHub() {
       const savedStreak = localStorage.getItem("smartpicks_blueprint_streak");
       const savedBadges = localStorage.getItem("smartpicks_blueprint_badges");
       const savedNodes = localStorage.getItem("smartpicks_blueprint_completed_nodes");
-      
+
       if (savedXp) {
         setXp(parseInt(savedXp));
       } else if (user && user.xp !== undefined) {
@@ -1662,7 +1662,7 @@ export default function CareerBlueprintHub() {
       details = { ...MOCK_ROLES_DATABASE[selectedRole] };
     } else {
       // Generate intelligent details on the fly
-      const resolvedDifficulty: "Easy" | "Medium" | "Hard" = 
+      const resolvedDifficulty: "Easy" | "Medium" | "Hard" =
         selectedRole.includes("Senior") || selectedRole.includes("Architect") || selectedRole.includes("MLOps") || selectedRole.includes("SRE") || selectedRole.includes("Deep Learning")
           ? "Hard"
           : selectedRole.includes("Analyst") || selectedRole.includes("Prompt") || selectedRole.includes("Freelancing")
@@ -1882,7 +1882,7 @@ export default function CareerBlueprintHub() {
     );
   }
 
-    return (
+  return (
     <div
       style={{ background: "#09090B" }}
       className="min-h-screen text-slate-100 relative overflow-hidden font-sans pb-12 select-none"
@@ -1997,7 +1997,7 @@ export default function CareerBlueprintHub() {
                   {DOMAINS.flatMap(d => d.roles).length} Paths
                 </span>
               </div>
-              
+
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
                 <input
@@ -2028,11 +2028,10 @@ export default function CareerBlueprintHub() {
                               setSelectedDomain(domain.name);
                               addXp(10, `Explored Career Path: ${r}`);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer border ${
-                              isSelected
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer border ${isSelected
                                 ? "bg-cyan-500/10 border-cyan-500/40 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
                                 : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-800/30 hover:text-white"
-                            }`}
+                              }`}
                           >
                             <span className="truncate pr-2">{r}</span>
                             {isSelected && <ChevronRight className="h-4 w-4 shrink-0 text-cyan-400" />}
@@ -2116,11 +2115,10 @@ export default function CareerBlueprintHub() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                        isSelected
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${isSelected
                           ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
                           : "text-neutral-500 hover:text-neutral-200 hover:bg-neutral-855"
-                      }`}
+                        }`}
                     >
                       <span>{tab.icon}</span>
                       <span>{tab.label}</span>
@@ -2132,7 +2130,7 @@ export default function CareerBlueprintHub() {
 
             {/* TAB INTERFACES */}
             <div className="min-h-[400px]">
-              
+
               {/* Tab: Overview details */}
               {activeTab === "overview" && (
                 <div className="space-y-6 animate-tab-in">
@@ -2148,7 +2146,7 @@ export default function CareerBlueprintHub() {
                         <h3 className="text-xs font-black uppercase text-cyan-400 tracking-widest">Industry Relevance</h3>
                       </div>
                       <p className="text-xs text-slate-350 leading-relaxed font-medium">{activeRoleDetails.importance}</p>
-                      
+
                       <div className="pt-4 border-t border-neutral-800/50">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="h-6 w-6 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
@@ -2238,17 +2236,17 @@ export default function CareerBlueprintHub() {
                         { label: "Senior Staff / Principal", value: activeRoleDetails.salaries.senior, isLpa: true }
                       ].map((sal, i) => {
                         const maxValue = 40; // Max ceiling for LPA index scaling
-                        const relativePercent = sal.isMonthly 
-                          ? (sal.value / 60000) * 100 
+                        const relativePercent = sal.isMonthly
+                          ? (sal.value / 60000) * 100
                           : (sal.value / maxValue) * 100;
-                        
+
                         return (
                           <div key={i} className="space-y-2">
                             <div className="flex justify-between items-center text-xs">
                               <span className="font-extrabold text-neutral-300">{sal.label}</span>
                               <span className="font-black text-white bg-neutral-950 px-2 py-0.5 rounded-lg border border-neutral-850">
-                                {sal.isMonthly 
-                                  ? `₹${(sal.value).toLocaleString()} / mo` 
+                                {sal.isMonthly
+                                  ? `₹${(sal.value).toLocaleString()} / mo`
                                   : `₹${sal.value} LPA`}
                               </span>
                             </div>
@@ -2319,11 +2317,10 @@ export default function CareerBlueprintHub() {
                                           <span className="text-[8px] font-black px-2 py-0.5 rounded bg-neutral-950 border border-neutral-850 text-neutral-400 uppercase tracking-wider">
                                             🕒 {tech.learningTime} Learn
                                           </span>
-                                          <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                                            tech.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border border-green-500/20" :
-                                            tech.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
-                                            "bg-red-500/10 text-red-400 border border-red-500/20"
-                                          }`}>
+                                          <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${tech.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border border-green-500/20" :
+                                              tech.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                                "bg-red-500/10 text-red-400 border border-red-500/20"
+                                            }`}>
                                             Difficulty: {tech.difficulty}
                                           </span>
                                         </div>
@@ -2421,7 +2418,7 @@ export default function CareerBlueprintHub() {
               {/* Tab: Learning Roadmap Flow */}
               {activeTab === "roadmap" && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-tab-in">
-                  
+
                   {/* Visual Vertical Timeline Node list (Col-Span 7) */}
                   <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl relative">
                     <div className="flex justify-between items-center border-b border-neutral-800 pb-3 mb-5">
@@ -2430,24 +2427,23 @@ export default function CareerBlueprintHub() {
                         {Object.keys(completedNodesMap).length} / {activeRoleDetails.roadmap.length} Completed
                       </span>
                     </div>
-                    
+
                     <div className="relative w-full pl-6 space-y-6 pt-2">
                       <div className="blueprint-timeline-line" />
 
                       {activeRoleDetails.roadmap.map((node, idx) => {
                         const isSelected = selectedRoadmapNode === node.id;
                         const isCompleted = completedNodesMap[node.id];
-                        
+
                         return (
                           <div key={node.id} className="relative flex items-start gap-4">
                             <div
-                              className={`absolute left-[-26px] h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all z-10 ${
-                                isSelected
+                              className={`absolute left-[-26px] h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all z-10 ${isSelected
                                   ? "bg-cyan-500 border-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.6)]"
                                   : isCompleted
                                     ? "bg-green-500 border-green-400"
                                     : "bg-neutral-950 border-neutral-800"
-                              }`}
+                                }`}
                               style={{ top: "10px" }}
                             >
                               {isCompleted ? (
@@ -2463,13 +2459,12 @@ export default function CareerBlueprintHub() {
                                 setQuizSubmitted(false);
                                 setQuizAnswerIndex(null);
                               }}
-                              className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center gap-3 ${
-                                isSelected
+                              className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center gap-3 ${isSelected
                                   ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.06)]"
                                   : isCompleted
                                     ? "bg-green-500/5 border-green-500/20 text-neutral-300"
                                     : "bg-neutral-950/80 border-neutral-850 text-neutral-450 hover:border-neutral-800 hover:text-neutral-250"
-                              }`}
+                                }`}
                             >
                               <div className="space-y-1">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400/90">{node.phase} Phase</span>
@@ -2514,7 +2509,7 @@ export default function CareerBlueprintHub() {
                             <HelpCircle className="h-4 w-4" /> Quick Checkpoint Quiz (+30 XP)
                           </span>
                           <p className="text-xs font-black text-slate-200 leading-snug">{selectedRoadmapNodeDetails.quiz.question}</p>
-                          
+
                           <div className="space-y-2 pt-1.5">
                             {selectedRoadmapNodeDetails.quiz.options.map((opt, i) => (
                               <button
@@ -2522,11 +2517,10 @@ export default function CareerBlueprintHub() {
                                 onClick={() => {
                                   if (!quizSubmitted) setQuizAnswerIndex(i);
                                 }}
-                                className={`w-full text-left p-3 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${
-                                  quizAnswerIndex === i
+                                className={`w-full text-left p-3 rounded-xl border text-[11px] font-bold transition-all cursor-pointer ${quizAnswerIndex === i
                                     ? "bg-cyan-500/10 border-cyan-500 text-cyan-400"
                                     : "bg-neutral-900 border-neutral-855 text-neutral-400 hover:text-white hover:border-neutral-700"
-                                }`}
+                                  }`}
                               >
                                 {opt}
                               </button>
@@ -2569,7 +2563,7 @@ export default function CareerBlueprintHub() {
               {/* Tab: Skill Trees */}
               {activeTab === "skills" && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-tab-in">
-                  
+
                   {/* Skill Node Grid (Col-Span 7) */}
                   <div className="lg:col-span-7 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-6">
                     <div className="border-b border-neutral-850 pb-3">
@@ -2580,7 +2574,7 @@ export default function CareerBlueprintHub() {
                       {["Beginner", "Intermediate", "Advanced", "Expert"].map((tier) => {
                         const tierNodes = activeRoleDetails.skillsTree.filter(n => n.tier === tier);
                         if (tierNodes.length === 0) return null;
-                        
+
                         return (
                           <div key={tier} className="space-y-2">
                             <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400 block px-1">{tier} Stage</span>
@@ -2591,21 +2585,19 @@ export default function CareerBlueprintHub() {
                                   <button
                                     key={node.id}
                                     onClick={() => setSelectedSkillNode(node.id)}
-                                    className={`p-4 text-left rounded-2xl border transition-all cursor-pointer flex justify-between items-start gap-2 ${
-                                      isSelected
+                                    className={`p-4 text-left rounded-2xl border transition-all cursor-pointer flex justify-between items-start gap-2 ${isSelected
                                         ? "bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.05)]"
                                         : "bg-neutral-950 border-neutral-850 hover:border-neutral-750"
-                                    }`}
+                                      }`}
                                   >
                                     <div className="space-y-1">
                                       <span className="text-xs font-black text-slate-200 block truncate max-w-[160px]">{node.name}</span>
                                       <div className="flex gap-2">
                                         <span className="text-[9px] text-neutral-500 font-extrabold block">🕒 {node.hours} Hours</span>
-                                        <span className={`text-[9px] font-black uppercase ${
-                                          node.importance === "High" ? "text-red-400" :
-                                          node.importance === "Medium" ? "text-amber-400" :
-                                          "text-green-400"
-                                        }`}>
+                                        <span className={`text-[9px] font-black uppercase ${node.importance === "High" ? "text-red-400" :
+                                            node.importance === "Medium" ? "text-amber-400" :
+                                              "text-green-400"
+                                          }`}>
                                           {node.importance} Priority
                                         </span>
                                       </div>
@@ -2627,7 +2619,7 @@ export default function CareerBlueprintHub() {
                       (() => {
                         const sDetails = activeRoleDetails.skillsTree.find(n => n.id === selectedSkillNode);
                         if (!sDetails) return null;
-                        
+
                         return (
                           <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-4">
                             <div className="border-b border-neutral-800 pb-3">
@@ -2694,7 +2686,7 @@ export default function CareerBlueprintHub() {
                           <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-0.5">Problem Statement</span>
                           {proj.problemStatement}
                         </p>
-                        
+
                         <div className="space-y-1.5">
                           <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest block">Feature Guidelines</span>
                           <div className="space-y-1">
@@ -2732,7 +2724,7 @@ export default function CareerBlueprintHub() {
               {/* Tab: Placement Prep & mock questions */}
               {activeTab === "placement" && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-tab-in">
-                  
+
                   {/* Guidelines checklist (Col-Span 6) */}
                   <div className="lg:col-span-6 bg-neutral-900/40 border border-neutral-800/60 rounded-3xl p-6 shadow-2xl space-y-5">
                     <h3 className="text-xs font-black uppercase text-cyan-500 tracking-wider pb-2 border-b border-neutral-800">
@@ -2804,11 +2796,10 @@ export default function CareerBlueprintHub() {
                         className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
                       >
                         <div
-                          className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed font-semibold ${
-                            msg.sender === "user"
+                          className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed font-semibold ${msg.sender === "user"
                               ? "bg-cyan-500 text-white rounded-tr-none shadow-[0_4px_12px_rgba(6,182,212,0.15)]"
                               : "bg-neutral-950 border border-neutral-855 text-neutral-300 rounded-tl-none whitespace-pre-line"
-                          }`}
+                            }`}
                         >
                           {msg.text}
                         </div>
@@ -2876,12 +2867,12 @@ export default function CareerBlueprintHub() {
               exit={{ scale: 0.95, y: 15 }}
               className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-3xl w-full shadow-2xl space-y-6"
             >
-              
+
               <div className="flex justify-between items-center border-b border-neutral-800 pb-3">
                 <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   ⚖️ Career Comparison Matrix
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowCompareModal(false)}
                   className="text-neutral-500 hover:text-white cursor-pointer transition-colors p-1.5 hover:bg-neutral-850 rounded-xl"
                 >

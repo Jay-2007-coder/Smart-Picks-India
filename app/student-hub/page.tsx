@@ -24,6 +24,7 @@ import {
   X,
   TrendingUp,
   Brain,
+  GitFork,
 } from "lucide-react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -173,6 +174,14 @@ const tools = [
         href: "/student-hub/project-idea-generator",
         icon: Lightbulb,
         color: "#f59e0b",
+        badge: "New",
+      },
+      {
+        title: "AI Skill Tree Builder",
+        description: "Generate dynamic, gamified skill node trees with quizzes to unlock custom career paths.",
+        href: "/student-hub/ai-skill-tree",
+        icon: GitFork,
+        color: "#0ea5e9",
         badge: "New",
       },
     ],

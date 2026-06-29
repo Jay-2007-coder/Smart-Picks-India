@@ -16,8 +16,11 @@ import {
   Award,
   AlertCircle,
   HelpCircle,
+  Cloud,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Application {
   id: string;
@@ -39,8 +42,10 @@ const STAGES = [
 ];
 
 export default function PlacementTracker() {
+  const { user, loading: authLoading } = useAuth() as any;
   const [applications, setApplications] = useState<Application[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [dbLoading, setDbLoading] = useState(false);
 
   // Form State
   const [companyName, setCompanyName] = useState("");
@@ -50,61 +55,133 @@ export default function PlacementTracker() {
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
 
-  // Load from LocalStorage
+  // Load from DB (or fall back to LocalStorage if guest)
   useEffect(() => {
-    if (typeof window === "undefined" || !window.localStorage) return;
-    try {
-      const stored = localStorage.getItem("smartpicks_placement_tracker");
-      if (stored) {
-        setApplications(JSON.parse(stored));
-      } else {
-        // Seed default template data for demo purposes
-        const seed = [
-          {
-            id: "1",
-            companyName: "Google",
-            role: "Software Engineer",
-            packageLPA: 35,
-            stage: "tech",
-            date: "2026-06-12",
-            notes: "DSA practice: Trees, Graphs, and System Design.",
-          },
-          {
-            id: "2",
-            companyName: "Amazon",
-            role: "Cloud Associate",
-            packageLPA: 22,
-            stage: "oa",
-            date: "2026-06-15",
-            notes: "Got the OA link. Prepare Leadership Principles.",
-          },
-          {
-            id: "3",
-            companyName: "TCS",
-            role: "Ninja Developer",
-            packageLPA: 7,
-            stage: "offered",
-            date: "2026-05-20",
-            notes: "Offer letter received! Join date August 1st.",
-          },
-        ];
-        setApplications(seed);
-        localStorage.setItem("smartpicks_placement_tracker", JSON.stringify(seed));
-      }
-    } catch (e) {
-      console.error("Failed to load placement tracker applications", e);
-    }
-  }, []);
+    if (authLoading) return;
 
-  // Save to LocalStorage
-  const saveToStorage = (updatedList: Application[]) => {
-    setApplications(updatedList);
-    try {
-      localStorage.setItem("smartpicks_placement_tracker", JSON.stringify(updatedList));
-    } catch (e) {
-      console.error("Failed to save placement tracker applications", e);
+    if (user) {
+      setDbLoading(true);
+      fetch("/api/v1/student-hub/applications")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.applications)) {
+            // Check if there are local storage applications to migrate
+            const stored = localStorage.getItem("smartpicks_placement_tracker");
+            const localApps = stored ? JSON.parse(stored) : [];
+            const hasLocalApps = localApps.length > 0 && !localApps.some((app: any) => app.id === "1" && app.companyName === "Google");
+
+            if (hasLocalApps) {
+              // Perform migration
+              fetch("/api/v1/student-hub/applications/bulk-migrate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ applications: localApps }),
+              })
+                .then((mRes) => mRes.json())
+                .then((mData) => {
+                  if (mData.success && Array.isArray(mData.applications)) {
+                    const migrated = mData.applications.map((app: any) => ({
+                      id: app._id,
+                      companyName: app.companyName,
+                      role: app.role,
+                      packageLPA: app.packageLPA,
+                      stage: app.stage,
+                      date: app.date ? app.date.split("T")[0] : new Date().toISOString().split("T")[0],
+                      notes: app.notes,
+                    }));
+                    const dbApps = data.applications.map((app: any) => ({
+                      id: app._id,
+                      companyName: app.companyName,
+                      role: app.role,
+                      packageLPA: app.packageLPA,
+                      stage: app.stage,
+                      date: app.date ? app.date.split("T")[0] : new Date().toISOString().split("T")[0],
+                      notes: app.notes,
+                    }));
+                    setApplications([...migrated, ...dbApps]);
+                    localStorage.removeItem("smartpicks_placement_tracker");
+                  }
+                })
+                .catch((e) => {
+                  console.error("Migration failed, loading database records instead", e);
+                  setApplications(data.applications.map((app: any) => ({
+                    id: app._id,
+                    companyName: app.companyName,
+                    role: app.role,
+                    packageLPA: app.packageLPA,
+                    stage: app.stage,
+                    date: app.date ? app.date.split("T")[0] : new Date().toISOString().split("T")[0],
+                    notes: app.notes,
+                  })));
+                })
+                .finally(() => {
+                  setDbLoading(false);
+                });
+            } else {
+              setApplications(data.applications.map((app: any) => ({
+                id: app._id,
+                companyName: app.companyName,
+                role: app.role,
+                packageLPA: app.packageLPA,
+                stage: app.stage,
+                date: app.date ? app.date.split("T")[0] : new Date().toISOString().split("T")[0],
+                notes: app.notes,
+              })));
+              setDbLoading(false);
+              localStorage.removeItem("smartpicks_placement_tracker");
+            }
+          } else {
+            setDbLoading(false);
+          }
+        })
+        .catch((e) => {
+          console.error("Failed to load applications from database", e);
+          setDbLoading(false);
+        });
+    } else {
+      // Guest local storage fallback
+      try {
+        const stored = localStorage.getItem("smartpicks_placement_tracker");
+        if (stored) {
+          setApplications(JSON.parse(stored));
+        } else {
+          const seed = [
+            {
+              id: "1",
+              companyName: "Google",
+              role: "Software Engineer",
+              packageLPA: 35,
+              stage: "tech",
+              date: "2026-06-12",
+              notes: "DSA practice: Trees, Graphs, and System Design.",
+            },
+            {
+              id: "2",
+              companyName: "Amazon",
+              role: "Cloud Associate",
+              packageLPA: 22,
+              stage: "oa",
+              date: "2026-06-15",
+              notes: "Got the OA link. Prepare Leadership Principles.",
+            },
+            {
+              id: "3",
+              companyName: "TCS",
+              role: "Ninja Developer",
+              packageLPA: 7,
+              stage: "offered",
+              date: "2026-05-20",
+              notes: "Offer letter received! Join date August 1st.",
+            },
+          ];
+          setApplications(seed);
+          localStorage.setItem("smartpicks_placement_tracker", JSON.stringify(seed));
+        }
+      } catch (e) {
+        console.error("Failed to read local placement tracker applications", e);
+      }
     }
-  };
+  }, [user, authLoading]);
 
   // Stats Calculations
   const stats = useMemo(() => {
@@ -122,12 +199,11 @@ export default function PlacementTracker() {
     return { total, active, offerCount, highestLPA, avgOfferedLPA };
   }, [applications]);
 
-  const handleAddApplication = (e: React.FormEvent) => {
+  const handleAddApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim() || !role.trim()) return;
 
-    const newApp: Application = {
-      id: Date.now().toString(),
+    const newAppFields = {
       companyName: companyName.trim(),
       role: role.trim(),
       packageLPA: parseFloat(packageLPA) || 0,
@@ -136,8 +212,41 @@ export default function PlacementTracker() {
       notes: notes.trim(),
     };
 
-    const updated = [...applications, newApp];
-    saveToStorage(updated);
+    if (user) {
+      setDbLoading(true);
+      try {
+        const res = await fetch("/api/v1/student-hub/applications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newAppFields),
+        });
+        const data = await res.json();
+        if (data.success && data.application) {
+          const createdApp: Application = {
+            id: data.application._id,
+            companyName: data.application.companyName,
+            role: data.application.role,
+            packageLPA: data.application.packageLPA,
+            stage: data.application.stage,
+            date: data.application.date ? data.application.date.split("T")[0] : newAppFields.date,
+            notes: data.application.notes,
+          };
+          setApplications((prev) => [...prev, createdApp]);
+        }
+      } catch (err) {
+        console.error("Failed to add placement application", err);
+      } finally {
+        setDbLoading(false);
+      }
+    } else {
+      const newApp: Application = {
+        id: Date.now().toString(),
+        ...newAppFields,
+      };
+      const updated = [...applications, newApp];
+      setApplications(updated);
+      localStorage.setItem("smartpicks_placement_tracker", JSON.stringify(updated));
+    }
 
     // Reset Form
     setCompanyName("");
@@ -149,26 +258,74 @@ export default function PlacementTracker() {
     setShowAddForm(false);
   };
 
-  const handleDeleteApplication = (id: string) => {
-    const updated = applications.filter((app) => app.id !== id);
-    saveToStorage(updated);
+  const handleDeleteApplication = async (id: string) => {
+    if (user) {
+      setDbLoading(true);
+      try {
+        const res = await fetch(`/api/v1/student-hub/applications/${id}`, {
+          method: "DELETE",
+        });
+        const data = await res.json();
+        if (data.success) {
+          setApplications((prev) => prev.filter((app) => app.id !== id));
+        }
+      } catch (err) {
+        console.error("Failed to delete application", err);
+      } finally {
+        setDbLoading(false);
+      }
+    } else {
+      const updated = applications.filter((app) => app.id !== id);
+      setApplications(updated);
+      localStorage.setItem("smartpicks_placement_tracker", JSON.stringify(updated));
+    }
   };
 
-  const moveApplication = (id: string, direction: "prev" | "next") => {
-    const updated = applications.map((app) => {
-      if (app.id === id) {
-        const currentIdx = STAGES.findIndex((s) => s.id === app.stage);
-        let nextIdx = currentIdx;
-        if (direction === "next" && currentIdx < STAGES.length - 1) nextIdx += 1;
-        if (direction === "prev" && currentIdx > 0) nextIdx -= 1;
-        return {
-          ...app,
-          stage: STAGES[nextIdx].id,
-        };
+  const moveApplication = async (id: string, direction: "prev" | "next") => {
+    const targetApp = applications.find((app) => app.id === id);
+    if (!targetApp) return;
+
+    const currentIdx = STAGES.findIndex((s) => s.id === targetApp.stage);
+    let nextIdx = currentIdx;
+    if (direction === "next" && currentIdx < STAGES.length - 1) nextIdx += 1;
+    if (direction === "prev" && currentIdx > 0) nextIdx -= 1;
+    const newStage = STAGES[nextIdx].id;
+
+    if (user) {
+      setDbLoading(true);
+      try {
+        const res = await fetch("/api/v1/student-hub/applications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id,
+            stage: newStage,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setApplications((prev) =>
+            prev.map((app) => (app.id === id ? { ...app, stage: newStage } : app))
+          );
+        }
+      } catch (err) {
+        console.error("Failed to move application", err);
+      } finally {
+        setDbLoading(false);
       }
-      return app;
-    });
-    saveToStorage(updated);
+    } else {
+      const updated = applications.map((app) => {
+        if (app.id === id) {
+          return {
+            ...app,
+            stage: newStage,
+          };
+        }
+        return app;
+      });
+      setApplications(updated);
+      localStorage.setItem("smartpicks_placement_tracker", JSON.stringify(updated));
+    }
   };
 
   return (
@@ -208,6 +365,48 @@ export default function PlacementTracker() {
             </span>
           </div>
         </motion.div>
+
+        {/* Sync Status Banner */}
+        <AnimatePresence mode="wait">
+          {authLoading || dbLoading ? (
+            <motion.div
+              key="loading-banner"
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              className="mb-6 flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-border text-xs font-bold text-muted-foreground"
+            >
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
+                <span>Syncing dashboard state with cloud database...</span>
+              </div>
+            </motion.div>
+          ) : user ? (
+            <motion.div
+              key="cloud-synced-banner"
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 flex items-center justify-between p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/[0.02] border border-emerald-500/20 text-xs font-bold text-emerald-600 dark:text-emerald-400"
+            >
+              <div className="flex items-center gap-2">
+                <Cloud className="h-4 w-4 text-emerald-500" />
+                <span>Cloud Synced: Your placement board is securely saved to your account.</span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="offline-banner"
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/[0.02] border border-amber-500/20 text-xs font-bold text-amber-600 dark:text-amber-400"
+            >
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <span>Offline mode (Guest): Placements are saved on this browser session only. <Link href="/login" className="underline hover:text-amber-700">Login</Link> to sync to the cloud.</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Summary Statistics Dashboard */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

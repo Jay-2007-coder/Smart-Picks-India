@@ -5,7 +5,7 @@ import Link from "next/link";
 import { 
   ArrowLeft, Plus, Trash2, Calculator, RefreshCw, Save, Download, 
   Sparkles, Trophy, Award, TrendingUp, Calendar, Info, X, Check, 
-  Star, CheckCircle, HelpCircle, AlertCircle, BookOpen
+  Star, CheckCircle, HelpCircle, AlertCircle, BookOpen, Send, MessageSquare, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -68,6 +68,12 @@ export default function CGPACalculator() {
   
   // Selected course tooltip/detail view
   const [activeCourseHover, setActiveCourseHover] = useState<{ semId: number; cIdx: number } | null>(null);
+
+  // AI Study Mentor Chat States
+  const [chatMessages, setChatMessages] = useState<Array<{ id: string; sender: "user" | "assistant"; text: string }>>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-clear notification
   useEffect(() => {
@@ -287,6 +293,80 @@ export default function CGPACalculator() {
 
   // SGPA Trend Values for Graph
   const sGPAs = semesters.map((s) => calculateSGPA(s.courses));
+
+  // Initialize AI Mentor greeting
+  useEffect(() => {
+    if (chatMessages.length === 0 && currentCGPA > 0) {
+      const greeting = `🎓 **AI Study Planner**: Hello! I'm your academic mentor. \n\nCurrently, you have completed **${completedSemestersCount}** semester(s) with an overall CGPA of **${currentCGPA.toFixed(2)}** (Target: **${targetCGPA.toFixed(2)}**).\n\n${
+        currentCGPA >= targetCGPA 
+          ? "Fantastic work! You are currently meeting or exceeding your target. Ask me how to plan your remaining courses to maintain this level!" 
+          : requiredAverageSGPA > 10.0
+            ? `⚠️ Note: Your target of **${targetCGPA.toFixed(2)}** is currently mathematically unreachable with your current semester counts. Let's talk about adjusting your goals.`
+            : `To hit your target, you must maintain an average SGPA of **${requiredAverageSGPA.toFixed(2)}** in your remaining semesters. I can suggest some study rules to help you get there!`
+      }`;
+
+      setChatMessages([
+        {
+          id: "init",
+          sender: "assistant",
+          text: greeting
+        }
+      ]);
+    } else if (chatMessages.length === 0) {
+      setChatMessages([
+        {
+          id: "init",
+          sender: "assistant",
+          text: `👋 Welcome! I am your AI Study Planner. Let's start tracking your semesters to map out a clear academic pathway to your target CGPA!`
+        }
+      ]);
+    }
+  }, [completedSemestersCount, currentCGPA, targetCGPA, requiredAverageSGPA, chatMessages.length]);
+
+  const handleSendChat = (predefinedMsg?: string) => {
+    const query = predefinedMsg || chatInput;
+    if (!query.trim()) return;
+
+    // Add user message
+    setChatMessages(prev => [...prev, { id: `user-${Date.now()}`, sender: "user", text: query }]);
+    setChatInput("");
+    setIsTyping(true);
+
+    // Auto scroll chat to bottom
+    setTimeout(() => {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+
+    // Simulate AI response
+    setTimeout(() => {
+      let reply = "";
+      const text = query.toLowerCase();
+
+      if (text.includes("pathway") || text.includes("evaluate") || text.includes("target") || text.includes("sgpa")) {
+        if (requiredAverageSGPA > 10.0) {
+          reply = `⚠️ **Goal Analysis**: Your target CGPA of **${targetCGPA.toFixed(2)}** is mathematically unreachable with your current completed credits. Even getting a perfect 10.0 SGPA won't reach it.\n\n**Action Plan**:\n1. Adjust your target CGPA to a realistic level (e.g. **${(currentCGPA + 0.5).toFixed(2)}**).\n2. Focus on maximizing grades in high-credit papers to raise your score fast.`;
+        } else if (requiredAverageSGPA <= 4.0) {
+          reply = `✅ **Goal Analysis**: Excellent news! Your target of **${targetCGPA.toFixed(2)}** is fully secured. Even if you maintain a passing SGPA of 4.0, you'll cross the line.\n\nKeep up the steady pace to aim for higher honors!`;
+        } else {
+          reply = `📈 **Pathway Evaluation**:\nTo achieve your target CGPA of **${targetCGPA.toFixed(2)}**, you need to average **${requiredAverageSGPA.toFixed(2)}** SGPA across your next **${remainingSemestersCount}** semesters.\n\n**Target Recommendation**:\nAim for **${Math.min(10, Math.round((requiredAverageSGPA + 0.25) * 10) / 10).toFixed(2)}** SGPA next semester to give yourself a safety cushion!`;
+        }
+      } else if (text.includes("study") || text.includes("habits") || text.includes("credits") || text.includes("plan")) {
+        reply = `📚 **Academic Study Planner Strategy**:\nAlways prioritize **high-credit courses** (4+ credits). Because grade calculations are weighted by credits, an 'O' in a 4-credit course has **double** the weight of an 'O' in a 2-credit course!\n\n**Study Plan Rules**:\n1. **Credit Leverage**: Allocate 60% of your self-study time to high-credit papers.\n2. **Consistency Checklist**: Set a weekly review of key formulas/syntax for your core coding courses.`;
+      } else if (text.includes("rescue") || text.includes("fail") || text.includes("behind")) {
+        reply = `🚨 **Grade Rescue Strategy**:\nIf you're falling behind your target, here is the recovery playbook:\n\n1. **Identify the Leaks**: Check semesters with the lowest SGPA. Which course category (Math, programming lab, theory) caused the drag?\n2. **Grade Replacement**: Check if your university allows re-evaluations or grade replacements for failing/low papers.\n3. **Practical Lab Boost**: Labs are usually easier to score 10/10 points. Ensure you get perfect internal assessment marks!`;
+      } else {
+        reply = `🎓 **AI Study Planner**:\nTo help you plan, try one of these queries:\n- **Evaluate Pathway**: Check remaining SGPA targets.\n- **Study Plan Action**: Optimize schedule for high-credit courses.\n- **Grade Rescue**: Steps to recover from a bad semester.`;
+      }
+
+      setIsTyping(false);
+      setChatMessages(prev => [...prev, { id: `ai-${Date.now()}`, sender: "assistant", text: reply }]);
+      
+      // Auto scroll chat to bottom
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }, 1000);
+  };
   
   // SVG Parameters
   const graphWidth = 500;
@@ -977,6 +1057,100 @@ export default function CGPACalculator() {
                 </div>
               </div>
             )}
+
+            {/* AI STUDY MENTOR PANEL */}
+            <div className="bg-zinc-900/30 border border-zinc-800/80 rounded-3xl p-5 backdrop-blur-xl shadow-lg space-y-4 text-left relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-zinc-800/0 via-zinc-800/60 to-zinc-800/0" />
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-purple-400 animate-pulse" /> AI Study Mentor
+                </h4>
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/25 text-purple-400 uppercase tracking-wider">
+                  Always Active
+                </span>
+              </div>
+              
+              {/* Chat messages */}
+              <div className="bg-zinc-950/60 border border-zinc-900 rounded-2xl p-3 h-[250px] overflow-y-auto space-y-3 scrollbar-none flex flex-col">
+                <div className="flex-1 space-y-3">
+                  {chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex flex-col max-w-[85%] ${
+                        msg.sender === "user" ? "ml-auto items-end" : "mr-auto items-start"
+                      }`}
+                    >
+                      <div
+                        className={`text-xs px-3 py-2.5 rounded-2xl leading-relaxed whitespace-pre-line ${
+                          msg.sender === "user"
+                            ? "bg-purple-650 text-white rounded-br-none shadow-md shadow-purple-950/20"
+                            : "bg-zinc-900/80 border border-zinc-800 text-zinc-300 rounded-bl-none"
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex items-center gap-1 mr-auto bg-zinc-900/80 border border-zinc-800 px-3 py-2.5 rounded-2xl rounded-bl-none">
+                      <span className="h-1.5 w-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="h-1.5 w-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="h-1.5 w-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+              </div>
+
+              {/* Predefined prompt tags */}
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleSendChat("Evaluate Pathway")}
+                  className="text-[10px] font-bold px-2.5 py-1.5 rounded-xl bg-zinc-950 border border-zinc-850 hover:border-purple-500/40 text-zinc-400 hover:text-purple-400 transition-colors"
+                >
+                  📈 Evaluate Pathway
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendChat("Study Plan Action")}
+                  className="text-[10px] font-bold px-2.5 py-1.5 rounded-xl bg-zinc-950 border border-zinc-850 hover:border-purple-500/40 text-zinc-400 hover:text-purple-400 transition-colors"
+                >
+                  📚 Study Plan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendChat("Grade Rescue Strategy")}
+                  className="text-[10px] font-bold px-2.5 py-1.5 rounded-xl bg-zinc-950 border border-zinc-850 hover:border-purple-500/40 text-zinc-400 hover:text-purple-400 transition-colors"
+                >
+                  🚨 Rescue Plan
+                </button>
+              </div>
+
+              {/* Chat Input form */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendChat();
+                }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask study tips, targets, or recovery tips..."
+                  className="flex-1 bg-zinc-950/80 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className="p-2 bg-purple-650 hover:bg-purple-500 disabled:opacity-40 disabled:hover:bg-purple-650 text-white rounded-xl transition-all shadow-md shadow-purple-950/20"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              </form>
+            </div>
 
           </div>
         </div>

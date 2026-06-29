@@ -3,6 +3,8 @@ import { protect } from "../middleware/auth.js";
 import User from "../models/User.js";
 import { awardXp } from "../middleware/xp.js";
 import { checkHubLimits } from "../middleware/hubLimits.js";
+import PlacementApplication from "../models/PlacementApplication.js";
+import CustomSkillTree from "../models/CustomSkillTree.js";
 
 const router = express.Router();
 
@@ -21,6 +23,214 @@ router.get("/leaderboard", async (req, res, next) => {
 
 // Apply protect middleware to secure student helper utilities
 router.use(protect);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PLACEMENT TRACKER CRUD (BYPASSES AI RUN LIMITS)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// GET all user applications
+router.get("/applications", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const applications = await PlacementApplication.find({ userId }).sort({ date: -1 });
+    res.status(200).json({ success: true, applications });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST create or update single application
+router.post("/applications", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { id, companyName, role, packageLPA, stage, date, notes } = req.body;
+
+    if (id) {
+      // Update
+      const app = await PlacementApplication.findOne({ _id: id, userId });
+      if (!app) {
+        return res.status(404).json({ success: false, message: "Application not found or unauthorized." });
+      }
+
+      if (companyName !== undefined) app.companyName = companyName;
+      if (role !== undefined) app.role = role;
+      if (packageLPA !== undefined) app.packageLPA = packageLPA;
+      if (stage !== undefined) app.stage = stage;
+      if (date !== undefined) app.date = date;
+      if (notes !== undefined) app.notes = notes;
+
+      await app.save();
+      return res.status(200).json({ success: true, message: "Application updated successfully", application: app });
+    } else {
+      // Create
+      if (!companyName || !role) {
+        return res.status(400).json({ success: false, message: "Company name and role are required." });
+      }
+
+      const newApp = new PlacementApplication({
+        userId,
+        companyName,
+        role,
+        packageLPA: packageLPA || 0,
+        stage: stage || "applied",
+        date: date || new Date(),
+        notes: notes || "",
+      });
+
+      await newApp.save();
+      return res.status(201).json({ success: true, message: "Application created successfully", application: newApp });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST bulk migrate applications from LocalStorage
+router.post("/applications/bulk-migrate", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { applications } = req.body;
+
+    if (!Array.isArray(applications) || applications.length === 0) {
+      return res.status(400).json({ success: false, message: "Invalid or empty applications array." });
+    }
+
+    const records = applications.map((app) => ({
+      userId,
+      companyName: app.companyName,
+      role: app.role,
+      packageLPA: app.packageLPA || 0,
+      stage: app.stage || "applied",
+      date: app.date || new Date(),
+      notes: app.notes || "",
+    }));
+
+    const inserted = await PlacementApplication.insertMany(records);
+    res.status(201).json({
+      success: true,
+      message: `Successfully migrated ${inserted.length} applications`,
+      applications: inserted,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE single application
+router.delete("/applications/:id", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+
+    const result = await PlacementApplication.deleteOne({ _id: id, userId });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "Application not found or unauthorized." });
+    }
+
+    res.status(200).json({ success: true, message: "Application deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CUSTOM SKILL TREE UTILITIES (BYPASSES AI RUN LIMITS)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// GET all user skill trees
+router.get("/ai-skill-tree", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const trees = await CustomSkillTree.find({ userId }).select("roleName createdAt updatedAt").sort({ updatedAt: -1 });
+    res.status(200).json({ success: true, trees });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET single skill tree
+router.get("/ai-skill-tree/:id", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const tree = await CustomSkillTree.findOne({ _id: req.params.id, userId });
+    if (!tree) {
+      return res.status(404).json({ success: false, message: "Skill tree not found." });
+    }
+    res.status(200).json({ success: true, tree });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE skill tree
+router.delete("/ai-skill-tree/:id", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const result = await CustomSkillTree.deleteOne({ _id: req.params.id, userId });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "Skill tree not found." });
+    }
+    res.status(200).json({ success: true, message: "Skill tree deleted successfully." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST complete node and unlock progress
+router.post("/ai-skill-tree/:id/complete-node", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { nodeId } = req.body;
+
+    const tree = await CustomSkillTree.findOne({ _id: req.params.id, userId });
+    if (!tree) {
+      return res.status(404).json({ success: false, message: "Skill tree not found." });
+    }
+
+    const node = tree.nodes.find((n) => n.id === nodeId);
+    if (!node) {
+      return res.status(404).json({ success: false, message: "Node not found." });
+    }
+
+    if (node.status === "locked") {
+      return res.status(400).json({ success: false, message: "Cannot complete a locked node." });
+    }
+
+    node.status = "completed";
+
+    // Re-evaluate locked nodes status in the tree.
+    for (const childNode of tree.nodes) {
+      if (childNode.status === "locked") {
+        const parents = tree.edges.filter((edge) => edge.target === childNode.id).map((edge) => edge.source);
+        if (parents.length > 0) {
+          const allCompleted = parents.every((pId) => {
+            const parentNode = tree.nodes.find((n) => n.id === pId);
+            return parentNode && parentNode.status === "completed";
+          });
+          if (allCompleted) {
+            childNode.status = "unlocked";
+          }
+        }
+      }
+    }
+
+    // Award +15 XP
+    req.user.xp = (req.user.xp || 0) + 15;
+    await req.user.save();
+    await tree.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Node completed! +15 XP awarded.",
+      nodes: tree.nodes,
+      xp: req.user.xp,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Apply AI usage limits to AI tools
 router.use(checkHubLimits);
 
 
@@ -44,6 +254,123 @@ router.post("/quiz/submit", awardXp, async (req, res, next) => {
     next(err);
   }
 });
+
+// POST generate custom skill tree (Uses AI daily limit)
+router.post("/ai-skill-tree/generate", async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { roleName } = req.body;
+
+    if (!roleName || !roleName.trim()) {
+      return res.status(400).json({ success: false, message: "Target role or technology stack is required." });
+    }
+
+    // Rate limit check: max 5 trees per user
+    const existingCount = await CustomSkillTree.countDocuments({ userId });
+    if (existingCount >= 5) {
+      return res.status(400).json({
+        success: false,
+        message: "You have reached your limit of 5 custom skill trees. Please delete an existing tree to generate a new one.",
+      });
+    }
+
+    const systemPrompt = `You are a visionary career planner and curriculum architect.
+Generate a structured, gamified learning skill tree for the target role: "${roleName}".
+You MUST generate exactly 8 nodes and their directed connection edges.
+Group the nodes into 4 tiers:
+- 'Beginner' (2 nodes)
+- 'Intermediate' (2 nodes)
+- 'Advanced' (2 nodes)
+- 'Expert' (2 nodes)
+
+Each node needs layout coordinates (x, y) so they can be rendered as a flowchart:
+- Tier 1 (Beginner) nodes: y=100. Node 1: x=150, Node 2: x=450.
+- Tier 2 (Intermediate) nodes: y=250. Node 3: x=150, Node 4: x=450.
+- Tier 3 (Advanced) nodes: y=400. Node 5: x=150, Node 6: x=450.
+- Tier 4 (Expert) nodes: y=550. Node 7: x=150, Node 8: x=450.
+
+Connect Beginner nodes to Intermediate nodes, Intermediate to Advanced, and Advanced to Expert using directed edges.
+
+Output MUST be a raw JSON object with NO markdown formatting (no backticks, no markdown code block formatting).
+JSON Format:
+{
+  "nodes": [
+    {
+      "id": "node-unique-id-lowercase",
+      "label": "Short Skill Title (e.g. Git Basics)",
+      "tier": "Beginner" | "Intermediate" | "Advanced" | "Expert",
+      "description": "2-3 sentence overview of what they learn",
+      "resources": ["Resource Link or Title 1", "Resource Link or Title 2"],
+      "quiz": {
+        "question": "A multiple-choice conceptual test question",
+        "options": ["Option A", "Option B", "Option C", "Option D"],
+        "answerIndex": 0, // 0-based index of the correct option
+        "explanation": "Brief explanation of the answer"
+      },
+      "x": 150,
+      "y": 100
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-id",
+      "source": "source-node-id",
+      "target": "target-node-id"
+    }
+  ]
+}`;
+
+    const userPrompt = `Target Career Path: ${roleName}`;
+    let aiOutput = null;
+
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini skill tree generator failed:", aiErr.message);
+    }
+
+    if (!aiOutput) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate skill tree. Gemini API is currently unavailable.",
+      });
+    }
+
+    try {
+      const parsedTree = cleanGeminiJson(aiOutput);
+      if (!parsedTree || !Array.isArray(parsedTree.nodes) || !Array.isArray(parsedTree.edges)) {
+        throw new Error("Invalid skill tree structure from AI.");
+      }
+
+      // Automatically unlock beginner tier nodes, lock others
+      const mappedNodes = parsedTree.nodes.map((node) => ({
+        ...node,
+        status: node.tier === "Beginner" ? "unlocked" : "locked",
+      }));
+
+      const newTree = new CustomSkillTree({
+        userId,
+        roleName: roleName.trim(),
+        nodes: mappedNodes,
+        edges: parsedTree.edges,
+      });
+
+      await newTree.save();
+
+      res.status(201).json({
+        success: true,
+        message: "AI Skill Tree generated successfully!",
+        tree: newTree,
+      });
+    } catch (parseErr) {
+      console.error("Failed to parse and save CustomSkillTree:", parseErr.message);
+      res.status(500).json({ success: false, message: "AI response parsing failed. Try again." });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 import { callGemini, cleanGeminiJson, GEMINI_API_KEY } from "../utils/gemini.js";
 
