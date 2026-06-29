@@ -450,6 +450,12 @@ async function processSocialLoginUser({ provider, accountId, email, name, avatar
 // ──────────────────────────────────────────────────────────────────────────────
 router.post("/social-login", async (req, res, next) => {
   try {
+    if (process.env.NODE_ENV === "production") {
+      return res.status(403).json({
+        success: false,
+        message: "Mock social login is disabled in production."
+      });
+    }
     const { provider, accountId, email, name, avatarUrl } = req.body;
     if (!provider || !accountId || !email) {
       return res.status(400).json({ success: false, message: "Missing oauth parameters" });
