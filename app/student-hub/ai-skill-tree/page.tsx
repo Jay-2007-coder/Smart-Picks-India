@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -19,6 +19,9 @@ import {
   Check,
   ChevronRight,
   Info,
+  Layers,
+  Map,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,49 +37,71 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useAuth } from "@/hooks/use-auth";
 
+// Quick start role recommendations
+const SUGGESTED_ROLES = [
+  { role: "AI & Machine Learning Engineer", icon: "🧠", color: "from-teal-500 to-emerald-500" },
+  { role: "Smart Contract Web3 Auditor", icon: "⛓️", color: "from-indigo-500 to-purple-500" },
+  { role: "Fullstack Next.js Developer", icon: "⚡", color: "from-blue-500 to-cyan-500" },
+  { role: "Cybersecurity Analyst", icon: "🛡️", color: "from-rose-500 to-amber-500" },
+];
+
 /* ── Custom Node component ── */
 function SkillNodeCustom({ data }: { data: any }) {
   const isLocked = data.status === "locked";
   const isCompleted = data.status === "completed";
 
-  // Colors & styles based on tier and status
+  // Border & Glow theme based on status
+  const themeStyles = isCompleted
+    ? "border-emerald-500/80 bg-emerald-950/20 shadow-[0_0_20px_rgba(16,185,129,0.25)] text-emerald-400"
+    : isLocked
+    ? "border-slate-800 bg-slate-950/40 opacity-55 text-slate-500"
+    : "border-blue-500/80 bg-blue-950/10 shadow-[0_0_20px_rgba(59,130,246,0.25)] text-blue-400";
+
+  // Tier Badge Color
   const tierColors = {
-    Beginner: "border-teal-500/40 text-teal-400 bg-teal-500/[0.03]",
-    Intermediate: "border-indigo-500/40 text-indigo-400 bg-indigo-500/[0.03]",
-    Advanced: "border-purple-500/40 text-purple-400 bg-purple-500/[0.03]",
-    Expert: "border-amber-500/40 text-amber-400 bg-amber-500/[0.03]",
-  }[data.tier as "Beginner" | "Intermediate" | "Advanced" | "Expert"] || "border-border text-foreground";
+    Beginner: "text-teal-400 bg-teal-500/10 border-teal-500/20",
+    Intermediate: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+    Advanced: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    Expert: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  }[data.tier as "Beginner" | "Intermediate" | "Advanced" | "Expert"] || "text-slate-400 bg-slate-500/10";
 
   return (
     <div
-      className={`px-4 py-3 rounded-2xl border-2 bg-slate-950/90 backdrop-blur-md flex flex-col justify-center min-w-[170px] select-none cursor-pointer transition-all duration-200 text-left ${
-        isCompleted
-          ? "border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-          : isLocked
-          ? "border-slate-800 opacity-60 text-slate-500"
-          : "border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-      }`}
+      className={`px-4.5 py-3.5 rounded-2xl border-2 backdrop-blur-xl flex flex-col justify-center min-w-[190px] select-none cursor-pointer transition-all duration-300 relative group hover:scale-[1.03] ${themeStyles}`}
     >
+      {/* Hidden React Flow ports */}
       <Handle type="target" position={Position.Top} className="opacity-0 !w-0 !h-0" id="t-top" />
       <Handle type="target" position={Position.Left} className="opacity-0 !w-0 !h-0" id="t-left" />
 
-      {/* Tier Badge */}
-      <span className={`text-[8px] font-black uppercase tracking-wider mb-1 px-1.5 py-0.5 rounded w-fit ${tierColors}`}>
+      {/* Floating accent background glow on hover */}
+      {!isLocked && (
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      )}
+
+      {/* Tier Tag */}
+      <span className={`text-[8px] font-black uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-md border w-fit font-mono ${tierColors}`}>
         {data.tier}
       </span>
 
-      {/* Label and Status */}
-      <div className="flex items-center justify-between gap-2.5">
-        <span className={`text-xs font-black truncate max-w-[130px] ${isLocked ? "text-slate-500" : "text-white"}`}>
+      {/* Label and Status Icon */}
+      <div className="flex items-center justify-between gap-3">
+        <span className={`text-xs font-extrabold truncate max-w-[140px] tracking-wide ${isLocked ? "text-slate-500" : "text-white"}`}>
           {data.label}
         </span>
-        {isCompleted ? (
-          <CheckCircle className="h-4.5 w-4.5 text-emerald-500 shrink-0" />
-        ) : isLocked ? (
-          <Lock className="h-3.5 w-3.5 text-slate-600 shrink-0" />
-        ) : (
-          <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
-        )}
+        <div className="shrink-0">
+          {isCompleted ? (
+            <div className="p-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/50">
+              <Check className="h-3 w-3 text-emerald-400 stroke-[3px]" />
+            </div>
+          ) : isLocked ? (
+            <Lock className="h-3 w-3 text-slate-600" />
+          ) : (
+            <div className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </div>
+          )}
+        </div>
       </div>
 
       <Handle type="source" position={Position.Bottom} className="opacity-0 !w-0 !h-0" id="s-bottom" />
@@ -188,11 +213,8 @@ export default function AISkillTreeBuilder() {
     setSelectedNode(null);
   };
 
-  // Generate a new skill tree
-  const handleGenerateTree = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!roleName.trim()) return;
-
+  // Run generator helper
+  const triggerGeneration = async (roleQuery: string) => {
     setGenerating(true);
     setErrorMsg("");
 
@@ -200,7 +222,7 @@ export default function AISkillTreeBuilder() {
       const res = await fetch("/api/v1/student-hub/ai-skill-tree/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roleName: roleName.trim() }),
+        body: JSON.stringify({ roleName: roleQuery.trim() }),
       });
       const data = await res.json();
       if (res.ok && data.success && data.tree) {
@@ -217,6 +239,12 @@ export default function AISkillTreeBuilder() {
     } finally {
       setGenerating(false);
     }
+  };
+
+  const handleGenerateTree = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!roleName.trim()) return;
+    triggerGeneration(roleName);
   };
 
   // Delete an existing skill tree
@@ -262,7 +290,6 @@ export default function AISkillTreeBuilder() {
     setQuizSuccess(isCorrect);
 
     if (isCorrect) {
-      // Confetti splash
       try {
         const confetti = (await import("canvas-confetti")).default;
         confetti({ particleCount: 140, spread: 75, origin: { y: 0.6 } });
@@ -270,7 +297,6 @@ export default function AISkillTreeBuilder() {
         console.error("Confetti script failed to load", err);
       }
 
-      // Sync node completion with backend
       try {
         const res = await fetch(`/api/v1/student-hub/ai-skill-tree/${selectedTree._id}/complete-node`, {
           method: "POST",
@@ -279,13 +305,11 @@ export default function AISkillTreeBuilder() {
         });
         const data = await res.json();
         if (data.success && Array.isArray(data.nodes)) {
-          // Re-sync user XP
           if (user) user.xp = data.xp;
-          // Refresh active local graph states
           const updatedTree = { ...selectedTree, nodes: data.nodes };
           setSelectedTree(updatedTree);
           setupGraph(updatedTree);
-          setXpBonusMsg("🚀 Quiz Passed! +15 XP earned!");
+          setXpBonusMsg("🚀 Milestone Quiz Cleared! +15 XP earned!");
           setTimeout(() => setXpBonusMsg(null), 4000);
         }
       } catch (err) {
@@ -295,25 +319,29 @@ export default function AISkillTreeBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080b14] text-white py-12 select-none relative overflow-hidden">
-      {/* Background Blobs */}
-      <div className="absolute top-[-10%] left-[5%] w-[400px] h-[400px] rounded-full bg-teal-500/10 blur-[90px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[5%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-[#080b16] text-white py-12 select-none relative overflow-hidden font-sans">
+      {/* Dynamic Background Mesh */}
+      <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full bg-teal-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-15%] right-[-5%] w-[700px] h-[700px] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none" />
+      <div className="absolute top-[35%] left-[45%] w-[400px] h-[400px] rounded-full bg-purple-500/5 blur-[100px] pointer-events-none" />
+
+      {/* Decorative Cybernetic Grid lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <div className="container-custom max-w-6xl relative z-10">
         {/* Navigation row */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-10">
           <Link
             href="/student-hub"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-white/40 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-black text-white/40 hover:text-white transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Hub
+            <ArrowLeft className="h-4.5 w-4.5" /> Back to Hub
           </Link>
 
           {user && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-teal-500/30 bg-teal-500/5 text-teal-400 text-xs font-black uppercase tracking-wider">
-              <Trophy className="h-4 w-4 text-amber-400" />
-              <span>{user.xp || 0} XP</span>
+            <div className="flex items-center gap-2.5 px-4.5 py-2 rounded-full border border-teal-500/30 bg-teal-500/5 text-teal-400 text-xs font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(20,184,166,0.1)]">
+              <Trophy className="h-4.5 w-4.5 text-amber-400 animate-bounce" />
+              <span>{user.xp || 0} XP Ranked</span>
             </div>
           )}
         </div>
@@ -322,113 +350,119 @@ export default function AISkillTreeBuilder() {
         <AnimatePresence>
           {xpBonusMsg && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 rounded-2xl bg-emerald-500 text-white font-extrabold text-sm text-center shadow-lg flex items-center justify-center gap-2 select-none"
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="mb-8 p-4.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-sm text-center shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex items-center justify-center gap-3 border border-emerald-400/30 select-none"
             >
-              <Sparkles className="h-5 w-5 animate-pulse text-amber-200" />
+              <Sparkles className="h-5.5 w-5.5 animate-pulse text-amber-200" />
               <span>{xpBonusMsg}</span>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Guest fallback block */}
+        {/* Guest check */}
         {!authLoading && !user ? (
-          <div className="max-w-md mx-auto text-center border border-white/10 bg-white/[0.02] p-8 rounded-3xl backdrop-blur-md">
-            <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
-            <h2 className="text-xl font-black mb-2">Login Required</h2>
-            <p className="text-sm text-white/50 mb-6 leading-relaxed font-semibold">
-              The AI Custom Skill Tree Builder requires a student account to store generated roadmaps, save unlock progress, and award leaderboard XP.
+          <div className="max-w-md mx-auto text-center border border-white/10 bg-slate-950/60 p-10 rounded-3xl backdrop-blur-xl shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-5" />
+            <h2 className="text-2xl font-black mb-3">Sign In Required</h2>
+            <p className="text-xs text-white/50 mb-8 leading-relaxed font-semibold">
+              The Interactive AI Skill Tree Builder requires a logged-in account to save generated roadmaps, lock progression nodes, and claim your leaderboard XP rewards.
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center w-full py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-gradient-to-tr from-teal-500 to-indigo-600 text-white hover:opacity-90 active:scale-95 transition-all shadow-md"
+              className="inline-flex items-center justify-center w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest bg-gradient-to-tr from-teal-500 via-indigo-500 to-purple-600 text-white hover:brightness-110 active:scale-95 transition-all shadow-lg"
             >
-              Sign In to Build Paths
+              Log In to Start
             </Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-4 gap-6 items-start">
+          <div className="grid lg:grid-cols-4 gap-8 items-start">
             {/* Sidebar Controls */}
             <div className="space-y-6 lg:col-span-1">
-              {/* Generator Form */}
-              <div className="border border-white/10 bg-white/[0.02] p-5 rounded-3xl">
-                <h3 className="font-extrabold text-xs uppercase tracking-widest text-white/40 mb-4 flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-teal-400" /> New Skill Path
+              {/* Generator Card */}
+              <div className="border border-white/10 bg-slate-900/40 backdrop-blur-xl p-6 rounded-3xl shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/40 to-transparent" />
+                <h3 className="font-extrabold text-[10px] uppercase tracking-widest text-teal-400 mb-5 flex items-center gap-1.5 font-mono">
+                  <Sparkles className="h-4 w-4 animate-pulse text-teal-400" /> Generator Engine
                 </h3>
 
-                <form onSubmit={handleGenerateTree} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-white/30">Target Role</label>
+                <form onSubmit={handleGenerateTree} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-white/30 font-mono">Career Target</label>
                     <input
                       type="text"
                       required
                       disabled={generating}
                       value={roleName}
                       onChange={(e) => setRoleName(e.target.value)}
-                      placeholder="e.g. Web3 Auditor, AI Agent Developer"
-                      className="w-full h-10 px-3 rounded-xl border border-white/10 bg-black/40 text-xs font-semibold placeholder:text-white/20 focus:outline-none focus:border-teal-500/50 transition-colors disabled:opacity-50"
+                      placeholder="e.g. Web3 Security, AI Agent Dev"
+                      className="w-full h-11 px-3.5 rounded-2xl border border-white/10 bg-black/60 text-xs font-bold placeholder:text-white/20 focus:outline-none focus:border-teal-500/50 focus:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all disabled:opacity-50"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={generating || !roleName.trim()}
-                    className="w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-teal-500 hover:bg-teal-600 text-white shadow-lg disabled:opacity-40 disabled:hover:bg-teal-50 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest bg-gradient-to-r from-teal-500 to-indigo-600 hover:brightness-110 text-white shadow-xl disabled:opacity-40 disabled:hover:bg-teal-50 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
                   >
                     {generating ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Generating...
+                        <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                        Analyzing...
                       </>
                     ) : (
                       <>
-                        <GitFork className="h-4 w-4 rotate-180" />
-                        Generate Tree
+                        <GitFork className="h-4.5 w-4.5 rotate-180" />
+                        Compile Path
                       </>
                     )}
                   </button>
                 </form>
 
                 {errorMsg && (
-                  <p className="text-[10px] text-rose-400 font-extrabold mt-3 border border-rose-500/25 bg-rose-500/5 p-2 rounded-lg text-center leading-relaxed">
+                  <p className="text-[10px] text-rose-400 font-extrabold mt-4 border border-rose-500/25 bg-rose-500/5 p-3 rounded-xl text-center leading-relaxed">
                     {errorMsg}
                   </p>
                 )}
               </div>
 
-              {/* My Trees selector */}
-              <div className="border border-white/10 bg-white/[0.02] p-5 rounded-3xl">
-                <h3 className="font-extrabold text-xs uppercase tracking-widest text-white/40 mb-3.5">
-                  My Career Trees ({trees.length}/5)
+              {/* Saved Trees List */}
+              <div className="border border-white/10 bg-slate-900/40 backdrop-blur-xl p-6 rounded-3xl shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
+                <h3 className="font-extrabold text-[10px] uppercase tracking-widest text-indigo-400 mb-4.5 font-mono">
+                  My Custom Paths ({trees.length}/5)
                 </h3>
 
                 {dbLoading && trees.length === 0 ? (
-                  <div className="flex items-center justify-center py-6 text-white/30 gap-1.5">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-[10px] font-bold">Loading...</span>
+                  <div className="flex items-center justify-center py-8 text-white/30 gap-2">
+                    <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                    <span className="text-[10px] font-bold">Querying DB...</span>
                   </div>
                 ) : trees.length === 0 ? (
-                  <p className="text-[10px] text-white/30 font-bold italic py-4 text-center">No generated trees yet.</p>
+                  <div className="py-6 text-center text-white/20">
+                    <Map className="h-6 w-6 mx-auto mb-2 text-white/10" />
+                    <p className="text-[10px] font-bold italic">No custom paths generated.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {trees.map((t) => {
                       const isActive = selectedTree?._id === t._id;
                       return (
                         <button
                           key={t._id}
                           onClick={() => handleSelectTree(t._id)}
-                          className={`w-full p-3 rounded-xl border flex items-center justify-between transition-all text-left cursor-pointer group ${
+                          className={`w-full p-3.5 rounded-2xl border flex items-center justify-between transition-all text-left cursor-pointer group hover:scale-[1.02] ${
                             isActive
-                              ? "border-teal-500/50 bg-teal-500/5 text-teal-400"
-                              : "border-white/5 bg-black/20 text-white/70 hover:border-white/10 hover:text-white"
+                              ? "border-teal-500/50 bg-teal-500/5 text-teal-400 shadow-[0_0_12px_rgba(20,184,166,0.05)]"
+                              : "border-white/5 bg-black/30 text-white/60 hover:border-white/10 hover:text-white"
                           }`}
                         >
-                          <span className="text-xs font-black truncate max-w-[150px]">{t.roleName}</span>
+                          <span className="text-xs font-extrabold truncate max-w-[140px] tracking-wide">{t.roleName}</span>
                           <Trash2
                             onClick={(e) => handleDeleteTree(t._id, e)}
-                            className="h-3.5 w-3.5 text-white/20 hover:text-rose-500 transition-colors shrink-0 group-hover:opacity-100"
+                            className="h-3.5 w-3.5 text-white/20 hover:text-rose-500 transition-colors shrink-0 opacity-80 group-hover:opacity-100"
                           />
                         </button>
                       );
@@ -440,20 +474,22 @@ export default function AISkillTreeBuilder() {
 
             {/* React Flow Canvas and Inspection Panel */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Title Header */}
+              {/* Header Title */}
               {selectedTree && (
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/15 pb-5 gap-4">
                   <div>
-                    <h2 className="text-2xl font-black">{selectedTree.roleName}</h2>
-                    <p className="text-[11px] text-white/40 font-bold uppercase tracking-wider mt-0.5">
-                      Gamified Skill Path · Pass quizzes to earn XP
+                    <h2 className="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">
+                      {selectedTree.roleName}
+                    </h2>
+                    <p className="text-[10px] text-white/35 font-bold uppercase tracking-widest mt-1 font-mono flex items-center gap-1.5">
+                      <Layers className="h-3.5 w-3.5 text-indigo-400" /> Interactive Skill Flowchart · Pass exams to progress
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/5 border border-emerald-500/25 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                      <CheckCircle className="h-3.5 w-3.5" />
+                  <div className="shrink-0">
+                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/5 border border-emerald-500/30 px-3.5 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_12px_rgba(16,185,129,0.05)]">
+                      <CheckCircle className="h-4 w-4" />
                       {selectedTree.nodes.filter((n: any) => n.status === "completed").length} /{" "}
-                      {selectedTree.nodes.length} Completed
+                      {selectedTree.nodes.length} Skills Mastered
                     </span>
                   </div>
                 </div>
@@ -464,8 +500,8 @@ export default function AISkillTreeBuilder() {
                 <div className="md:col-span-2">
                   {selectedTree ? (
                     <div
-                      className="h-[480px] w-full border border-white/10 rounded-3xl overflow-hidden relative"
-                      style={{ background: "linear-gradient(135deg, #090c12 0%, #0c0f16 70%)" }}
+                      className="h-[520px] w-full border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl"
+                      style={{ background: "linear-gradient(135deg, #07090e 0%, #0a0d15 80%)" }}
                     >
                       <ReactFlow
                         nodes={nodes}
@@ -476,31 +512,65 @@ export default function AISkillTreeBuilder() {
                         onNodeClick={handleNodeClick}
                         fitView
                         fitViewOptions={{ padding: 0.15 }}
-                        minZoom={0.4}
+                        minZoom={0.3}
                         maxZoom={1.5}
                         nodesConnectable={false}
                         nodesDraggable={true}
                         edgesFocusable={false}
                       >
-                        <Background color="#1f293d" gap={18} size={1} />
-                        <Controls className="!bg-[#0c0f16] !border-white/10 [&_button]:!bg-[#0c0f16] [&_button]:!border-white/10 [&_button]:!text-white/40 hover:[&_button]:!text-white" />
+                        <Background color="#161d2d" gap={20} size={1} />
+                        <Controls className="!bg-[#0c0f16]/90 !backdrop-blur-md !border-white/10 [&_button]:!bg-[#0c0f16] [&_button]:!border-white/10 [&_button]:!text-white/40 hover:[&_button]:!text-white shadow-xl" />
                       </ReactFlow>
 
-                      <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40 pointer-events-none">
-                        <ZoomIn className="h-3.5 w-3.5" />
-                        Click nodes to unlock milestones
+                      <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40 pointer-events-none">
+                        <ZoomIn className="h-3.5 w-3.5 text-teal-400" />
+                        Click node milestones to start quiz
                       </div>
                     </div>
                   ) : (
+                    /* Onboarding quick-start screen */
                     <div
-                      className="h-[480px] w-full border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-center p-6"
-                      style={{ background: "linear-gradient(135deg, #090c12 0%, #0c0f16 70%)" }}
+                      className="min-h-[520px] w-full border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center p-8 text-center relative overflow-hidden shadow-xl"
+                      style={{ background: "linear-gradient(135deg, #07090e 0%, #0a0d15 80%)" }}
                     >
-                      <Cpu className="h-10 w-10 text-white/15 mb-4 animate-pulse" />
-                      <h4 className="text-sm font-black text-white/60">No Career Path Selected</h4>
-                      <p className="text-xs text-white/35 max-w-xs mt-1 leading-relaxed font-semibold">
-                        Select an existing path from the sidebar list, or type a custom engineering role above to generate a new AI tree.
-                      </p>
+                      <div className="absolute top-[-30%] left-[20%] w-[300px] h-[300px] rounded-full bg-teal-500/5 blur-[80px]" />
+                      
+                      <div className="relative z-10 max-w-lg space-y-6">
+                        <div className="inline-flex p-4 rounded-3xl bg-slate-900 border border-white/10 shadow-lg text-teal-400 animate-pulse">
+                          <Compass className="h-8 w-8" />
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-black tracking-wide">Generate Custom Career Maps</h4>
+                          <p className="text-[11px] text-white/40 max-w-sm mx-auto mt-2 leading-relaxed font-semibold">
+                            Enter any advanced technical path. Gemini will dynamically generate a custom 8-node roadmap distributed across 4 tiers with study resources and conceptual exams.
+                          </p>
+                        </div>
+
+                        {/* Quick Start Suggested Buttons */}
+                        <div className="space-y-2 pt-2 text-left">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-white/30 text-center font-mono">
+                            ⚡ Quick Start Suggestions
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            {SUGGESTED_ROLES.map((r, ri) => (
+                              <button
+                                key={ri}
+                                onClick={() => triggerGeneration(r.role)}
+                                disabled={generating}
+                                className="flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-slate-950/40 hover:border-white/15 hover:bg-slate-900/60 text-left transition-all active:scale-[0.98] group cursor-pointer"
+                              >
+                                <span className="text-lg bg-slate-900 p-1.5 rounded-xl border border-white/5">{r.icon}</span>
+                                <div>
+                                  <h5 className="text-[11px] font-extrabold text-white group-hover:text-teal-400 transition-colors">
+                                    {r.role}
+                                  </h5>
+                                  <span className="text-[8px] text-white/30 font-bold uppercase tracking-widest">Generate</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -514,48 +584,50 @@ export default function AISkillTreeBuilder() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="border border-white/10 bg-white/[0.02] p-5 rounded-3xl h-full flex flex-col justify-between"
+                        className="border border-white/10 bg-slate-900/20 backdrop-blur-xl p-6 rounded-3xl h-full flex flex-col justify-between shadow-xl relative overflow-hidden"
                       >
-                        <div className="space-y-4">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                        
+                        <div className="space-y-5">
                           {/* Node Header */}
-                          <div className="flex items-start justify-between border-b border-white/10 pb-3">
+                          <div className="flex items-start justify-between border-b border-white/10 pb-4">
                             <div>
-                              <span className="text-[8px] font-black uppercase tracking-wider text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/25">
+                              <span className="text-[8px] font-black uppercase tracking-widest text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20 font-mono">
                                 {selectedNode.data.tier}
                               </span>
-                              <h4 className="font-extrabold text-sm text-white mt-1.5 leading-snug">
+                              <h4 className="font-extrabold text-sm text-white mt-2 leading-snug tracking-wide">
                                 {selectedNode.data.label}
                               </h4>
                             </div>
-                            <span className="text-[9px] font-black uppercase tracking-wider">
+                            <div className="shrink-0 text-right">
                               {selectedNode.data.status === "completed" ? (
-                                <span className="text-emerald-400">Completed</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md font-mono">Mastered</span>
                               ) : selectedNode.data.status === "locked" ? (
-                                <span className="text-slate-500">Locked</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-950/40 border border-slate-800 px-2 py-0.5 rounded-md font-mono">Locked</span>
                               ) : (
-                                <span className="text-blue-400 animate-pulse">Unlocked</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md animate-pulse font-mono">Active</span>
                               )}
-                            </span>
+                            </div>
                           </div>
 
                           {/* Node Overview */}
-                          <div className="space-y-1.5 text-left">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30">Skill Overview</p>
+                          <div className="space-y-2 text-left">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30 font-mono">Description</p>
                             <p className="text-[11px] text-white/60 leading-relaxed font-semibold">
                               {selectedNode.data.description}
                             </p>
                           </div>
 
                           {/* Resources list */}
-                          <div className="space-y-2 text-left">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1">
-                              <BookOpen className="h-3 w-3" /> Recommended Links
+                          <div className="space-y-2.5 text-left">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5 font-mono">
+                              <BookOpen className="h-3.5 w-3.5 text-teal-400" /> Syllabus & Links
                             </p>
-                            <div className="flex flex-col gap-1.5">
+                            <div className="flex flex-col gap-2">
                               {selectedNode.data.resources.map((link: string, li: number) => (
                                 <div
                                   key={li}
-                                  className="flex items-center gap-2 p-2 rounded-xl bg-black/40 border border-white/5 text-[10px] text-white/60 font-bold"
+                                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/70 font-semibold shadow-inner"
                                 >
                                   <ChevronRight className="h-3.5 w-3.5 text-teal-400 shrink-0" />
                                   <span className="truncate">{link}</span>
@@ -566,42 +638,42 @@ export default function AISkillTreeBuilder() {
                         </div>
 
                         {/* Interactive Quiz area */}
-                        <div className="pt-4 border-t border-white/10 mt-4 text-left">
+                        <div className="pt-5 border-t border-white/10 mt-5 text-left">
                           {selectedNode.data.status === "locked" ? (
-                            <div className="flex items-center gap-2 text-white/35 bg-slate-900/50 p-4 border border-dashed border-white/5 rounded-2xl">
-                              <Lock className="h-4.5 w-4.5 shrink-0" />
-                              <p className="text-[10px] leading-relaxed font-bold">
-                                This node is locked. Complete all preceding parent skills in the tree flowchart to unlock this module.
+                            <div className="flex items-start gap-3 text-slate-400 bg-slate-950/40 p-4 border border-slate-800/80 rounded-2xl">
+                              <Lock className="h-5 w-5 shrink-0 text-slate-500 mt-0.5" />
+                              <p className="text-[10px] leading-relaxed font-semibold">
+                                This syllabus module is locked. Complete all previous parent nodes in the workflow flowchart to activate this exam.
                               </p>
                             </div>
                           ) : selectedNode.data.status === "completed" ? (
-                            <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/5 p-4 border border-emerald-500/25 rounded-2xl">
-                              <CheckCircle className="h-5 w-5 shrink-0" />
+                            <div className="flex items-start gap-3 text-emerald-400 bg-emerald-500/5 p-4.5 border border-emerald-500/25 rounded-2xl shadow-[inset_0_0_12px_rgba(16,185,129,0.02)]">
+                              <CheckCircle className="h-5.5 w-5.5 shrink-0 text-emerald-400 mt-0.5" />
                               <div>
-                                <p className="text-[10px] font-black uppercase tracking-wider">Milestone Unlocked</p>
-                                <p className="text-[9px] leading-snug mt-0.5 font-bold text-white/50">
-                                  You have passed the quiz and unlocked subsequent nodes in this career branch.
+                                <p className="text-[10px] font-black uppercase tracking-widest font-mono">Node Unlocked</p>
+                                <p className="text-[9px] leading-relaxed mt-1 font-semibold text-white/40">
+                                  You have successfully passed the conceptual verification test and unlocked downstream lessons.
                                 </p>
                               </div>
                             </div>
                           ) : (
-                            <form onSubmit={handleQuizSubmit} className="space-y-3.5">
-                              <p className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1">
-                                <HelpCircle className="h-3.5 w-3.5" /> Conceptual Quiz
+                            <form onSubmit={handleQuizSubmit} className="space-y-4">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5 font-mono">
+                                <HelpCircle className="h-3.5 w-3.5 text-blue-400 animate-pulse" /> Concept Verification
                               </p>
-                              <p className="text-[11px] font-black text-white leading-normal">
+                              <p className="text-[11px] font-extrabold text-white leading-relaxed">
                                 {selectedNode.data.quiz.question}
                               </p>
 
-                              <div className="space-y-1.5">
+                              <div className="space-y-2">
                                 {selectedNode.data.quiz.options.map((opt: string, idx: number) => (
                                   <label
                                     key={idx}
                                     onClick={() => !quizSubmitted && setSelectedAns(idx)}
-                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer text-[10px] font-bold transition-all ${
+                                    className={`flex items-center gap-3 px-3.5 py-3 border rounded-2xl cursor-pointer text-[10px] font-extrabold transition-all hover:scale-[1.01] ${
                                       selectedAns === idx
-                                        ? "border-teal-500/50 bg-teal-500/5 text-teal-400"
-                                        : "border-white/5 bg-black/20 text-white/70 hover:border-white/10"
+                                        ? "border-teal-500 bg-teal-500/5 text-teal-400"
+                                        : "border-white/5 bg-black/40 text-white/70 hover:border-white/10"
                                     }`}
                                   >
                                     <input
@@ -613,15 +685,15 @@ export default function AISkillTreeBuilder() {
                                       className="sr-only"
                                     />
                                     <div
-                                      className={`h-3 w-3 rounded-full border flex items-center justify-center shrink-0 ${
-                                        selectedAns === idx ? "border-teal-500" : "border-white/30"
+                                      className={`h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0 ${
+                                        selectedAns === idx ? "border-teal-500" : "border-white/20"
                                       }`}
                                     >
                                       {selectedAns === idx && (
                                         <div className="h-1.5 w-1.5 rounded-full bg-teal-500" />
                                       )}
                                     </div>
-                                    <span>{opt}</span>
+                                    <span className="leading-snug">{opt}</span>
                                   </label>
                                 ))}
                               </div>
@@ -630,21 +702,21 @@ export default function AISkillTreeBuilder() {
                                 <button
                                   type="submit"
                                   disabled={selectedAns === null || dbLoading}
-                                  className="w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
+                                  className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/10"
                                 >
                                   {dbLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                                  Submit Quiz
+                                  Verify Answers
                                 </button>
                               ) : quizSuccess ? (
-                                <div className="p-3 border border-emerald-500/25 bg-emerald-500/5 text-emerald-400 rounded-xl text-[10px] leading-relaxed font-bold">
-                                  <span className="block font-black uppercase tracking-wider text-xs mb-1">🎉 Correct!</span>
+                                <div className="p-4 border border-emerald-500/25 bg-emerald-500/5 text-emerald-400 rounded-2xl text-[10px] leading-relaxed font-semibold">
+                                  <span className="block font-black uppercase tracking-widest text-xs mb-1 font-mono">🎉 Success</span>
                                   {selectedNode.data.quiz.explanation}
                                 </div>
                               ) : (
-                                <div className="space-y-2">
-                                  <div className="p-3 border border-rose-500/25 bg-rose-500/5 text-rose-400 rounded-xl text-[10px] leading-relaxed font-bold">
-                                    <span className="block font-black uppercase tracking-wider text-xs mb-1">❌ Incorrect</span>
-                                    Try again! Re-read the guide details.
+                                <div className="space-y-3">
+                                  <div className="p-4 border border-rose-500/25 bg-rose-500/5 text-rose-400 rounded-2xl text-[10px] leading-relaxed font-semibold">
+                                    <span className="block font-black uppercase tracking-widest text-xs mb-1 font-mono">❌ Incorrect</span>
+                                    Review the notes and syllabus link details, then try again.
                                   </div>
                                   <button
                                     type="button"
@@ -652,7 +724,7 @@ export default function AISkillTreeBuilder() {
                                       setSelectedAns(null);
                                       setQuizSubmitted(false);
                                     }}
-                                    className="w-full py-2 rounded-xl text-xs font-black uppercase tracking-wider text-white bg-slate-800 hover:bg-slate-700 cursor-pointer transition-all"
+                                    className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-slate-800 hover:bg-slate-700 cursor-pointer transition-all active:scale-95"
                                   >
                                     Try Again
                                   </button>
@@ -663,11 +735,11 @@ export default function AISkillTreeBuilder() {
                         </div>
                       </motion.div>
                     ) : (
-                      <div className="border border-white/10 bg-white/[0.02] p-5 rounded-3xl h-full flex flex-col items-center justify-center text-center py-20">
-                        <Info className="h-7 w-7 text-white/20 mb-3" />
-                        <h5 className="text-xs font-black text-white/50 uppercase tracking-wider">Inspect Skill</h5>
-                        <p className="text-[10px] text-white/30 max-w-xs mt-1 leading-relaxed font-bold">
-                          Click on any unlocked node in the graph flowchart to view study resources and attempt the milestone unlocking quiz.
+                      <div className="border border-white/10 bg-slate-900/10 backdrop-blur-md p-6 rounded-3xl h-full flex flex-col items-center justify-center text-center py-24 relative overflow-hidden shadow-inner">
+                        <Info className="h-8 w-8 text-white/20 mb-3" />
+                        <h5 className="text-[11px] font-black text-white/50 uppercase tracking-widest font-mono">Milestone Detail</h5>
+                        <p className="text-[10px] text-white/30 max-w-xs mt-1.5 leading-relaxed font-semibold">
+                          Click any active node in the graph flowchart to view study materials and solve verification quizzes to earn XP.
                         </p>
                       </div>
                     )}
