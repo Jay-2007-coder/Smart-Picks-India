@@ -32,7 +32,7 @@ const BOARD_IDS = {
 };
 
 const PINS_PER_RUN = 3;         // 2 runs × 3 pins = 6 pins/day
-const SITE_URL     = "https://smart-picks-india.vercel.app";
+const SITE_URL     = process.env.CLIENT_URL || "https://smart-picks-india.vercel.app";
 const POSTED_FILE  = path.join(process.cwd(), "data", "pinterest-posted.json");
 
 // Helper to delay execution to avoid rate limits

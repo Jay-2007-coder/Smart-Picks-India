@@ -17,8 +17,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 const getSiteUrl = () => {
-  const url = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
-  return url.includes("smartpicksindia.com") ? "https://smart-picks-india.vercel.app" : url;
+  return process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
 };
 const siteUrl = getSiteUrl();
 

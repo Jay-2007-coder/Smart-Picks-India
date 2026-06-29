@@ -20,6 +20,8 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
+const CLIENT_URL = process.env.CLIENT_URL || "https://smart-picks-india.vercel.app";
+
 const router = express.Router();
 
 // Initialize Razorpay Instance or flag Sandbox Mode
@@ -563,7 +565,7 @@ router.post("/checkout/verify", async (req, res, next) => {
             <p>Your payment of ₹${purchase.amount} for <strong>${purchase.productId.title}</strong> has been successfully processed.</p>
             <p>Click the secure link below to download your file:</p>
             <p><a href="${downloadUrl}" style="background-color: #df3838; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-top: 10px;">Download Your Resource</a></p>
-            <p>This download link can also be retrieved inside your personal <a href="https://smart-picks-india.vercel.app/dashboard">SmartPicks Dashboard</a> under the Purchases section.</p>
+            <p>This download link can also be retrieved inside your personal <a href="${CLIENT_URL}/dashboard">SmartPicks Dashboard</a> under the Purchases section.</p>
             <p>Thanks,<br/>SmartPicks India Team</p>
           `,
         });

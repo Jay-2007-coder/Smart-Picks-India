@@ -15,6 +15,8 @@ if (!fs.existsSync(PRODUCTS_FILE_PATH)) {
   PRODUCTS_FILE_PATH = path.join(__dirname, "..", "data", "products.ts");
 }
 
+const CLIENT_URL = process.env.CLIENT_URL || "https://smart-picks-india.vercel.app";
+
 // Regex parser to read TypeScript products file without requiring TS transpiler
 export function parseProducts() {
   try {
@@ -232,7 +234,7 @@ async function checkAndTriggerAlerts(product, oldPrice) {
       if (!user) continue;
 
       const title = `Price Drop Alert: ${product.title}`;
-      const message = `Good news! The price of "${product.title}" has dropped from ₹${oldPrice} to ₹${product.price}.\n\nView deal on SmartPicks India: https://smart-picks-india.vercel.app/product/${product.slug}`;
+      const message = `Good news! The price of "${product.title}" has dropped from ₹${oldPrice} to ₹${product.price}.\n\nView deal on SmartPicks India: ${CLIENT_URL}/product/${product.slug}`;
 
       if (alert.deliveryMethod === "email") {
         // Send email notification
@@ -257,7 +259,7 @@ async function checkAndTriggerAlerts(product, oldPrice) {
                   <td style="color: #10b981; font-weight: bold;">₹${product.price}</td>
                 </tr>
               </table>
-              <p><a href="https://smart-picks-india.vercel.app/product/${product.slug}" style="background-color: #df3838; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">Claim Deal Now</a></p>
+              <p><a href="${CLIENT_URL}/product/${product.slug}" style="background-color: #df3838; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px;">Claim Deal Now</a></p>
             `,
           });
           console.log(`      ✉️ Sent price alert email to ${user.email}`);
@@ -269,7 +271,7 @@ async function checkAndTriggerAlerts(product, oldPrice) {
         try {
           const safeTitle = escapeHtml(product.title);
           const affiliateLink = product.affiliateLink || `https://www.amazon.in/dp/${product.slug}?tag=smartpick07d2-21`;
-          const tgHtml = `🔔 <b>Price Drop Alert!</b>\n\n<b>${safeTitle}</b>\n\n💸 Price dropped from <s>₹${oldPrice.toLocaleString("en-IN")}</s> to <b>₹${product.price.toLocaleString("en-IN")}</b>!\n\n🛒 <a href="${affiliateLink}">👉 Buy Direct on Amazon</a>\n📝 <a href="https://smart-picks-india.vercel.app/product/${product.slug}">Read Full Review</a>`;
+          const tgHtml = `🔔 <b>Price Drop Alert!</b>\n\n<b>${safeTitle}</b>\n\n💸 Price dropped from <s>₹${oldPrice.toLocaleString("en-IN")}</s> to <b>₹${product.price.toLocaleString("en-IN")}</b>!\n\n🛒 <a href="${affiliateLink}">👉 Buy Direct on Amazon</a>\n📝 <a href="${CLIENT_URL}/product/${product.slug}">Read Full Review</a>`;
           await sendTelegramMessage(user.telegramChatId, tgHtml);
           console.log(`      📱 Sent Telegram alert message to chat ${user.telegramChatId}`);
         } catch (tgErr) {
@@ -295,7 +297,7 @@ async function postDealToChannel(product, oldPrice) {
     const affiliateLink = product.affiliateLink && product.affiliateLink.includes("/dp/")
       ? product.affiliateLink
       : `https://www.amazon.in/dp/${product.slug}?tag=smartpick07d2-21`;
-    const siteReviewLink = `https://smart-picks-india.vercel.app/product/${product.slug}`;
+    const siteReviewLink = `${CLIENT_URL}/product/${product.slug}`;
 
     const tgHtml =
       `🔥 <b>LIVE DEAL DROP!</b> 🔥\n\n` +
@@ -340,7 +342,7 @@ export async function broadcastTopDeals() {
     const amazonLink = d.affiliateLink && d.affiliateLink.includes("/dp/")
       ? d.affiliateLink
       : d.affiliateLink || `https://www.amazon.in/s?k=${encodeURIComponent(d.title)}&tag=smartpick07d2-21`;
-    const reviewLink = `https://smart-picks-india.vercel.app/product/${d.slug}`;
+    const reviewLink = `${CLIENT_URL}/product/${d.slug}`;
     const safeTitle = escapeHtml(d.title);
 
     html +=
