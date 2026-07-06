@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Sparkles,
   GitFork,
-  Cpu,
   Trophy,
   Trash2,
   Lock,
@@ -15,13 +14,18 @@ import {
   HelpCircle,
   AlertTriangle,
   Loader2,
-  ZoomIn,
   Check,
   ChevronRight,
   Info,
   Layers,
-  Map,
   Compass,
+  Flame,
+  Star,
+  Zap,
+  Brain,
+  Target,
+  X,
+  RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,71 +41,73 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useAuth } from "@/hooks/use-auth";
 
-// Quick start role recommendations
 const SUGGESTED_ROLES = [
-  { role: "AI & Machine Learning Engineer", icon: "🧠", color: "from-teal-500 to-emerald-500" },
-  { role: "Smart Contract Web3 Auditor", icon: "⛓️", color: "from-indigo-500 to-purple-500" },
-  { role: "Fullstack Next.js Developer", icon: "⚡", color: "from-blue-500 to-cyan-500" },
-  { role: "Cybersecurity Analyst", icon: "🛡️", color: "from-rose-500 to-amber-500" },
+  { role: "AI & Machine Learning Engineer", icon: "🧠", gradient: "from-violet-600 to-purple-600", bg: "bg-violet-500/10 border-violet-500/20" },
+  { role: "Smart Contract Web3 Auditor", icon: "⛓️", gradient: "from-blue-600 to-cyan-600", bg: "bg-blue-500/10 border-blue-500/20" },
+  { role: "Fullstack Next.js Developer", icon: "⚡", gradient: "from-amber-500 to-orange-600", bg: "bg-amber-500/10 border-amber-500/20" },
+  { role: "Cybersecurity Analyst", icon: "🛡️", gradient: "from-rose-600 to-pink-600", bg: "bg-rose-500/10 border-rose-500/20" },
 ];
 
-/* ── Custom Node component ── */
+const TIER_CONFIG = {
+  Beginner: { color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/25", dot: "bg-emerald-400" },
+  Intermediate: { color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/25", dot: "bg-blue-400" },
+  Advanced: { color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/25", dot: "bg-violet-400" },
+  Expert: { color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/25", dot: "bg-amber-400" },
+};
+
+/* ── Custom Node ── */
 function SkillNodeCustom({ data }: { data: any }) {
   const isLocked = data.status === "locked";
   const isCompleted = data.status === "completed";
+  const tier = data.tier as keyof typeof TIER_CONFIG;
+  const tc = TIER_CONFIG[tier] || { color: "text-slate-400", bg: "bg-slate-500/10 border-slate-500/25", dot: "bg-slate-400" };
 
-  // Border & Glow theme based on status
-  const themeStyles = isCompleted
-    ? "border-emerald-500/80 bg-emerald-950/20 shadow-[0_0_20px_rgba(16,185,129,0.25)] text-emerald-400"
+  const borderClass = isCompleted
+    ? "border-emerald-500/70 shadow-[0_0_18px_rgba(16,185,129,0.20)]"
     : isLocked
-    ? "border-slate-800 bg-slate-950/40 opacity-55 text-slate-500"
-    : "border-blue-500/80 bg-blue-950/10 shadow-[0_0_20px_rgba(59,130,246,0.25)] text-blue-400";
+    ? "border-white/5 opacity-50"
+    : "border-blue-500/60 shadow-[0_0_18px_rgba(59,130,246,0.18)]";
 
-  // Tier Badge Color
-  const tierColors = {
-    Beginner: "text-teal-400 bg-teal-500/10 border-teal-500/20",
-    Intermediate: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
-    Advanced: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    Expert: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-  }[data.tier as "Beginner" | "Intermediate" | "Advanced" | "Expert"] || "text-slate-400 bg-slate-500/10";
+  const bgClass = isCompleted
+    ? "bg-emerald-950/25"
+    : isLocked
+    ? "bg-slate-950/60"
+    : "bg-[#080d1f]/80";
 
   return (
     <div
-      className={`px-4.5 py-3.5 rounded-2xl border-2 backdrop-blur-xl flex flex-col justify-center min-w-[190px] select-none cursor-pointer transition-all duration-300 relative group hover:scale-[1.03] ${themeStyles}`}
+      className={`min-w-[185px] max-w-[210px] rounded-2xl border-2 backdrop-blur-xl p-3.5 flex flex-col gap-1.5 cursor-pointer select-none transition-all duration-200 hover:scale-[1.04] group relative ${borderClass} ${bgClass}`}
     >
-      {/* Hidden React Flow ports */}
       <Handle type="target" position={Position.Top} className="opacity-0 !w-0 !h-0" id="t-top" />
       <Handle type="target" position={Position.Left} className="opacity-0 !w-0 !h-0" id="t-left" />
 
-      {/* Floating accent background glow on hover */}
+      {/* Shimmer overlay on hover */}
       {!isLocked && (
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       )}
 
-      {/* Tier Tag */}
-      <span className={`text-[8px] font-black uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-md border w-fit font-mono ${tierColors}`}>
+      {/* Tier Badge */}
+      <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-[3px] rounded-lg border w-fit font-mono ${tc.color} ${tc.bg}`}>
         {data.tier}
       </span>
 
-      {/* Label and Status Icon */}
-      <div className="flex items-center justify-between gap-3">
-        <span className={`text-xs font-extrabold truncate max-w-[140px] tracking-wide ${isLocked ? "text-slate-500" : "text-white"}`}>
+      {/* Label + Status */}
+      <div className="flex items-center justify-between gap-2 mt-0.5">
+        <span className={`text-[11px] font-extrabold leading-tight tracking-wide truncate max-w-[140px] ${isLocked ? "text-slate-600" : "text-white"}`}>
           {data.label}
         </span>
-        <div className="shrink-0">
-          {isCompleted ? (
-            <div className="p-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/50">
-              <Check className="h-3 w-3 text-emerald-400 stroke-[3px]" />
-            </div>
-          ) : isLocked ? (
-            <Lock className="h-3 w-3 text-slate-600" />
-          ) : (
-            <div className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </div>
-          )}
-        </div>
+        {isCompleted ? (
+          <div className="shrink-0 p-[3px] rounded-full bg-emerald-500/20 border border-emerald-500/40">
+            <Check className="h-2.5 w-2.5 text-emerald-400 stroke-[3px]" />
+          </div>
+        ) : isLocked ? (
+          <Lock className="h-3 w-3 text-slate-700 shrink-0" />
+        ) : (
+          <div className="relative flex h-2 w-2 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+          </div>
+        )}
       </div>
 
       <Handle type="source" position={Position.Bottom} className="opacity-0 !w-0 !h-0" id="s-bottom" />
@@ -112,53 +118,77 @@ function SkillNodeCustom({ data }: { data: any }) {
 
 const nodeTypes = { skillNode: SkillNodeCustom };
 
-/* ── Main Component ── */
+/* ── Progress Ring ── */
+function ProgressRing({ completed, total }: { completed: number; total: number }) {
+  const pct = total > 0 ? (completed / total) * 100 : 0;
+  const r = 26;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+  return (
+    <div className="flex items-center gap-3">
+      <svg width="64" height="64" className="-rotate-90">
+        <circle cx="32" cy="32" r={r} fill="none" stroke="#1e293b" strokeWidth="5" />
+        <circle
+          cx="32" cy="32" r={r} fill="none"
+          stroke="url(#ringGrad)" strokeWidth="5"
+          strokeDasharray={circ} strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: "stroke-dashoffset 0.8s ease" }}
+        />
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#3b82f6" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="rotate-0 absolute flex flex-col items-center justify-center" style={{ marginLeft: "24px", marginTop: "0" }}>
+        {/* inner text via absolute overlay */}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-lg font-black text-white leading-none">{completed}<span className="text-white/30 text-xs font-bold">/{total}</span></span>
+        <span className="text-[9px] font-bold uppercase tracking-widest text-white/40 font-mono">Skills Mastered</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Page ── */
 export default function AISkillTreeBuilder() {
   const { user, loading: authLoading } = useAuth() as any;
 
-  // Active custom trees list
   const [trees, setTrees] = useState<any[]>([]);
   const [selectedTree, setSelectedTree] = useState<any | null>(null);
-
-  // Form State
   const [roleName, setRoleName] = useState("");
   const [generating, setGenerating] = useState(false);
   const [dbLoading, setDbLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Inspection drawer state
   const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [selectedAns, setSelectedAns] = useState<number | null>(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizSuccess, setQuizSuccess] = useState(false);
   const [xpBonusMsg, setXpBonusMsg] = useState<string | null>(null);
 
-  // Load user trees
   const fetchTrees = useCallback(() => {
     if (!user) return;
     setDbLoading(true);
     fetch("/api/v1/student-hub/ai-skill-tree")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.trees)) {
-          setTrees(data.trees);
-        }
+        if (data.success && Array.isArray(data.trees)) setTrees(data.trees);
       })
-      .catch((e) => console.error("Failed to load custom skill trees", e))
+      .catch((e) => console.error("Failed to load skill trees", e))
       .finally(() => setDbLoading(false));
   }, [user]);
 
   useEffect(() => {
-    if (!authLoading) {
-      fetchTrees();
-    }
+    if (!authLoading) fetchTrees();
   }, [user, authLoading, fetchTrees]);
 
-  // Handle single tree fetch
   const handleSelectTree = (id: string) => {
     setDbLoading(true);
     fetch(`/api/v1/student-hub/ai-skill-tree/${id}`)
@@ -169,55 +199,50 @@ export default function AISkillTreeBuilder() {
           setupGraph(data.tree);
         }
       })
-      .catch((e) => console.error("Failed to fetch custom skill tree details", e))
+      .catch(console.error)
       .finally(() => setDbLoading(false));
   };
 
-  // React Flow mapper
   const setupGraph = (tree: any) => {
     const formattedNodes = tree.nodes.map((n: any) => ({
       id: n.id,
       type: "skillNode",
-      position: { x: n.x, y: n.y },
+      position: { x: n.x ?? 150, y: n.y ?? 100 },
       data: {
         label: n.label,
         tier: n.tier,
         status: n.status,
         description: n.description,
-        resources: n.resources,
+        resources: n.resources || [],
         quiz: n.quiz,
       },
     }));
 
     const formattedEdges = tree.edges.map((e: any) => {
       const sourceNode = tree.nodes.find((n: any) => n.id === e.source);
-      const isCompleted = sourceNode && sourceNode.status === "completed";
-      const strokeColor = isCompleted ? "#10b981" : "#334155";
+      const done = sourceNode?.status === "completed";
+      const col = done ? "#10b981" : "#1e293b";
       return {
         id: e.id,
         source: e.source,
         target: e.target,
-        animated: isCompleted,
-        style: { stroke: strokeColor, strokeWidth: 2 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: strokeColor,
-          width: 14,
-          height: 14,
-        },
+        animated: done,
+        style: { stroke: col, strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: col, width: 14, height: 14 },
       };
     });
 
     setNodes(formattedNodes);
     setEdges(formattedEdges);
     setSelectedNode(null);
+    setQuizSubmitted(false);
+    setQuizSuccess(false);
+    setSelectedAns(null);
   };
 
-  // Run generator helper
   const triggerGeneration = async (roleQuery: string) => {
     setGenerating(true);
     setErrorMsg("");
-
     try {
       const res = await fetch("/api/v1/student-hub/ai-skill-tree/generate", {
         method: "POST",
@@ -233,9 +258,8 @@ export default function AISkillTreeBuilder() {
       } else {
         setErrorMsg(data.message || "Failed to generate skill tree. Try again.");
       }
-    } catch (err) {
+    } catch {
       setErrorMsg("Failed to connect to server. Check your connection.");
-      console.error(err);
     } finally {
       setGenerating(false);
     }
@@ -247,15 +271,11 @@ export default function AISkillTreeBuilder() {
     triggerGeneration(roleName);
   };
 
-  // Delete an existing skill tree
   const handleDeleteTree = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this custom skill tree?")) return;
-
+    if (!confirm("Delete this skill tree? This action cannot be undone.")) return;
     try {
-      const res = await fetch(`/api/v1/student-hub/ai-skill-tree/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/v1/student-hub/ai-skill-tree/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setTrees((prev) => prev.filter((t) => t._id !== id));
@@ -263,14 +283,14 @@ export default function AISkillTreeBuilder() {
           setSelectedTree(null);
           setNodes([]);
           setEdges([]);
+          setSelectedNode(null);
         }
       }
     } catch (err) {
-      console.error("Failed to delete custom skill tree", err);
+      console.error(err);
     }
   };
 
-  // Click on React Flow node
   const handleNodeClick = (_: any, node: any) => {
     setSelectedNode(node);
     setSelectedAns(null);
@@ -278,24 +298,19 @@ export default function AISkillTreeBuilder() {
     setQuizSuccess(false);
   };
 
-  // Validate quiz answers
   const handleQuizSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedAns === null || !selectedNode || !selectedTree) return;
-
     const quiz = selectedNode.data.quiz;
     const isCorrect = selectedAns === quiz.answerIndex;
-
     setQuizSubmitted(true);
     setQuizSuccess(isCorrect);
 
     if (isCorrect) {
       try {
         const confetti = (await import("canvas-confetti")).default;
-        confetti({ particleCount: 140, spread: 75, origin: { y: 0.6 } });
-      } catch (err) {
-        console.error("Confetti script failed to load", err);
-      }
+        confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
+      } catch {}
 
       try {
         const res = await fetch(`/api/v1/student-hub/ai-skill-tree/${selectedTree._id}/complete-node`, {
@@ -309,88 +324,121 @@ export default function AISkillTreeBuilder() {
           const updatedTree = { ...selectedTree, nodes: data.nodes };
           setSelectedTree(updatedTree);
           setupGraph(updatedTree);
-          setXpBonusMsg("🚀 Milestone Quiz Cleared! +15 XP earned!");
-          setTimeout(() => setXpBonusMsg(null), 4000);
+          setXpBonusMsg("🚀 Milestone cleared! +15 XP earned!");
+          setTimeout(() => setXpBonusMsg(null), 4500);
         }
-      } catch (err) {
-        console.error("Failed to complete node on server", err);
-      }
+      } catch {}
     }
   };
 
+  const completedCount = selectedTree?.nodes?.filter((n: any) => n.status === "completed").length ?? 0;
+  const totalCount = selectedTree?.nodes?.length ?? 0;
+
   return (
-    <div className="min-h-screen bg-[#080b16] text-white py-12 select-none relative overflow-hidden font-sans">
-      {/* Dynamic Background Mesh */}
-      <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full bg-teal-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-5%] w-[700px] h-[700px] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none" />
-      <div className="absolute top-[35%] left-[45%] w-[400px] h-[400px] rounded-full bg-purple-500/5 blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-[#060810] text-white select-none relative overflow-hidden">
+      {/* Ambient background blobs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-[700px] h-[700px] rounded-full bg-gradient-to-br from-violet-600/8 to-blue-600/8 blur-[140px]" />
+        <div className="absolute -bottom-40 -right-40 w-[800px] h-[800px] rounded-full bg-gradient-to-tl from-emerald-600/8 to-teal-600/8 blur-[160px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-indigo-600/5 blur-[120px]" />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_50%,#000_60%,transparent_100%)]" />
+      </div>
 
-      {/* Decorative Cybernetic Grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-      <div className="container-custom max-w-6xl relative z-10">
-        {/* Navigation row */}
-        <div className="flex justify-between items-center mb-10">
+        {/* ── Top Navigation Bar ── */}
+        <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
           <Link
             href="/student-hub"
-            className="inline-flex items-center gap-2 text-xs font-black text-white/40 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white/80 transition-colors group"
           >
-            <ArrowLeft className="h-4.5 w-4.5" /> Back to Hub
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            Back to Hub
           </Link>
 
-          {user && (
-            <div className="flex items-center gap-2.5 px-4.5 py-2 rounded-full border border-teal-500/30 bg-teal-500/5 text-teal-400 text-xs font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(20,184,166,0.1)]">
-              <Trophy className="h-4.5 w-4.5 text-amber-400 animate-bounce" />
-              <span>{user.xp || 0} XP Ranked</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {user && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400"
+              >
+                <Trophy className="h-4 w-4 animate-bounce" />
+                <span className="text-xs font-black uppercase tracking-widest">{user.xp || 0} XP</span>
+              </motion.div>
+            )}
+          </div>
         </div>
 
-        {/* Milestone Toast banner */}
+        {/* ── Hero Header ── */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest mb-4 font-mono">
+            <Brain className="h-3.5 w-3.5" />
+            Gemini AI · Career Path Generator
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-white via-white/90 to-white/50 bg-clip-text text-transparent mb-3">
+            AI Skill Tree
+          </h1>
+          <p className="text-sm text-white/40 font-semibold max-w-lg mx-auto leading-relaxed">
+            Generate personalized 8-node career roadmaps with quizzes, resources, and XP-locked progression milestones.
+          </p>
+        </div>
+
+        {/* ── XP Toast ── */}
         <AnimatePresence>
           {xpBonusMsg && (
             <motion.div
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              className="mb-8 p-4.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-sm text-center shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex items-center justify-center gap-3 border border-emerald-400/30 select-none"
+              className="mb-8 mx-auto max-w-sm p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-sm text-center shadow-[0_15px_40px_rgba(16,185,129,0.35)] flex items-center justify-center gap-3 border border-emerald-400/30"
             >
-              <Sparkles className="h-5.5 w-5.5 animate-pulse text-amber-200" />
-              <span>{xpBonusMsg}</span>
+              <Sparkles className="h-5 w-5 animate-pulse text-amber-200" />
+              {xpBonusMsg}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Guest check */}
+        {/* ── Guest Wall ── */}
         {!authLoading && !user ? (
-          <div className="max-w-md mx-auto text-center border border-white/10 bg-slate-950/60 p-10 rounded-3xl backdrop-blur-xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-5" />
-            <h2 className="text-2xl font-black mb-3">Sign In Required</h2>
-            <p className="text-xs text-white/50 mb-8 leading-relaxed font-semibold">
-              The Interactive AI Skill Tree Builder requires a logged-in account to save generated roadmaps, lock progression nodes, and claim your leaderboard XP rewards.
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md mx-auto text-center border border-white/8 bg-white/3 backdrop-blur-xl p-12 rounded-3xl shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <AlertTriangle className="h-14 w-14 text-amber-500 mx-auto mb-5" />
+            <h2 className="text-2xl font-black mb-3 tracking-tight">Sign In Required</h2>
+            <p className="text-xs text-white/40 mb-8 leading-relaxed font-semibold">
+              Save generated roadmaps, track node progression, and earn XP rewards — requires an account.
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest bg-gradient-to-tr from-teal-500 via-indigo-500 to-purple-600 text-white hover:brightness-110 active:scale-95 transition-all shadow-lg"
+              className="inline-flex items-center justify-center w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest bg-gradient-to-r from-violet-600 to-blue-600 text-white hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-violet-500/20"
             >
               Log In to Start
             </Link>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid lg:grid-cols-4 gap-8 items-start">
-            {/* Sidebar Controls */}
-            <div className="space-y-6 lg:col-span-1">
-              {/* Generator Card */}
-              <div className="border border-white/10 bg-slate-900/40 backdrop-blur-xl p-6 rounded-3xl shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/40 to-transparent" />
-                <h3 className="font-extrabold text-[10px] uppercase tracking-widest text-teal-400 mb-5 flex items-center gap-1.5 font-mono">
-                  <Sparkles className="h-4 w-4 animate-pulse text-teal-400" /> Generator Engine
-                </h3>
+          <div className="grid xl:grid-cols-[280px_1fr] gap-6 items-start">
 
-                <form onSubmit={handleGenerateTree} className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-white/30 font-mono">Career Target</label>
+            {/* ══ LEFT SIDEBAR ══ */}
+            <div className="space-y-5">
+
+              {/* Generator Card */}
+              <div className="rounded-3xl border border-white/8 bg-white/3 backdrop-blur-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="p-1.5 rounded-xl bg-violet-500/15 border border-violet-500/20">
+                    <Sparkles className="h-4 w-4 text-violet-400" />
+                  </div>
+                  <h3 className="font-black text-[10px] uppercase tracking-widest text-violet-400 font-mono">Generator Engine</h3>
+                </div>
+
+                <form onSubmit={handleGenerateTree} className="space-y-4">
+                  <div>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-white/25 font-mono block mb-1.5">Career Target</label>
                     <input
                       type="text"
                       required
@@ -398,110 +446,161 @@ export default function AISkillTreeBuilder() {
                       value={roleName}
                       onChange={(e) => setRoleName(e.target.value)}
                       placeholder="e.g. Web3 Security, AI Agent Dev"
-                      className="w-full h-11 px-3.5 rounded-2xl border border-white/10 bg-black/60 text-xs font-bold placeholder:text-white/20 focus:outline-none focus:border-teal-500/50 focus:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all disabled:opacity-50"
+                      className="w-full h-11 px-3.5 rounded-2xl border border-white/8 bg-black/50 text-xs font-bold placeholder:text-white/20 focus:outline-none focus:border-violet-500/50 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.12)] transition-all disabled:opacity-50 text-white"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={generating || !roleName.trim()}
-                    className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest bg-gradient-to-r from-teal-500 to-indigo-600 hover:brightness-110 text-white shadow-xl disabled:opacity-40 disabled:hover:bg-teal-50 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
+                    className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest bg-gradient-to-r from-violet-600 to-blue-600 hover:brightness-110 text-white shadow-lg shadow-violet-500/20 disabled:opacity-35 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
                   >
                     {generating ? (
-                      <>
-                        <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                        Analyzing...
-                      </>
+                      <><Loader2 className="h-4 w-4 animate-spin" />Compiling…</>
                     ) : (
-                      <>
-                        <GitFork className="h-4.5 w-4.5 rotate-180" />
-                        Compile Path
-                      </>
+                      <><GitFork className="h-4 w-4 rotate-180" />Compile Path</>
                     )}
                   </button>
                 </form>
 
-                {errorMsg && (
-                  <p className="text-[10px] text-rose-400 font-extrabold mt-4 border border-rose-500/25 bg-rose-500/5 p-3 rounded-xl text-center leading-relaxed">
-                    {errorMsg}
-                  </p>
-                )}
+                <AnimatePresence>
+                  {errorMsg && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 overflow-hidden"
+                    >
+                      <div className="flex items-start gap-2 p-3 rounded-xl border border-rose-500/25 bg-rose-500/8 text-rose-400">
+                        <X className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                        <p className="text-[10px] font-semibold leading-relaxed">{errorMsg}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              {/* Saved Trees List */}
-              <div className="border border-white/10 bg-slate-900/40 backdrop-blur-xl p-6 rounded-3xl shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
-                <h3 className="font-extrabold text-[10px] uppercase tracking-widest text-indigo-400 mb-4.5 font-mono">
-                  My Custom Paths ({trees.length}/5)
-                </h3>
+              {/* Saved Trees */}
+              <div className="rounded-3xl border border-white/8 bg-white/3 backdrop-blur-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-xl bg-blue-500/15 border border-blue-500/20">
+                      <Layers className="h-4 w-4 text-blue-400" />
+                    </div>
+                    <h3 className="font-black text-[10px] uppercase tracking-widest text-blue-400 font-mono">My Paths</h3>
+                  </div>
+                  <span className="text-[9px] font-black text-white/20 font-mono border border-white/8 bg-white/5 px-2 py-0.5 rounded-full">
+                    {trees.length}/5
+                  </span>
+                </div>
 
                 {dbLoading && trees.length === 0 ? (
-                  <div className="flex items-center justify-center py-8 text-white/30 gap-2">
-                    <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                    <span className="text-[10px] font-bold">Querying DB...</span>
+                  <div className="flex items-center justify-center py-8 text-white/25 gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-[10px] font-bold">Loading paths…</span>
                   </div>
                 ) : trees.length === 0 ? (
-                  <div className="py-6 text-center text-white/20">
-                    <Map className="h-6 w-6 mx-auto mb-2 text-white/10" />
-                    <p className="text-[10px] font-bold italic">No custom paths generated.</p>
+                  <div className="py-8 text-center">
+                    <Compass className="h-7 w-7 text-white/10 mx-auto mb-2" />
+                    <p className="text-[10px] font-bold text-white/20 italic">No custom paths generated yet.</p>
                   </div>
                 ) : (
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {trees.map((t) => {
                       const isActive = selectedTree?._id === t._id;
                       return (
-                        <button
+                        <motion.button
                           key={t._id}
+                          layout
                           onClick={() => handleSelectTree(t._id)}
-                          className={`w-full p-3.5 rounded-2xl border flex items-center justify-between transition-all text-left cursor-pointer group hover:scale-[1.02] ${
+                          className={`w-full p-3.5 rounded-2xl border flex items-center justify-between text-left cursor-pointer group transition-all hover:scale-[1.02] ${
                             isActive
-                              ? "border-teal-500/50 bg-teal-500/5 text-teal-400 shadow-[0_0_12px_rgba(20,184,166,0.05)]"
-                              : "border-white/5 bg-black/30 text-white/60 hover:border-white/10 hover:text-white"
+                              ? "border-violet-500/40 bg-violet-500/8 shadow-[0_0_12px_rgba(139,92,246,0.08)]"
+                              : "border-white/5 bg-black/20 hover:border-white/10"
                           }`}
                         >
-                          <span className="text-xs font-extrabold truncate max-w-[140px] tracking-wide">{t.roleName}</span>
-                          <Trash2
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${isActive ? "bg-violet-400" : "bg-white/20"}`} />
+                            <span className={`text-xs font-extrabold truncate tracking-wide ${isActive ? "text-violet-300" : "text-white/55 group-hover:text-white/80"}`}>
+                              {t.roleName}
+                            </span>
+                          </div>
+                          <button
                             onClick={(e) => handleDeleteTree(t._id, e)}
-                            className="h-3.5 w-3.5 text-white/20 hover:text-rose-500 transition-colors shrink-0 opacity-80 group-hover:opacity-100"
-                          />
-                        </button>
+                            className="p-1 rounded-lg hover:bg-rose-500/15 transition-colors shrink-0"
+                          >
+                            <Trash2 className="h-3 w-3 text-white/15 group-hover:text-rose-400 transition-colors" />
+                          </button>
+                        </motion.button>
                       );
                     })}
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* React Flow Canvas and Inspection Panel */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* Header Title */}
+              {/* Tier Legend */}
               {selectedTree && (
-                <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/15 pb-5 gap-4">
-                  <div>
-                    <h2 className="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">
-                      {selectedTree.roleName}
-                    </h2>
-                    <p className="text-[10px] text-white/35 font-bold uppercase tracking-widest mt-1 font-mono flex items-center gap-1.5">
-                      <Layers className="h-3.5 w-3.5 text-indigo-400" /> Interactive Skill Flowchart · Pass exams to progress
-                    </p>
-                  </div>
-                  <div className="shrink-0">
-                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/5 border border-emerald-500/30 px-3.5 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_12px_rgba(16,185,129,0.05)]">
-                      <CheckCircle className="h-4 w-4" />
-                      {selectedTree.nodes.filter((n: any) => n.status === "completed").length} /{" "}
-                      {selectedTree.nodes.length} Skills Mastered
-                    </span>
+                <div className="rounded-3xl border border-white/8 bg-white/3 backdrop-blur-xl p-5 relative overflow-hidden">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/25 font-mono mb-3">Tier Legend</p>
+                  <div className="space-y-2">
+                    {(["Beginner", "Intermediate", "Advanced", "Expert"] as const).map((tier) => {
+                      const tc = TIER_CONFIG[tier];
+                      const count = selectedTree.nodes.filter((n: any) => n.tier === tier).length;
+                      const done = selectedTree.nodes.filter((n: any) => n.tier === tier && n.status === "completed").length;
+                      return (
+                        <div key={tier} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${tc.dot}`} />
+                            <span className={`text-[10px] font-bold ${tc.color}`}>{tier}</span>
+                          </div>
+                          <span className="text-[9px] font-black text-white/30 font-mono">{done}/{count}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
+            </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
-                {/* ReactFlow Area */}
-                <div className="md:col-span-2">
+            {/* ══ MAIN CONTENT AREA ══ */}
+            <div className="space-y-5">
+
+              {/* Tree Header (when selected) */}
+              <AnimatePresence mode="wait">
+                {selectedTree && (
+                  <motion.div
+                    key={selectedTree._id}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="rounded-3xl border border-white/8 bg-white/3 backdrop-blur-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="h-4 w-4 text-violet-400" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-violet-400 font-mono">Active Career Path</span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight text-white leading-none">{selectedTree.roleName}</h2>
+                      <p className="text-[10px] text-white/35 font-semibold mt-1 flex items-center gap-1.5">
+                        <Zap className="h-3 w-3 text-amber-400" />
+                        Click active nodes to take quizzes and progress
+                      </p>
+                    </div>
+                    <ProgressRing completed={completedCount} total={totalCount} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* ReactFlow + Inspector Grid */}
+              <div className="grid lg:grid-cols-[1fr_320px] gap-5">
+
+                {/* ReactFlow Canvas */}
+                <div>
                   {selectedTree ? (
                     <div
-                      className="h-[520px] w-full border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl"
-                      style={{ background: "linear-gradient(135deg, #07090e 0%, #0a0d15 80%)" }}
+                      className="rounded-3xl border border-white/8 overflow-hidden relative shadow-2xl"
+                      style={{ height: "520px", background: "radial-gradient(ellipse at 30% 20%, #0d1327 0%, #060810 100%)" }}
                     >
                       <ReactFlow
                         nodes={nodes}
@@ -511,187 +610,199 @@ export default function AISkillTreeBuilder() {
                         nodeTypes={nodeTypes}
                         onNodeClick={handleNodeClick}
                         fitView
-                        fitViewOptions={{ padding: 0.15 }}
-                        minZoom={0.3}
-                        maxZoom={1.5}
+                        fitViewOptions={{ padding: 0.18 }}
+                        minZoom={0.25}
+                        maxZoom={1.6}
                         nodesConnectable={false}
                         nodesDraggable={true}
                         edgesFocusable={false}
                       >
-                        <Background color="#161d2d" gap={20} size={1} />
-                        <Controls className="!bg-[#0c0f16]/90 !backdrop-blur-md !border-white/10 [&_button]:!bg-[#0c0f16] [&_button]:!border-white/10 [&_button]:!text-white/40 hover:[&_button]:!text-white shadow-xl" />
+                        <Background color="#1a2035" gap={28} size={1.2} />
+                        <Controls
+                          className="!bg-black/60 !backdrop-blur-md !border-white/8 [&_button]:!bg-black/40 [&_button]:!border-white/8 [&_button]:!text-white/40 shadow-xl !rounded-2xl overflow-hidden"
+                        />
                       </ReactFlow>
 
-                      <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/75 backdrop-blur-md border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40 pointer-events-none">
-                        <ZoomIn className="h-3.5 w-3.5 text-teal-400" />
-                        Click node milestones to start quiz
+                      {/* Hint overlay */}
+                      <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/8 text-[9px] font-black uppercase tracking-widest text-white/35 pointer-events-none">
+                        <Star className="h-3 w-3 text-amber-400" />
+                        Click nodes to start milestone quizzes
                       </div>
+
+                      {/* Loading overlay */}
+                      <AnimatePresence>
+                        {dbLoading && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center"
+                          >
+                            <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   ) : (
-                    /* Onboarding quick-start screen */
-                    <div
-                      className="min-h-[520px] w-full border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center p-8 text-center relative overflow-hidden shadow-xl"
-                      style={{ background: "linear-gradient(135deg, #07090e 0%, #0a0d15 80%)" }}
+                    /* Onboarding Screen */
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="rounded-3xl border border-dashed border-white/8 overflow-hidden relative flex flex-col items-center justify-center p-10 text-center"
+                      style={{ minHeight: "520px", background: "radial-gradient(ellipse at 50% 50%, #0d1327 0%, #060810 100%)" }}
                     >
-                      <div className="absolute top-[-30%] left-[20%] w-[300px] h-[300px] rounded-full bg-teal-500/5 blur-[80px]" />
-                      
-                      <div className="relative z-10 max-w-lg space-y-6">
-                        <div className="inline-flex p-4 rounded-3xl bg-slate-900 border border-white/10 shadow-lg text-teal-400 animate-pulse">
-                          <Compass className="h-8 w-8" />
+                      <div className="absolute top-[-20%] left-[20%] w-[350px] h-[350px] rounded-full bg-violet-600/5 blur-[100px]" />
+                      <div className="relative z-10 max-w-md space-y-7">
+                        <div className="inline-flex p-5 rounded-3xl bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-violet-500/20 text-violet-400 mx-auto">
+                          <Compass className="h-10 w-10" />
                         </div>
+
                         <div>
-                          <h4 className="text-lg font-black tracking-wide">Generate Custom Career Maps</h4>
-                          <p className="text-[11px] text-white/40 max-w-sm mx-auto mt-2 leading-relaxed font-semibold">
-                            Enter any advanced technical path. Gemini will dynamically generate a custom 8-node roadmap distributed across 4 tiers with study resources and conceptual exams.
+                          <h4 className="text-xl font-black tracking-tight mb-2">Generate Custom Career Maps</h4>
+                          <p className="text-xs text-white/35 max-w-sm mx-auto leading-relaxed font-semibold">
+                            Enter any technical career path. Gemini will generate a custom 8-node roadmap across 4 tiers with study resources, quizzes, and XP rewards.
                           </p>
                         </div>
 
-                        {/* Quick Start Suggested Buttons */}
-                        <div className="space-y-2 pt-2 text-left">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-white/30 text-center font-mono">
-                            ⚡ Quick Start Suggestions
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {SUGGESTED_ROLES.map((r, ri) => (
+                        <div className="space-y-3 pt-1 text-left">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-white/25 text-center font-mono">⚡ Quick Start</p>
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            {SUGGESTED_ROLES.map((r, i) => (
                               <button
-                                key={ri}
+                                key={i}
                                 onClick={() => triggerGeneration(r.role)}
                                 disabled={generating}
-                                className="flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-slate-950/40 hover:border-white/15 hover:bg-slate-900/60 text-left transition-all active:scale-[0.98] group cursor-pointer"
+                                className={`flex items-center gap-3 p-3.5 rounded-2xl border ${r.bg} hover:brightness-110 text-left transition-all active:scale-[0.98] group cursor-pointer disabled:opacity-40`}
                               >
-                                <span className="text-lg bg-slate-900 p-1.5 rounded-xl border border-white/5">{r.icon}</span>
+                                <span className="text-xl">{r.icon}</span>
                                 <div>
-                                  <h5 className="text-[11px] font-extrabold text-white group-hover:text-teal-400 transition-colors">
-                                    {r.role}
-                                  </h5>
-                                  <span className="text-[8px] text-white/30 font-bold uppercase tracking-widest">Generate</span>
+                                  <h5 className="text-[11px] font-extrabold text-white leading-tight">{r.role}</h5>
+                                  <span className="text-[8px] text-white/30 font-bold uppercase tracking-widest">Generate →</span>
                                 </div>
                               </button>
                             ))}
                           </div>
                         </div>
+
+                        {generating && (
+                          <div className="flex items-center justify-center gap-3 text-violet-400">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="text-xs font-bold">Gemini is compiling your path…</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
                 </div>
 
-                {/* Inspect Side Drawer */}
-                <div className="md:col-span-1">
-                  <AnimatePresence mode="wait">
-                    {selectedNode ? (
-                      <motion.div
-                        key={selectedNode.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        className="border border-white/10 bg-slate-900/20 backdrop-blur-xl p-6 rounded-3xl h-full flex flex-col justify-between shadow-xl relative overflow-hidden"
-                      >
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                        
-                        <div className="space-y-5">
-                          {/* Node Header */}
-                          <div className="flex items-start justify-between border-b border-white/10 pb-4">
-                            <div>
-                              <span className="text-[8px] font-black uppercase tracking-widest text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20 font-mono">
-                                {selectedNode.data.tier}
-                              </span>
-                              <h4 className="font-extrabold text-sm text-white mt-2 leading-snug tracking-wide">
-                                {selectedNode.data.label}
-                              </h4>
-                            </div>
-                            <div className="shrink-0 text-right">
-                              {selectedNode.data.status === "completed" ? (
-                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md font-mono">Mastered</span>
-                              ) : selectedNode.data.status === "locked" ? (
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-950/40 border border-slate-800 px-2 py-0.5 rounded-md font-mono">Locked</span>
-                              ) : (
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md animate-pulse font-mono">Active</span>
-                              )}
-                            </div>
-                          </div>
+                {/* Inspect Panel */}
+                <AnimatePresence mode="wait">
+                  {selectedNode ? (
+                    <motion.div
+                      key={selectedNode.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="rounded-3xl border border-white/8 bg-white/3 backdrop-blur-xl flex flex-col overflow-hidden relative"
+                      style={{ maxHeight: "520px" }}
+                    >
+                      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-                          {/* Node Overview */}
-                          <div className="space-y-2 text-left">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30 font-mono">Description</p>
-                            <p className="text-[11px] text-white/60 leading-relaxed font-semibold">
-                              {selectedNode.data.description}
-                            </p>
-                          </div>
+                      {/* Node Header */}
+                      <div className="p-5 border-b border-white/8 flex-shrink-0">
+                        {(() => {
+                          const tier = selectedNode.data.tier as keyof typeof TIER_CONFIG;
+                          const tc = TIER_CONFIG[tier] || { color: "text-slate-400", bg: "bg-slate-500/10 border-slate-500/25" };
+                          return (
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-[3px] rounded-lg border font-mono ${tc.color} ${tc.bg}`}>
+                                  {selectedNode.data.tier}
+                                </span>
+                                <h4 className="font-extrabold text-sm text-white mt-2 leading-snug tracking-wide">
+                                  {selectedNode.data.label}
+                                </h4>
+                              </div>
+                              <div className="shrink-0">
+                                {selectedNode.data.status === "completed" ? (
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg font-mono">✓ Done</span>
+                                ) : selectedNode.data.status === "locked" ? (
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/50 border border-slate-700/50 px-2 py-1 rounded-lg font-mono">Locked</span>
+                                ) : (
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded-lg font-mono animate-pulse">Active</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
 
-                          {/* Resources list */}
-                          <div className="space-y-2.5 text-left">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5 font-mono">
-                              <BookOpen className="h-3.5 w-3.5 text-teal-400" /> Syllabus & Links
+                      {/* Scrollable body */}
+                      <div className="overflow-y-auto flex-1 p-5 space-y-5 custom-scrollbar">
+                        {/* Description */}
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-white/25 font-mono mb-2">Description</p>
+                          <p className="text-[11px] text-white/55 leading-relaxed font-semibold">{selectedNode.data.description}</p>
+                        </div>
+
+                        {/* Resources */}
+                        {selectedNode.data.resources?.length > 0 && (
+                          <div>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-white/25 font-mono mb-2 flex items-center gap-1.5">
+                              <BookOpen className="h-3 w-3 text-blue-400" /> Syllabus
                             </p>
-                            <div className="flex flex-col gap-2">
+                            <div className="space-y-2">
                               {selectedNode.data.resources.map((link: string, li: number) => (
-                                <div
-                                  key={li}
-                                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 border border-white/5 text-[10px] text-white/70 font-semibold shadow-inner"
-                                >
-                                  <ChevronRight className="h-3.5 w-3.5 text-teal-400 shrink-0" />
+                                <div key={li} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-black/30 border border-white/5 text-[10px] text-white/60 font-semibold">
+                                  <ChevronRight className="h-3 w-3 text-blue-400 shrink-0" />
                                   <span className="truncate">{link}</span>
                                 </div>
                               ))}
                             </div>
                           </div>
-                        </div>
+                        )}
 
-                        {/* Interactive Quiz area */}
-                        <div className="pt-5 border-t border-white/10 mt-5 text-left">
+                        {/* Quiz Area */}
+                        <div className="border-t border-white/8 pt-4">
                           {selectedNode.data.status === "locked" ? (
-                            <div className="flex items-start gap-3 text-slate-400 bg-slate-950/40 p-4 border border-slate-800/80 rounded-2xl">
-                              <Lock className="h-5 w-5 shrink-0 text-slate-500 mt-0.5" />
+                            <div className="flex items-start gap-3 text-slate-400 bg-slate-900/40 p-4 border border-slate-800/50 rounded-2xl">
+                              <Lock className="h-4 w-4 shrink-0 text-slate-600 mt-0.5" />
                               <p className="text-[10px] leading-relaxed font-semibold">
-                                This syllabus module is locked. Complete all previous parent nodes in the workflow flowchart to activate this exam.
+                                Complete all prerequisite nodes in the flowchart to unlock this exam.
                               </p>
                             </div>
                           ) : selectedNode.data.status === "completed" ? (
-                            <div className="flex items-start gap-3 text-emerald-400 bg-emerald-500/5 p-4.5 border border-emerald-500/25 rounded-2xl shadow-[inset_0_0_12px_rgba(16,185,129,0.02)]">
-                              <CheckCircle className="h-5.5 w-5.5 shrink-0 text-emerald-400 mt-0.5" />
+                            <div className="flex items-start gap-3 text-emerald-400 bg-emerald-500/5 p-4 border border-emerald-500/20 rounded-2xl">
+                              <CheckCircle className="h-5 w-5 shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest font-mono">Node Unlocked</p>
-                                <p className="text-[9px] leading-relaxed mt-1 font-semibold text-white/40">
-                                  You have successfully passed the conceptual verification test and unlocked downstream lessons.
-                                </p>
+                                <p className="text-[10px] font-black uppercase tracking-widest font-mono mb-1">Node Mastered ✓</p>
+                                <p className="text-[9px] text-white/35 leading-relaxed font-semibold">You passed the verification test and unlocked downstream nodes.</p>
                               </div>
                             </div>
                           ) : (
-                            <form onSubmit={handleQuizSubmit} className="space-y-4">
-                              <p className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5 font-mono">
+                            <form onSubmit={handleQuizSubmit} className="space-y-3.5">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-white/25 font-mono flex items-center gap-1.5">
                                 <HelpCircle className="h-3.5 w-3.5 text-blue-400 animate-pulse" /> Concept Verification
                               </p>
-                              <p className="text-[11px] font-extrabold text-white leading-relaxed">
-                                {selectedNode.data.quiz.question}
+                              <p className="text-xs font-extrabold text-white leading-relaxed">
+                                {selectedNode.data.quiz?.question}
                               </p>
 
                               <div className="space-y-2">
-                                {selectedNode.data.quiz.options.map((opt: string, idx: number) => (
+                                {selectedNode.data.quiz?.options?.map((opt: string, idx: number) => (
                                   <label
                                     key={idx}
                                     onClick={() => !quizSubmitted && setSelectedAns(idx)}
-                                    className={`flex items-center gap-3 px-3.5 py-3 border rounded-2xl cursor-pointer text-[10px] font-extrabold transition-all hover:scale-[1.01] ${
+                                    className={`flex items-center gap-3 px-3.5 py-3 border rounded-xl cursor-pointer text-[10px] font-bold transition-all hover:scale-[1.01] ${
                                       selectedAns === idx
-                                        ? "border-teal-500 bg-teal-500/5 text-teal-400"
-                                        : "border-white/5 bg-black/40 text-white/70 hover:border-white/10"
+                                        ? "border-violet-500/60 bg-violet-500/8 text-violet-300"
+                                        : "border-white/5 bg-black/30 text-white/60 hover:border-white/10"
                                     }`}
                                   >
-                                    <input
-                                      type="radio"
-                                      name="quiz-opt"
-                                      checked={selectedAns === idx}
-                                      onChange={() => {}}
-                                      disabled={quizSubmitted}
-                                      className="sr-only"
-                                    />
-                                    <div
-                                      className={`h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0 ${
-                                        selectedAns === idx ? "border-teal-500" : "border-white/20"
-                                      }`}
-                                    >
-                                      {selectedAns === idx && (
-                                        <div className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-                                      )}
+                                    <div className={`h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                                      selectedAns === idx ? "border-violet-500" : "border-white/15"
+                                    }`}>
+                                      {selectedAns === idx && <div className="h-1.5 w-1.5 rounded-full bg-violet-500" />}
                                     </div>
                                     <span className="leading-snug">{opt}</span>
                                   </label>
@@ -701,50 +812,56 @@ export default function AISkillTreeBuilder() {
                               {!quizSubmitted ? (
                                 <button
                                   type="submit"
-                                  disabled={selectedAns === null || dbLoading}
-                                  className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/10"
+                                  disabled={selectedAns === null}
+                                  className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:brightness-110 disabled:opacity-35 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-violet-500/15"
                                 >
-                                  {dbLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                                  Verify Answers
+                                  <Flame className="h-3.5 w-3.5" />
+                                  Verify Answer
                                 </button>
                               ) : quizSuccess ? (
                                 <div className="p-4 border border-emerald-500/25 bg-emerald-500/5 text-emerald-400 rounded-2xl text-[10px] leading-relaxed font-semibold">
-                                  <span className="block font-black uppercase tracking-widest text-xs mb-1 font-mono">🎉 Success</span>
-                                  {selectedNode.data.quiz.explanation}
+                                  <span className="block font-black uppercase tracking-widest text-xs mb-1.5 font-mono">🎉 Correct!</span>
+                                  {selectedNode.data.quiz?.explanation}
                                 </div>
                               ) : (
                                 <div className="space-y-3">
                                   <div className="p-4 border border-rose-500/25 bg-rose-500/5 text-rose-400 rounded-2xl text-[10px] leading-relaxed font-semibold">
                                     <span className="block font-black uppercase tracking-widest text-xs mb-1 font-mono">❌ Incorrect</span>
-                                    Review the notes and syllabus link details, then try again.
+                                    Review the notes and try again.
                                   </div>
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      setSelectedAns(null);
-                                      setQuizSubmitted(false);
-                                    }}
-                                    className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-slate-800 hover:bg-slate-700 cursor-pointer transition-all active:scale-95"
+                                    onClick={() => { setSelectedAns(null); setQuizSubmitted(false); }}
+                                    className="w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white/70 bg-white/5 hover:bg-white/8 border border-white/8 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
                                   >
-                                    Try Again
+                                    <RefreshCw className="h-3.5 w-3.5" /> Try Again
                                   </button>
                                 </div>
                               )}
                             </form>
                           )}
                         </div>
-                      </motion.div>
-                    ) : (
-                      <div className="border border-white/10 bg-slate-900/10 backdrop-blur-md p-6 rounded-3xl h-full flex flex-col items-center justify-center text-center py-24 relative overflow-hidden shadow-inner">
-                        <Info className="h-8 w-8 text-white/20 mb-3" />
-                        <h5 className="text-[11px] font-black text-white/50 uppercase tracking-widest font-mono">Milestone Detail</h5>
-                        <p className="text-[10px] text-white/30 max-w-xs mt-1.5 leading-relaxed font-semibold">
-                          Click any active node in the graph flowchart to view study materials and solve verification quizzes to earn XP.
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="empty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="rounded-3xl border border-white/5 bg-black/20 backdrop-blur-md flex flex-col items-center justify-center text-center p-10 relative overflow-hidden"
+                      style={{ minHeight: "520px" }}
+                    >
+                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,#1a1f3a_0%,transparent_70%)]" />
+                      <div className="relative z-10">
+                        <Info className="h-9 w-9 text-white/15 mx-auto mb-3" />
+                        <h5 className="text-[11px] font-black text-white/35 uppercase tracking-widest font-mono">Milestone Detail</h5>
+                        <p className="text-[10px] text-white/20 max-w-[200px] mt-2 leading-relaxed font-semibold mx-auto">
+                          Click any active node in the flowchart to view study materials and solve quizzes.
                         </p>
                       </div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>

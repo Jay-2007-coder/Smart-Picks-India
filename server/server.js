@@ -128,31 +128,6 @@ app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/blog", blogRouter);
 app.use("/api/v1/roadmaps", roadmapProgressRouter);
 
-// Debug routes endpoint
-app.get("/debug-routes", (req, res) => {
-  const routes = [];
-  function print(path, layer) {
-    if (layer.route) {
-      layer.route.stack.forEach((stackItem) => {
-        const method = stackItem.method ? stackItem.method.toUpperCase() : "ALL";
-        routes.push(`${method} ${path}${layer.route.path}`);
-      });
-    } else if (layer.name === "router" && layer.handle.stack) {
-      const cleanRegexp = layer.regexp.toString()
-        .replace("/^\\", "")
-        .replace("\\/?(?=\\/|$)/i", "")
-        .replace(/\\/g, "")
-        .replace("?(?=\\/|$)", "");
-      layer.handle.stack.forEach((subLayer) => {
-        print(path + cleanRegexp, subLayer);
-      });
-    }
-  }
-  app._router.stack.forEach((layer) => {
-    print("", layer);
-  });
-  res.status(200).json({ success: true, routes });
-});
 
 // Health check endpoint
 app.get("/health", (req, res) => {

@@ -5,6 +5,7 @@ import { awardXp } from "../middleware/xp.js";
 import { checkHubLimits } from "../middleware/hubLimits.js";
 import PlacementApplication from "../models/PlacementApplication.js";
 import CustomSkillTree from "../models/CustomSkillTree.js";
+import { callGemini, cleanGeminiJson, GEMINI_API_KEY } from "../utils/gemini.js";
 
 const router = express.Router();
 
@@ -371,8 +372,6 @@ JSON Format:
   }
 });
 
-
-import { callGemini, cleanGeminiJson, GEMINI_API_KEY } from "../utils/gemini.js";
 
 
 // ──────────────────────────────────────────────────────────────────────────────
