@@ -162,9 +162,33 @@ app.use((err, req, res, next) => {
 console.log("🔌 Connecting to MongoDB...");
 mongoose
   .connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log("✅ MongoDB Connected successfully.");
+
+    // ── Ensure critical indexes exist ──────────────────────────────────────────
+    // These are no-ops if indexes already exist — safe to run on every restart
+    try {
+      const db = mongoose.connection.db;
+      // Product slug lookup (most common query — product detail pages)
+      await db.collection("products").createIndex({ slug: 1 }, { unique: true, background: true });
+      // Price history: fetch latest price for a product
+      await db.collection("pricehistories").createIndex({ slug: 1, recordedAt: -1 }, { background: true });
+      // Price alerts: find active alerts for a product slug on drop
+      await db.collection("pricealerts").createIndex({ slug: 1, isActive: 1 }, { background: true });
+      // Session: refresh token revocation check on every authenticated request
+      await db.collection("sessions").createIndex({ refreshToken: 1 }, { background: true });
+      // Session: auto-delete expired sessions via TTL
+      await db.collection("sessions").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, background: true });
+      // User: email uniqueness + login lookup
+      await db.collection("users").createIndex({ email: 1 }, { unique: true, background: true });
+      console.log("✅ MongoDB indexes verified.");
+    } catch (indexErr) {
+      console.warn("⚠️ Index creation warning (non-fatal):", indexErr.message);
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
     // Run catalog and price synchronization on startup
+
     syncProductsFromCatalog()
       .then(() => syncProductPrices())
       .catch((err) => {

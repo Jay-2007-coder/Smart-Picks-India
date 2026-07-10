@@ -96,6 +96,13 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Dedicated reset tracker — avoids the updatedAt collision bug
+    // where any unrelated user.save() would falsely reset the daily usage counter
+    hubUsageResetAt: {
+      type: Date,
+      default: Date.now,
+    },
+
     referralCode: {
       type: String,
       unique: true,

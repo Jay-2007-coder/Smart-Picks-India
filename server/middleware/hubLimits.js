@@ -17,14 +17,16 @@ export async function checkHubLimits(req, res, next) {
       return next();
     }
 
-    // Check if daily reset is needed (by checking calendar day)
+    // Check if daily reset is needed using dedicated reset timestamp field
+    // (avoids false resets caused by unrelated user.save() calls touching updatedAt)
     const todayStr = new Date().toDateString();
-    const lastUpdateStr = new Date(user.updatedAt || user.createdAt).toDateString();
+    const lastResetStr = new Date(user.hubUsageResetAt || user.createdAt).toDateString();
 
     let usage = user.hubUsage || 0;
-    if (todayStr !== lastUpdateStr) {
+    if (todayStr !== lastResetStr) {
       usage = 0;
       user.hubUsage = 0;
+      user.hubUsageResetAt = new Date();
       await user.save();
     }
 
@@ -37,8 +39,10 @@ export async function checkHubLimits(req, res, next) {
         });
       }
       user.hubUsage = usage + 1;
+      // Update reset tracker only on first use of the day (already handled above)
       await user.save();
     }
+
 
     next();
   } catch (err) {
