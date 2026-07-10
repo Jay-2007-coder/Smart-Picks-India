@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Check, X, ShieldCheck, Truck, RotateCcw } from "lucide-react";
 import { products } from "@/data/products";
 import { generateMetadata as generateSEOMetadata, generateProductSchema, generateFAQSchema } from "@/lib/seo";
@@ -11,9 +12,22 @@ import RelatedProducts from "@/components/RelatedProducts";
 import PinterestShareButton from "@/components/PinterestShareButton";
 import WhatsAppAlertButton from "@/components/WhatsAppAlertButton";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
-import PriceHistoryChart from "@/components/PriceHistoryChart";
-import PriceAlertTracker from "@/components/PriceAlertTracker";
 import RecentlyViewedTracker from "@/components/RecentlyViewedTracker";
+
+// Lazy-loaded — Chart.js (~60KB) and alert tracker only needed after scroll
+const PriceHistoryChart = dynamic(() => import("@/components/PriceHistoryChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-48 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
+  ),
+});
+const PriceAlertTracker = dynamic(() => import("@/components/PriceAlertTracker"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-24 w-full animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />
+  ),
+});
+
 
 export const revalidate = 60;
 
@@ -21,8 +35,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+// Limit static generation to top 150 products — rest are SSR on-demand + cached
 export async function generateStaticParams() {
-  return products.map((product) => ({
+  return products.slice(0, 150).map((product) => ({
     slug: product.slug,
   }));
 }

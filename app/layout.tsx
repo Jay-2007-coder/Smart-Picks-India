@@ -50,6 +50,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Amazon CDN preconnect — resolves DNS before product images load */}
+        <link rel="preconnect" href="https://m.media-amazon.com" />
+        <link rel="dns-prefetch" href="https://m.media-amazon.com" />
+        <link rel="preconnect" href="https://images-na.ssl-images-amazon.com" />
+        <link rel="dns-prefetch" href="https://images-na.ssl-images-amazon.com" />
         {/* Pinterest Rich Pins */}
         <meta name="p:domain_verify" content="41b175c4987172b0c7266d50e7598ec6" />
         {/* 
@@ -62,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
         )}
       </head>
+
       <body className={`${inter.variable} ${outfit.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
