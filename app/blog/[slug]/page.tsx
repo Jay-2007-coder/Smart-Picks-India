@@ -5,6 +5,7 @@ import rehypeSlug from "rehype-slug";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Tag, ChevronRight } from "lucide-react";
+import BlogTOC from "@/components/BlogTOC";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { generateMetadata as generateSEOMetadata, generateArticleSchema, generateFAQSchema } from "@/lib/seo";
 import { formatDate, getValidBlogImage } from "@/lib/utils";
@@ -151,14 +152,7 @@ export default async function BlogPostPage({ params }: Props) {
             {/* Table of Contents */}
             <div className="card p-5">
               <h3 className="font-bold text-foreground mb-4">Table of Contents</h3>
-              <nav className="space-y-2">
-                {post.toc.map((item) => (
-                  <a key={item.id} href={`#${item.id}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-600 transition-colors">
-                    <ChevronRight className="h-3 w-3" />
-                    {item.title}
-                  </a>
-                ))}
-              </nav>
+              <BlogTOC items={post.toc} />
             </div>
             
             {/* Newsletter CTA */}

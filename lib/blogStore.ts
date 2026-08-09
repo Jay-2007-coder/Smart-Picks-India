@@ -4,13 +4,55 @@ import path from "path";
 
 const DYNAMIC_BLOGS_FILE = path.join(process.cwd(), "data", "generatedBlogs.json");
 
+/** Convert content stored as object array (Gemini JSON) to a markdown string */
+function contentToMarkdown(content: any): string {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+
+  return content
+    .map((block: any) => {
+      if (!block || !block.type) return "";
+      const d = block.data;
+      switch (block.type) {
+        case "heading": {
+          const level = d?.level ?? 2;
+          const text = d?.text ?? d ?? "";
+          const id = d?.id ? ` {#${d.id}}` : "";
+          return `${"#".repeat(level)} ${text}`;
+        }
+        case "paragraph":
+          return typeof d === "string" ? d : "";
+        case "list": {
+          const items: string[] = Array.isArray(d?.items) ? d.items : [];
+          return items.map((it: string) => `- ${it}`).join("\n");
+        }
+        case "quote":
+          return `> ${d}`;
+        case "code":
+          return `\`\`\`\n${d}\n\`\`\``;
+        default:
+          return typeof d === "string" ? d : "";
+      }
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+/** Normalize a raw blog post (handles both string and array content) */
+function normalizePost(raw: any): BlogPost {
+  return {
+    ...raw,
+    content: contentToMarkdown(raw.content),
+  };
+}
+
 // Helper to load dynamic blogs saved locally
 export function getLocalGeneratedBlogs(): BlogPost[] {
   try {
     if (fs.existsSync(DYNAMIC_BLOGS_FILE)) {
       const fileData = fs.readFileSync(DYNAMIC_BLOGS_FILE, "utf-8");
       const parsed = JSON.parse(fileData);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) return parsed.map(normalizePost);
     }
   } catch (err) {
     console.warn("Could not read local generated blogs file:", err);
