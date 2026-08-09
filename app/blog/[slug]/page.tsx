@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Tag, ChevronRight } from "lucide-react";
 import BlogTOC from "@/components/BlogTOC";
+import BlogContent from "@/components/BlogContent";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { generateMetadata as generateSEOMetadata, generateArticleSchema, generateFAQSchema } from "@/lib/seo";
 import { formatDate, getValidBlogImage } from "@/lib/utils";
@@ -108,13 +106,8 @@ export default async function BlogPostPage({ params }: Props) {
                <PinterestShareButton url={`https://smart-picks-india.vercel.app/blog/${post.slug}`} image={post.image} description={post.excerpt} />
             </div>
 
-            <div className="space-y-6 text-foreground leading-relaxed">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeSlug]}
-              >
-                {post.content}
-              </ReactMarkdown>
+            <div className="my-6">
+              <BlogContent content={post.content} />
             </div>
             
             <hr className="my-10 border-border" />
