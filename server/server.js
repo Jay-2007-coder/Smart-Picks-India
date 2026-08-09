@@ -22,6 +22,7 @@ import roadmapProgressRouter from "./routes/roadmapProgress.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { syncProductPrices, syncProductsFromCatalog } from "./utils/priceSync.js";
 import { initPriceSyncCron } from "./jobs/priceSync.js";
+import { initBlogPosterCron } from "./jobs/blogCron.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -196,6 +197,8 @@ mongoose
       });
     // Start price history cron logger daemon
     initPriceSyncCron();
+    // Start automated daily AI blog poster daemon
+    initBlogPosterCron();
 
     app.listen(PORT, () => {
       console.log(`🚀 Express server is running on http://localhost:${PORT}`);

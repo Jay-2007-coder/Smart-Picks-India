@@ -27,6 +27,7 @@ import {
   Copy,
   Check,
   Search,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -96,6 +97,9 @@ export default function AdminDashboard() {
   const [publishingBlog, setPublishingBlog] = useState(false);
   const [blogPublishError, setBlogPublishError] = useState<string | null>(null);
   const [blogPublishSuccess, setBlogPublishSuccess] = useState<string | null>(null);
+  const [autoGeneratingBlog, setAutoGeneratingBlog] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState("auto");
+  const [autoBlogResult, setAutoBlogResult] = useState<string | null>(null);
 
   // Manual Product State
   const [manualTitle, setManualTitle] = useState("");
@@ -186,6 +190,29 @@ export default function AdminDashboard() {
       setSyncResult("Error triggering channel broadcast.");
     } finally {
       setBroadcasting(false);
+    }
+  };
+
+  const handleAutoGenerateBlog = async (topicType: string = "auto") => {
+    setAutoGeneratingBlog(true);
+    setAutoBlogResult(null);
+    try {
+      const response = await fetch("/api/v1/blog/generate-ai-blog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: topicType }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setAutoBlogResult(`Published AI Blog: "${data.blog.title}" (${data.blog.category})`);
+        fetchAdminData();
+      } else {
+        setAutoBlogResult(data.message || "Failed to generate AI blog post.");
+      }
+    } catch (err) {
+      setAutoBlogResult("Error calling AI blog generator API.");
+    } finally {
+      setAutoGeneratingBlog(false);
     }
   };
 
@@ -508,26 +535,33 @@ export default function AdminDashboard() {
             </button>
             
             <button
-              onClick={handleBroadcastDeals}
-              disabled={syncing || broadcasting}
-              className={`btn-shiny inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 px-5 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 border border-white/10 cursor-pointer ${
-                broadcasting ? "animate-pulse" : ""
+              onClick={() => handleAutoGenerateBlog(selectedTopic)}
+              disabled={syncing || broadcasting || autoGeneratingBlog}
+              className={`btn-shiny inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 px-5 text-xs font-bold text-white shadow-md hover:scale-102 hover:shadow-lg active:scale-98 transition-all duration-300 border border-white/10 cursor-pointer ${
+                autoGeneratingBlog ? "animate-pulse" : ""
               }`}
             >
-              {broadcasting ? (
+              {autoGeneratingBlog ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
               )}
-              {broadcasting ? "Broadcasting..." : "Broadcast Deals"}
+              {autoGeneratingBlog ? "Generating Blog..." : "✨ Generate AI Blog"}
             </button>
           </div>
         </div>
 
         {syncResult && (
-          <div className="mb-8 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 text-xs font-bold text-emerald-800 dark:border-emerald-950/20 dark:bg-emerald-950/10 dark:text-emerald-400 animate-fade-in shadow-sm">
+          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 text-xs font-bold text-emerald-800 dark:border-emerald-950/20 dark:bg-emerald-950/10 dark:text-emerald-400 animate-fade-in shadow-sm">
             <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
             <span>{syncResult}</span>
+          </div>
+        )}
+
+        {autoBlogResult && (
+          <div className="mb-8 flex items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/50 p-4 text-xs font-bold text-amber-800 dark:border-amber-950/20 dark:bg-amber-950/10 dark:text-amber-400 animate-fade-in shadow-sm">
+            <CheckCircle className="h-5 w-5 shrink-0 text-amber-500" />
+            <span>{autoBlogResult}</span>
           </div>
         )}
 
@@ -1003,6 +1037,51 @@ export default function AdminDashboard() {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="space-y-8"
           >
+            {/* Automated AI Blog Poster Card */}
+            <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-500/20 rounded-3xl p-6 shadow-sm relative overflow-hidden mb-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-amber-500/20 pb-4 mb-4">
+                <div>
+                  <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-amber-500" /> Auto AI Daily Blog Poster Daemon
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Powered by Google Gemini AI. Automatically generates and publishes comprehensive daily blogs with FAQs, TOC, and product reviews.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => handleAutoGenerateBlog(selectedTopic)}
+                  disabled={autoGeneratingBlog}
+                  className="btn-shiny inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 px-5 text-xs font-black text-white shadow-md hover:scale-102 transition-all cursor-pointer shrink-0"
+                >
+                  {autoGeneratingBlog ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {autoGeneratingBlog ? "Generating..." : "Generate AI Post Now"}
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-extrabold text-foreground">Select Topic Strategy:</span>
+                {[
+                  { id: "auto", label: "Auto (Smart Rotation)" },
+                  { id: "deals", label: "Product Deals & Buying Guides" },
+                  { id: "student-hub", label: "Student Hub & Placements" },
+                  { id: "tech-trends", label: "Trending Tech & AI Tools" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTopic(t.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedTopic === t.id
+                        ? "bg-amber-500 text-white shadow-sm"
+                        : "bg-background/80 text-muted-foreground hover:text-foreground border border-border"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Blog Post Helper & Code Template Generator */}
             <div id="blog-generator" className="glass-premium p-6 border border-border/60 dark:border-white/[0.06] rounded-3xl shadow-sm relative overflow-hidden mb-8">
               <div className="absolute -left-16 -top-16 h-36 w-36 rounded-full bg-brand-500/5 blur-2xl" />

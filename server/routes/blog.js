@@ -1,6 +1,7 @@
 import express from "express";
 import Blog from "../models/Blog.js";
 import { protect, requireAdmin } from "../middleware/auth.js";
+import { generateDailyAiBlog } from "../jobs/blogCron.js";
 
 const router = express.Router();
 
@@ -140,6 +141,23 @@ router.post("/", protect, requireAdmin, async (req, res, next) => {
       success: true,
       message: "Blog post published successfully!",
       blog: newBlog,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ON-DEMAND AI BLOG GENERATOR (ADMIN OR AUTOMATION CRON)
+// ──────────────────────────────────────────────────────────────────────────────
+router.post("/generate-ai-blog", async (req, res, next) => {
+  try {
+    const { topic } = req.body || {};
+    const blog = await generateDailyAiBlog(topic || "auto");
+    res.status(201).json({
+      success: true,
+      message: `AI Blog post ("${blog.title}") generated & published successfully!`,
+      blog,
     });
   } catch (err) {
     next(err);
