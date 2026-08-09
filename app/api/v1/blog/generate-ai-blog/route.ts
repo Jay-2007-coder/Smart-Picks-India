@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { products } from "@/data/products";
 import { blogPosts } from "@/data/blogPosts";
+import { saveLocalGeneratedBlog } from "@/lib/blogStore";
 
 export const runtime = "nodejs";
 
@@ -170,10 +171,11 @@ Return ONLY raw JSON with keys: title, excerpt, category, tags, image, readTime,
       toc: blogObj.toc || [],
     };
 
-    // Add to local in-memory posts array if not already present
+    // Add to local in-memory posts array & save to disk
     if (!blogPosts.some((b) => b.slug === slug)) {
       blogPosts.unshift(newBlog);
     }
+    saveLocalGeneratedBlog(newBlog);
 
     return NextResponse.json({
       success: true,

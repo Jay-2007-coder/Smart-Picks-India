@@ -30,7 +30,10 @@ interface BlogClientProps {
 
 const categoryInfo: Record<string, { label: string; icon: React.ComponentType<any>; color: string; glow: string }> = {
   all: { label: "All Guides", icon: Layers, color: "from-brand-600 to-rose-600", glow: "rgba(212,63,54,0.12)" },
+  "buying-guides": { label: "Buying Guides", icon: Layers, color: "from-amber-500 to-orange-600", glow: "rgba(245,158,11,0.12)" },
   tech: { label: "Tech", icon: Laptop, color: "from-blue-600 to-indigo-600", glow: "rgba(37,99,235,0.12)" },
+  "student-hub": { label: "Student Hub", icon: GraduationCap, color: "from-purple-600 to-violet-600", glow: "rgba(147,51,234,0.12)" },
+  "tech-trends": { label: "Tech Trends", icon: Sparkles, color: "from-cyan-600 to-blue-600", glow: "rgba(8,145,178,0.12)" },
   kitchen: { label: "Kitchen", icon: Coffee, color: "from-emerald-600 to-teal-600", glow: "rgba(5,150,105,0.12)" },
   gadgets: { label: "Gadgets", icon: Smartphone, color: "from-cyan-600 to-blue-600", glow: "rgba(8,145,178,0.12)" },
   fashion: { label: "Fashion", icon: Sparkles, color: "from-amber-500 to-orange-600", glow: "rgba(245,158,11,0.12)" },
@@ -125,7 +128,7 @@ export function FeaturedBlogCard({ post }: { post: BlogPost }) {
 export default function BlogClient({ initialPosts }: BlogClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const categories = ["all", "tech", "kitchen", "gadgets", "fashion", "study", "home"];
+  const categories = ["all", "buying-guides", "tech", "student-hub", "tech-trends", "kitchen", "gadgets", "fashion", "study", "home"];
   const { user } = useAuth() as any;
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,7 +152,15 @@ export default function BlogClient({ initialPosts }: BlogClientProps) {
     
     // Category filter
     if (selectedCategory !== "all") {
-      posts = posts.filter((post) => post.category.toLowerCase() === selectedCategory.toLowerCase());
+      posts = posts.filter((post) => {
+        const pCat = (post.category || "").toLowerCase();
+        const sCat = selectedCategory.toLowerCase();
+        if (pCat === sCat) return true;
+        if (sCat === "tech" && (pCat.includes("tech") || pCat.includes("buying-guides") || pCat.includes("gadget"))) return true;
+        if (sCat === "study" && (pCat.includes("student") || pCat.includes("study") || pCat.includes("placement"))) return true;
+        if (sCat === "buying-guides" && (pCat.includes("buying") || pCat.includes("guide") || pCat.includes("review"))) return true;
+        return false;
+      });
     }
     
     // Search query filter
