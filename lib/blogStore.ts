@@ -50,7 +50,8 @@ function normalizePost(raw: any): BlogPost {
 export function getLocalGeneratedBlogs(): BlogPost[] {
   try {
     if (fs.existsSync(DYNAMIC_BLOGS_FILE)) {
-      const fileData = fs.readFileSync(DYNAMIC_BLOGS_FILE, "utf-8");
+      // Strip BOM if present (PowerShell Set-Content adds UTF-8 BOM)
+      const fileData = fs.readFileSync(DYNAMIC_BLOGS_FILE, "utf-8").replace(/^\uFEFF/, "");
       const parsed = JSON.parse(fileData);
       if (Array.isArray(parsed)) return parsed.map(normalizePost);
     }
