@@ -62,8 +62,25 @@ export function getLocalGeneratedBlogs(): BlogPost[] {
 }
 
 // Helper to save dynamic blogs locally
-export function saveLocalGeneratedBlog(blog: BlogPost): void {
+export function saveLocalGeneratedBlog(rawBlog: any): void {
   try {
+    // Strip MongoDB-specific fields and normalize content
+    const blog: BlogPost = normalizePost({
+      slug: rawBlog.slug,
+      title: rawBlog.title,
+      excerpt: rawBlog.excerpt || "",
+      content: rawBlog.content || "",
+      image: rawBlog.image || "",
+      category: (rawBlog.category || "buying-guides").toLowerCase().trim(),
+      tags: Array.isArray(rawBlog.tags) ? rawBlog.tags : [],
+      datePublished: rawBlog.datePublished || new Date().toISOString().split("T")[0],
+      dateModified: rawBlog.dateModified || new Date().toISOString().split("T")[0],
+      readTime: rawBlog.readTime || "5 min read",
+      featured: rawBlog.featured !== undefined ? rawBlog.featured : true,
+      faqs: Array.isArray(rawBlog.faqs) ? rawBlog.faqs : [],
+      toc: Array.isArray(rawBlog.toc) ? rawBlog.toc : [],
+    });
+
     const existing = getLocalGeneratedBlogs();
     const filtered = existing.filter((b) => b.slug !== blog.slug);
     filtered.unshift(blog);
@@ -73,6 +90,7 @@ export function saveLocalGeneratedBlog(blog: BlogPost): void {
       fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(DYNAMIC_BLOGS_FILE, JSON.stringify(filtered, null, 2), "utf-8");
+    console.log(`✅ Blog saved locally: "${blog.title}" (${blog.slug})`);
   } catch (err) {
     console.warn("Could not save local generated blog:", err);
   }
