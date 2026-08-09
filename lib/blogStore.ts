@@ -101,17 +101,29 @@ export async function getAllBlogs(): Promise<BlogPost[]> {
   let backendBlogs: BlogPost[] = [];
   try {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
+
+    // Use AbortController so a sleeping Render instance doesn't hang the page
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 second timeout
+
     const res = await fetch(`${backendUrl}/api/v1/blog`, {
       cache: "no-store",
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
+
     if (res.ok) {
       const data = await res.json();
       if (data.success && Array.isArray(data.blogs)) {
-        backendBlogs = data.blogs;
+        // Normalize each backend blog (handles content stored as array or string)
+        backendBlogs = data.blogs.map(normalizePost);
       }
     }
-  } catch (err) {
-    // Express backend not running locally — ignore
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      console.warn("⚠️ Backend fetch timed out (Render may be cold-starting). Showing local/static blogs.");
+    }
+    // Express backend unreachable or sleeping — continue with local+static blogs
   }
 
   const localBlogs = getLocalGeneratedBlogs();
@@ -125,7 +137,7 @@ export async function getAllBlogs(): Promise<BlogPost[]> {
   // Layer local generated posts on top
   localBlogs.forEach((post) => slugMap.set(post.slug, post));
 
-  // Layer backend MongoDB posts on top
+  // Layer backend MongoDB posts on top (highest priority)
   backendBlogs.forEach((post) => slugMap.set(post.slug, post));
 
   // Sort by datePublished descending
