@@ -16,7 +16,7 @@ import { products } from "@/data/products";
 
 import { getBlogBySlug, getAllBlogs } from "@/lib/blogStore";
 
-export const revalidate = 10;
+export const dynamic = "force-dynamic"; // always serve fresh blog content
 
 interface Props {
   params: Promise<{ slug: string }>;

@@ -84,7 +84,7 @@ export async function getAllBlogs(): Promise<BlogPost[]> {
   try {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
     const res = await fetch(`${backendUrl}/api/v1/blog`, {
-      next: { revalidate: 10 },
+      cache: "no-store",
     });
     if (res.ok) {
       const data = await res.json();

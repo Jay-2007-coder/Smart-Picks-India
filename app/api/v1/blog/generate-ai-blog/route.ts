@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { products } from "@/data/products";
 import { blogPosts } from "@/data/blogPosts";
 import { saveLocalGeneratedBlog } from "@/lib/blogStore";
@@ -65,7 +66,11 @@ export async function POST(request: Request) {
       });
       if (backendRes.ok) {
         const backendData = await backendRes.json();
-        if (backendData.success) {
+        if (backendData.success && backendData.blog) {
+          // Also persist to local JSON so the Next.js pages pick it up immediately
+          saveLocalGeneratedBlog(backendData.blog);
+          revalidatePath("/blog");
+          revalidatePath(`/blog/${backendData.blog.slug}`);
           return NextResponse.json(backendData, { status: 200 });
         }
       }
@@ -192,6 +197,10 @@ Return ONLY raw JSON with keys: title, excerpt, category, tags, image, readTime,
       blogPosts.unshift(newBlog);
     }
     saveLocalGeneratedBlog(newBlog);
+
+    // Bust Next.js cache so /blog and the new post page show immediately
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${slug}`);
 
     return NextResponse.json({
       success: true,

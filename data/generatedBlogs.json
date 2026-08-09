@@ -1,5 +1,70 @@
 [
   {
+    "slug": "placement-preparation-ats-resume-blueprint-for-college-students-9-august-2026",
+    "title": "Placement Preparation & ATS Resume Blueprint for College Students (9 August 2026)",
+    "excerpt": "Master your campus placements with a single-page ATS-optimized resume, clear CGPA targets, and AI-powered interview practice. This guide covers everything a college student needs to land their dream job.",
+    "content": "## Why Placement Preparation Starts Before Final Year\n\nMost students wait until their 7th or 8th semester to start preparing for campus placements. By then, it is often too late to build the skills, projects, and resume narrative that top companies look for. Starting in your 5th or 6th semester gives you a critical head start.\n\nSmart Picks India Student Hub is designed to bridge this gap — giving you the tools, strategies, and resources to walk into your placement season fully prepared.\n\n---\n\n## Building an ATS-Optimized Resume\n\nApplicant Tracking Systems (ATS) are used by over 95% of large companies to filter resumes before a human ever sees them. If your resume is not ATS-compatible, it gets rejected automatically — even if you are the perfect candidate.\n\n### Key ATS Resume Rules to Follow\n\n- **Single page only** — keep it to one page for freshers and under-2-year experience candidates.\n- **Use standard section headings** — Education, Skills, Projects, Internships, Achievements. Avoid creative labels.\n- **Match keywords from the job description** — mirror the exact terms used: Python, REST API, Agile, etc.\n- **Avoid tables and columns** — ATS cannot parse multi-column layouts correctly.\n- **Use bullet points, not paragraphs** — each bullet should begin with an action verb: Built, Designed, Implemented, Optimized.\n- **Save as .docx or plain PDF** — avoid image-heavy PDFs that ATS cannot read.\n- **No photos, no borders, no icons** — these confuse ATS parsers.\n\n---\n\n## CGPA Strategy: What Scores Actually Matter\n\nNot all companies have the same CGPA cutoff. Here is a realistic breakdown:\n\n- **7.5+ CGPA** — Required for most product-based companies (Google, Microsoft, Amazon, Flipkart).\n- **6.5–7.5 CGPA** — Sufficient for most IT services companies (TCS, Infosys, Wipro, Accenture).\n- **Below 6.5** — Focus on skills, projects, and startups. Many startups do not have CGPA cutoffs.\n\nIf your CGPA is below the cutoff, compensate with strong projects, open-source contributions, internships, and certifications from platforms like Coursera, HackerRank, or LeetCode.\n\n---\n\n## AI-Powered Interview Practice\n\nMock interviews are the single most effective way to build confidence and identify weak spots. Use these free AI tools:\n\n- **Pramp** — Peer-to-peer technical interview practice with real-time code sharing.\n- **Interviewing.io** — Anonymous mock interviews with engineers from top companies.\n- **LeetCode** — Practice DSA problems by company and difficulty level.\n- **Smart Picks Student Hub** — Our curated placement preparation resources, resume templates, and company-wise preparation guides.\n\n### Common Interview Topics to Master\n\n- **Data Structures & Algorithms** — Arrays, Linked Lists, Trees, Graphs, Dynamic Programming.\n- **System Design** — For senior roles; start with basics like URL shorteners and chat systems.\n- **OOPS Concepts** — Inheritance, Polymorphism, Encapsulation, Abstraction.\n- **DBMS & SQL** — Joins, Indexing, Normalization, Query optimization.\n- **Operating Systems** — Process management, Memory management, Deadlocks.\n\n---\n\n## Internships: Your Biggest Resume Differentiator\n\nA relevant internship is worth more than 10 theoretical projects on your resume. Here is how to land one:\n\n- **Apply early** — Most internships for summer are posted between October–February.\n- **LinkedIn + Internshala** — These two platforms cover 80% of Indian internship postings.\n- **Cold email professors** — Research professors often need student help for projects and may offer paid research positions.\n- **Contribute to open source** — GitHub contributions show real-world coding ability and often lead to direct job offers.\n\n---\n\n## Your Placement Season Action Plan\n\nHere is a structured timeline to follow starting from your 5th semester:\n\n- **Semester 5–6:** Build 2–3 strong projects, get 1 internship, achieve 7.0+ CGPA.\n- **Semester 6–7:** Polish your resume, start DSA practice (150+ LeetCode problems), research target companies.\n- **Semester 7:** Mock interviews, group discussion practice, apply to off-campus opportunities.\n- **Semester 8:** On-campus placements, negotiate offers, keep backup options ready.\n\n**You have got this. Start today — not tomorrow.**",
+    "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80",
+    "category": "student-hub",
+    "tags": [
+      "placements",
+      "resume",
+      "ATS",
+      "student hub",
+      "interview prep",
+      "campus placement",
+      "CGPA"
+    ],
+    "datePublished": "2026-08-09",
+    "dateModified": "2026-08-09",
+    "readTime": "7 min",
+    "featured": true,
+    "faqs": [
+      {
+        "question": "What is an ATS resume?",
+        "answer": "An ATS (Applicant Tracking System) resume is formatted to be machine-readable. It uses standard section headings, simple formatting without tables or images, and keywords matching the job description so it passes automated screening."
+      },
+      {
+        "question": "What CGPA do I need for placements?",
+        "answer": "Most product-based companies require 7.5+ CGPA. IT services companies typically require 6.5+. If your CGPA is lower, focus on building strong projects, internship experience, and certifications to compensate."
+      },
+      {
+        "question": "How many LeetCode problems should I solve?",
+        "answer": "Aim for at least 150–200 problems covering Easy, Medium, and some Hard levels. Focus on company-specific problem sets available on LeetCode Premium and platform-specific tags."
+      },
+      {
+        "question": "Is Student Hub free?",
+        "answer": "Yes! Smart Picks India Student Hub provides all placement preparation resources, resume templates, and guides completely free of cost."
+      }
+    ],
+    "toc": [
+      {
+        "id": "why-placement-preparation-starts-before-final-year",
+        "title": "Why Placement Preparation Starts Before Final Year"
+      },
+      {
+        "id": "building-an-ats-optimized-resume",
+        "title": "Building an ATS-Optimized Resume"
+      },
+      {
+        "id": "cgpa-strategy-what-scores-actually-matter",
+        "title": "CGPA Strategy: What Scores Actually Matter"
+      },
+      {
+        "id": "ai-powered-interview-practice",
+        "title": "AI-Powered Interview Practice"
+      },
+      {
+        "id": "internships-your-biggest-resume-differentiator",
+        "title": "Internships: Your Biggest Resume Differentiator"
+      },
+      {
+        "id": "your-placement-season-action-plan",
+        "title": "Your Placement Season Action Plan"
+      }
+    ]
+  },
+  {
     "slug": "the-art-of-smart-shopping-uncovering-unbeatable-deals-with-smart-picks-india",
     "title": "The Art of Smart Shopping: Uncovering Unbeatable Deals with Smart Picks India",
     "excerpt": "In today's fast-paced market, finding the best deals can feel like a treasure hunt. Smart Picks India is your ultimate guide, helping you navigate through endless options to discover genuine savings on quality products.",

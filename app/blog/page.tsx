@@ -4,7 +4,7 @@ import BlogClient from "@/components/BlogClient";
 import NewsletterSection from "@/components/NewsletterSection";
 import { getAllBlogs } from "@/lib/blogStore";
 
-export const revalidate = 10; // fetch new posts and cache for 10 seconds
+export const dynamic = "force-dynamic"; // always read fresh blogs from disk
 
 export const metadata = generateSEOMetadata({
   title: "Blog & Buying Guides",
