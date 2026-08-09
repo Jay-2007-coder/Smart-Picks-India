@@ -1,6 +1,3 @@
-import HeroSection from "@/components/HeroSection";
-import AIProductFinder from "@/components/AIProductFinder";
-import AmbientBackground from "@/components/AmbientBackground";
 import FlashDealsSection from "@/components/FlashDealsSection";
 import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
@@ -10,7 +7,7 @@ import HomePersonalizer from "@/components/HomePersonalizer";
 import NewsletterSection from "@/components/NewsletterSection";
 import FAQAccordion from "@/components/FAQAccordion";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
-import AnimatedSectionHeader from "@/components/AnimatedSectionHeader";
+import AIProductFinder from "@/components/AIProductFinder";
 import { products } from "@/data/products";
 import { categories } from "@/data/categories";
 import { blogPosts as staticBlogs } from "@/data/blogPosts";
@@ -18,23 +15,26 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
 import {
-  Zap,
-  TrendingUp,
   ArrowRight,
-  Clock,
   ShieldCheck,
-  Bell,
+  TrendingUp,
   Brain,
+  Bell,
+  Zap,
   BookOpen,
   Target,
-  Star,
-  Sparkles,
-  GraduationCap,
   FileText,
   Code2,
   Users,
+  GraduationCap,
+  CheckCircle2,
+  Star,
+  Sparkles,
 } from "lucide-react";
 
+/* ─────────────────────────────────────────────────────────
+   Page-level static data
+───────────────────────────────────────────────────────── */
 
 export const revalidate = 60;
 
@@ -76,48 +76,36 @@ const WHY_US = [
     icon: ShieldCheck,
     title: "No Paid Reviews",
     desc: "Every recommendation is 100% editorial. We never accept money for product placements or rankings.",
-    color: "from-emerald-500/20 to-emerald-600/5",
-    border: "border-emerald-500/20",
-    iconColor: "text-emerald-400",
-    glow: "shadow-emerald-500/10",
   },
   {
     icon: TrendingUp,
     title: "90-Day Price History",
-    desc: "See if a deal is real. Our interactive charts expose fake discounts by showing price trends over 3 months.",
-    color: "from-blue-500/20 to-blue-600/5",
-    border: "border-blue-500/20",
-    iconColor: "text-blue-400",
-    glow: "shadow-blue-500/10",
+    desc: "See if a deal is real. Our charts expose fake discounts by showing 3 months of price trends.",
   },
   {
     icon: Brain,
     title: "Gemini AI Powered",
-    desc: "Describe your budget and needs in plain English — our AI instantly recommends the best products for you.",
-    color: "from-violet-500/20 to-violet-600/5",
-    border: "border-violet-500/20",
-    iconColor: "text-violet-400",
-    glow: "shadow-violet-500/10",
+    desc: "Describe your budget and needs in plain English — our AI instantly recommends the best products.",
   },
   {
     icon: Bell,
-    title: "Instant Drop Alerts",
+    title: "Price Drop Alerts",
     desc: "Set your target price. Get notified via Email or Telegram the moment any product crosses it.",
-    color: "from-amber-500/20 to-amber-600/5",
-    border: "border-amber-500/20",
-    iconColor: "text-amber-400",
-    glow: "shadow-amber-500/10",
   },
 ];
 
 const STUDENT_HUB_TOOLS = [
-  { icon: Target, label: "AI Skill Tree", desc: "8-node career roadmap with quizzes", href: "/student-hub/ai-skill-tree", color: "text-violet-400" },
-  { icon: FileText, label: "Resume Analyzer", desc: "ATS score + keyword gaps", href: "/student-hub/resume-analyzer", color: "text-blue-400" },
-  { icon: Code2, label: "DSA Reviewer", desc: "Time/space complexity checker", href: "/student-hub/coding-helper", color: "text-emerald-400" },
-  { icon: BookOpen, label: "Dev Roadmaps", desc: "Web Dev, AI/ML, DevOps paths", href: "/student-hub/roadmaps", color: "text-amber-400" },
-  { icon: Users, label: "Interview Prep", desc: "Role-specific Q&A generator", href: "/student-hub/interview-generator", color: "text-rose-400" },
-  { icon: GraduationCap, label: "Smart Notes", desc: "AI notes from your PDFs", href: "/student-hub/smart-notes", color: "text-cyan-400" },
+  { icon: Target,       label: "AI Skill Tree",    desc: "8-node career roadmap",       href: "/student-hub/ai-skill-tree"          },
+  { icon: FileText,     label: "Resume Analyzer",  desc: "ATS score + keyword gaps",    href: "/student-hub/resume-analyzer"        },
+  { icon: Code2,        label: "DSA Reviewer",     desc: "Time/space complexity check", href: "/student-hub/coding-helper"          },
+  { icon: BookOpen,     label: "Dev Roadmaps",     desc: "Web Dev, AI/ML, DevOps paths",href: "/student-hub/roadmaps"              },
+  { icon: Users,        label: "Interview Prep",   desc: "Role-specific Q&A generator", href: "/student-hub/interview-generator"   },
+  { icon: GraduationCap, label: "Smart Notes",     desc: "AI notes from your PDFs",     href: "/student-hub/smart-notes"           },
 ];
+
+/* ─────────────────────────────────────────────────────────
+   Data fetching
+───────────────────────────────────────────────────────── */
 
 async function getDynamicBlogs() {
   try {
@@ -135,12 +123,17 @@ async function getDynamicBlogs() {
   return [];
 }
 
+/* ─────────────────────────────────────────────────────────
+   Page
+───────────────────────────────────────────────────────── */
+
 export default async function HomePage() {
-  const featuredProducts = [...products].reverse().filter((p) => p.featured).slice(0, 8);
-  const trendingProducts = [...products].reverse().filter((p) => p.trending).slice(0, 4);
+  const featuredProducts  = [...products].reverse().filter((p) => p.featured).slice(0, 8);
+  const trendingProducts  = [...products].reverse().filter((p) => p.trending).slice(0, 4);
+  const heroProducts      = [...products].reverse().filter((p) => p.featured).slice(0, 4);
 
   const dynamicBlogs = await getDynamicBlogs();
-  const allBlogs = [...dynamicBlogs, ...staticBlogs].sort((a, b) => {
+  const allBlogs     = [...dynamicBlogs, ...staticBlogs].sort((a, b) => {
     const dateA = new Date(a.datePublished).getTime() || 0;
     const dateB = new Date(b.datePublished).getTime() || 0;
     return dateB - dateA;
@@ -152,50 +145,185 @@ export default async function HomePage() {
     .filter((p) => p.oldPrice > p.price)
     .slice(0, 6)
     .map((p) => ({
-      slug: p.slug,
-      title: p.title,
-      image: p.image,
-      price: p.price,
-      oldPrice: p.oldPrice,
+      slug:          p.slug,
+      title:         p.title,
+      image:         p.image,
+      price:         p.price,
+      oldPrice:      p.oldPrice,
       affiliateLink: p.affiliateLink,
-      label: "🔥 Hot Deal",
-      saved: p.oldPrice - p.price,
+      saved:         p.oldPrice - p.price,
     }));
 
   const categoriesWithCounts = categories.map((cat) => ({
     ...cat,
-    count: products.filter((p) => p.category && p.category.toLowerCase() === cat.slug.toLowerCase()).length,
+    count: products.filter(
+      (p) => p.category && p.category.toLowerCase() === cat.slug.toLowerCase()
+    ).length,
   }));
 
+  const activeDeals = products.filter((p) => p.oldPrice > p.price).length;
+
   return (
-    <div className="relative overflow-hidden">
-      <AmbientBackground />
+    <div>
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <HeroSection heroProducts={[...products].reverse().slice(0, 4)} />
+      {/* ══════════════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════════════ */}
+      <section
+        className="border-b border-border bg-background"
+        aria-labelledby="hero-heading"
+      >
+        <div className="container-custom py-16 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-      {/* ── AI PRODUCT FINDER ────────────────────────────────────────────── */}
+            {/* Left — headline + CTAs */}
+            <div className="max-w-xl">
+
+              {/* Label */}
+              <div className="inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground mb-6">
+                <Sparkles className="h-3 w-3 text-brand-600" strokeWidth={2} aria-hidden="true" />
+                India&apos;s most trusted product platform
+              </div>
+
+              {/* Headline */}
+              <h1 id="hero-heading" className="text-4xl sm:text-5xl lg:text-[56px] font-bold tracking-tight text-foreground leading-[1.08]">
+                The smartest way to shop{" "}
+                <span className="text-brand-600">Amazon India</span>
+              </h1>
+
+              <p className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-lg">
+                Handpicked deals, 90-day price history charts, AI-powered
+                recommendations, and real-time price drop alerts — all in one place.
+              </p>
+
+              {/* Trust signals */}
+              <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2" aria-label="Key features">
+                {[
+                  "No sponsored reviews",
+                  "90-day price charts",
+                  "Telegram + email alerts",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" strokeWidth={2} aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTAs */}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/deals" className="btn-primary btn-lg">
+                  Browse deals
+                  <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                </Link>
+                <Link href="/student-hub" className="btn-secondary btn-lg">
+                  Student Hub — free
+                </Link>
+              </div>
+            </div>
+
+            {/* Right — product preview grid */}
+            <div className="relative hidden lg:block" aria-hidden="true">
+              <div className="grid grid-cols-2 gap-3">
+                {heroProducts.map((product, i) => {
+                  const discount = calculateDiscount(product.price, product.oldPrice);
+                  return (
+                    <Link
+                      key={product.slug}
+                      href={`/product/${product.slug}`}
+                      className="group card-hover p-3 flex flex-col gap-2.5 cursor-pointer"
+                      tabIndex={-1}
+                    >
+                      <div className="relative aspect-square rounded-lg bg-muted overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={product.title}
+                          fill
+                          sizes="200px"
+                          className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+                          priority={i < 2}
+                        />
+                        {discount > 0 && (
+                          <span className="absolute top-1.5 left-1.5 badge-brand text-[10px]">
+                            -{discount}%
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
+                          {product.title}
+                        </p>
+                        <p className="text-sm font-bold text-foreground mt-1">
+                          {formatPrice(product.price)}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          STATS STRIP
+      ══════════════════════════════════════════════════ */}
+      <section className="border-b border-border bg-muted/30" aria-label="Platform statistics">
+        <div className="container-custom">
+          <dl className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border">
+            {[
+              { label: "Products reviewed",   value: `${products.length}+`  },
+              { label: "Active deals",        value: `${activeDeals}+`      },
+              { label: "Categories",          value: `${categories.length}` },
+              { label: "Trusted by shoppers", value: "10,000+"              },
+            ].map((stat) => (
+              <div key={stat.label} className="py-5 px-6 sm:py-6 sm:px-8 flex flex-col gap-1">
+                <dt className="text-xs text-muted-foreground">{stat.label}</dt>
+                <dd className="text-xl font-bold text-foreground">{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          AI PRODUCT FINDER
+      ══════════════════════════════════════════════════ */}
       <AIProductFinder />
 
-      {/* ── FLASH DEALS ──────────────────────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════
+          FLASH DEALS (live, client component)
+      ══════════════════════════════════════════════════ */}
       <FlashDealsSection />
 
-      {/* ── TODAY'S BEST DEALS ───────────────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════
+          TODAY'S BEST DEALS
+      ══════════════════════════════════════════════════ */}
       {todayDeals.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-background via-muted/20 to-background">
+        <section className="py-16 sm:py-20 border-b border-border" aria-labelledby="deals-heading">
           <div className="container-custom">
-            <AnimatedSectionHeader
-              eyebrow={<><Zap className="h-4 w-4" /> Flash Sales</>}
-              eyebrowClass="text-brand-500"
-              title="Today's Best Deals"
-              subtitle="Prices verified daily · Click to see live price on Amazon"
-              action={
-                <Link href="/deals" className="btn-secondary hidden sm:flex text-sm gap-1.5">
-                  View All Deals <ArrowRight className="h-4 w-4" />
-                </Link>
-              }
-            />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mt-10">
+
+            {/* Section header */}
+            <div className="flex items-start justify-between gap-4 mb-8">
+              <div>
+                <p className="section-label flex items-center gap-1.5 mb-2">
+                  <Zap className="h-3.5 w-3.5 text-brand-600" strokeWidth={2} aria-hidden="true" />
+                  Flash Sales
+                </p>
+                <h2 id="deals-heading" className="section-title">Today&apos;s Best Deals</h2>
+                <p className="section-subtitle">
+                  Prices verified daily · Click to see live price on Amazon
+                </p>
+              </div>
+              <Link href="/deals" className="btn-secondary btn-sm shrink-0 hidden sm:inline-flex">
+                View all
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+              </Link>
+            </div>
+
+            {/* Deals grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               {todayDeals.map((deal) => {
                 const discount = calculateDiscount(deal.price, deal.oldPrice);
                 return (
@@ -204,193 +332,220 @@ export default async function HomePage() {
                     href={deal.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="group relative rounded-2xl overflow-hidden flex flex-col bg-card border border-border/60 hover:border-brand-500/40 hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-300"
+                    aria-label={`${deal.title} — ${formatPrice(deal.price)}`}
+                    className="group card-hover flex flex-col overflow-hidden"
                   >
-                    {/* Discount ribbon */}
-                    <div className="absolute top-0 right-0 z-10">
-                      <div className="bg-brand-600 text-white text-[10px] font-black px-2 py-1 rounded-bl-xl">
-                        -{discount}%
-                      </div>
-                    </div>
-                    <div className="relative aspect-square overflow-hidden bg-muted/50">
+                    <div className="relative aspect-square bg-white overflow-hidden">
                       <Image
                         src={deal.image}
                         alt={deal.title}
                         fill
-                        sizes="200px"
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="180px"
+                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {discount > 0 && (
+                        <span className="absolute top-2 right-2 badge-brand text-[10px]">
+                          -{discount}%
+                        </span>
+                      )}
                     </div>
                     <div className="p-3 flex flex-col gap-1.5 flex-1">
-                      <span className="text-[10px] text-brand-500 font-bold tracking-wide">{deal.label}</span>
-                      <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{deal.title}</p>
-                      <div className="mt-auto pt-1.5 border-t border-border/40">
-                        <p className="text-sm font-black text-brand-600">{formatPrice(deal.price)}</p>
-                        <p className="text-[10px] text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</p>
-                        <p className="text-[10px] text-emerald-600 font-bold">Save {formatPrice(deal.saved)}</p>
+                      <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
+                        {deal.title}
+                      </p>
+                      <div className="mt-auto pt-2 border-t border-border">
+                        <p className="text-sm font-bold text-foreground">{formatPrice(deal.price)}</p>
+                        <p className="text-xs text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</p>
+                        <p className="text-xs text-green-600 font-medium dark:text-green-400">
+                          Save {formatPrice(deal.saved)}
+                        </p>
                       </div>
                     </div>
                   </a>
                 );
               })}
             </div>
-            <div className="mt-6 sm:hidden">
-              <Link href="/deals" className="btn-secondary w-full text-center text-sm">
-                View All Deals <ArrowRight className="h-4 w-4" />
+
+            <div className="mt-5 sm:hidden">
+              <Link href="/deals" className="btn-secondary w-full justify-center">
+                View all deals
+                <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
               </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* ── RECENTLY VIEWED ──────────────────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════
+          RECENTLY VIEWED
+      ══════════════════════════════════════════════════ */}
       <RecentlyViewedBar />
 
-      {/* ── WHY SMART PICKS INDIA ────────────────────────────────────────── */}
-      <section className="py-20">
+      {/* ══════════════════════════════════════════════════
+          WHY SMART PICKS INDIA
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 bg-muted/30 border-y border-border" aria-labelledby="why-us-heading">
         <div className="container-custom">
-          <AnimatedSectionHeader
-            eyebrow={<><Sparkles className="h-4 w-4" /> Our Promise</>}
-            title="Why 10,000+ Indians Trust Us"
-            subtitle="Built by shoppers, for shoppers — with zero compromises on honesty."
-            centered
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
-            {WHY_US.map((item, i) => (
+
+          <div className="text-center mb-10">
+            <p className="section-label mb-2">Our Promise</p>
+            <h2 id="why-us-heading" className="section-title">Why 10,000+ Indians trust us</h2>
+            <p className="section-subtitle mx-auto">
+              Built by shoppers, for shoppers — with zero compromises on honesty.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {WHY_US.map((item) => (
               <div
                 key={item.title}
-                className={`relative group rounded-3xl p-6 bg-gradient-to-br ${item.color} border ${item.border} hover:shadow-xl ${item.glow} transition-all duration-300 hover:-translate-y-1.5`}
+                className="card p-6 flex flex-col gap-4 hover:shadow-sm transition-shadow duration-200"
               >
-                <div className={`inline-flex p-3 rounded-2xl bg-white/5 border border-white/10 mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <item.icon className={`h-5 w-5 ${item.iconColor}`} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border border-border">
+                  <item.icon className="h-5 w-5 text-foreground" strokeWidth={1.5} aria-hidden="true" />
                 </div>
-                <h3 className="font-black text-foreground text-base mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1.5">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CATEGORIES ───────────────────────────────────────────────────── */}
-      <section className="py-20 bg-muted/20">
+      {/* ══════════════════════════════════════════════════
+          SHOP BY CATEGORY
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20" aria-labelledby="categories-heading">
         <div className="container-custom">
-          <AnimatedSectionHeader
-            title="Shop by Category"
-            subtitle="From tech to kitchen — find the best-reviewed products in every category"
-            centered
-          />
-          <div className="mt-10">
-            <CategoryGrid categories={categoriesWithCounts} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── STUDENT HUB PROMO ────────────────────────────────────────────── */}
-      <section className="py-20 relative overflow-hidden">
-        {/* Dark gradient bg */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#080c18] via-[#0d1230] to-[#080c18]" />
-        {/* Ambient glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-violet-600/10 blur-[100px]" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-blue-600/8 blur-[100px]" />
-        </div>
-        <div className="container-custom relative z-10">
-          <div className="flex flex-col items-center text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-600/15 border border-violet-500/25 text-violet-300 text-xs font-bold mb-5">
-              <Brain className="h-3.5 w-3.5" />
-              Free for Indian CS/IT Students
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Meet the{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">
-                Student Hub
-              </span>
-            </h2>
-            <p className="mt-4 text-slate-400 max-w-xl text-sm sm:text-base leading-relaxed">
-              15+ AI-powered tools to supercharge your career — roadmaps, interview prep, resume analysis, and more. All free, all powered by Google Gemini AI.
+          <div className="text-center mb-10">
+            <h2 id="categories-heading" className="section-title">Shop by category</h2>
+            <p className="section-subtitle mx-auto">
+              From tech to kitchen — the best-reviewed picks in every category
             </p>
           </div>
+          <CategoryGrid categories={categoriesWithCounts} />
+        </div>
+      </section>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
-            {STUDENT_HUB_TOOLS.map((tool) => (
+      {/* ══════════════════════════════════════════════════
+          STUDENT HUB PROMO
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 bg-muted/30 border-y border-border" aria-labelledby="student-hub-heading">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+            {/* Text */}
+            <div>
+              <p className="section-label mb-3 flex items-center gap-1.5">
+                <GraduationCap className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                Free for Indian CS / IT students
+              </p>
+              <h2 id="student-hub-heading" className="section-title mb-4">
+                Meet the Student Hub
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                15+ AI-powered tools to supercharge your career — roadmaps, interview
+                prep, resume analysis, DSA review, and more. All free, all powered by
+                Google Gemini AI.
+              </p>
               <Link
-                key={tool.label}
-                href={tool.href}
-                className="group flex flex-col items-center text-center p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-white/20 hover:bg-white/[0.08] hover:-translate-y-1.5 transition-all duration-300 gap-3"
+                href="/student-hub"
+                className="btn-primary"
+                aria-label="Explore Student Hub — free AI career tools"
               >
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-300">
-                  <tool.icon className={`h-5 w-5 ${tool.color}`} />
-                </div>
-                <div>
-                  <p className="text-[11px] font-black text-white/90">{tool.label}</p>
-                  <p className="text-[10px] text-white/40 mt-0.5 leading-snug">{tool.desc}</p>
-                </div>
+                Explore Student Hub
+                <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
               </Link>
-            ))}
-          </div>
+            </div>
 
-          <div className="flex justify-center">
-            <Link
-              href="/student-hub"
-              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-black shadow-xl shadow-violet-500/25 transition-all duration-300 hover:scale-105 hover:-translate-y-1"
-            >
-              <GraduationCap className="h-5 w-5" />
-              Explore Student Hub — It&apos;s Free
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {/* Tool grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" role="list" aria-label="Student Hub tools">
+              {STUDENT_HUB_TOOLS.map((tool) => (
+                <Link
+                  key={tool.label}
+                  href={tool.href}
+                  role="listitem"
+                  className="card p-4 flex flex-col gap-3 hover:shadow-sm hover:border-gray-300 dark:hover:border-border transition-shadow duration-200 group"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted border border-border group-hover:border-gray-300 dark:group-hover:border-border transition-colors duration-200">
+                    <tool.icon className="h-4.5 w-4.5 text-foreground" strokeWidth={1.5} aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground leading-none mb-1.5">{tool.label}</p>
+                    <p className="text-xs text-muted-foreground leading-snug">{tool.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── PERSONALIZED FEED ────────────────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════
+          PERSONALIZED FEED (client — recently viewed / featured)
+      ══════════════════════════════════════════════════ */}
       <HomePersonalizer initialFeatured={featuredProducts} initialTrending={trendingProducts} />
 
-      {/* ── BLOG POSTS ───────────────────────────────────────────────────── */}
-      <section className="py-20 bg-muted/20">
+      {/* ══════════════════════════════════════════════════
+          BLOG
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 bg-muted/30 border-y border-border" aria-labelledby="blog-heading">
         <div className="container-custom">
-          <AnimatedSectionHeader
-            eyebrow={<><BookOpen className="h-4 w-4" /> Buying Guides & Reviews</>}
-            title="Research Before You Buy"
-            subtitle="In-depth articles to help you make smarter purchasing decisions"
-            action={
-              <Link href="/blog" className="btn-secondary hidden sm:flex text-sm gap-1.5">
-                All Articles <ArrowRight className="h-4 w-4" />
-              </Link>
-            }
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+          <div className="flex items-start justify-between gap-4 mb-8">
+            <div>
+              <p className="section-label flex items-center gap-1.5 mb-2">
+                <BookOpen className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                Buying Guides &amp; Reviews
+              </p>
+              <h2 id="blog-heading" className="section-title">Research before you buy</h2>
+              <p className="section-subtitle">
+                In-depth articles to help you make smarter purchasing decisions
+              </p>
+            </div>
+            <Link href="/blog" className="btn-secondary btn-sm shrink-0 hidden sm:inline-flex">
+              All articles
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {featuredBlogs.map((post, i) => (
               <BlogCard key={post.slug} post={post} priority={i === 0} index={i} />
             ))}
           </div>
-          <div className="mt-8 sm:hidden">
-            <Link href="/blog" className="btn-secondary w-full text-center text-sm">
-              All Articles <ArrowRight className="h-4 w-4" />
+
+          <div className="mt-6 sm:hidden">
+            <Link href="/blog" className="btn-secondary w-full justify-center">
+              All articles
+              <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── NEWSLETTER ───────────────────────────────────────────────────── */}
-      <section className="py-20">
+      {/* ══════════════════════════════════════════════════
+          NEWSLETTER
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20" aria-label="Newsletter signup">
         <div className="container-custom">
           <NewsletterSection />
         </div>
       </section>
 
-      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section className="py-20 bg-muted/20">
+      {/* ══════════════════════════════════════════════════
+          FAQ
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 bg-muted/30 border-y border-border" aria-labelledby="faq-heading">
         <div className="container-custom max-w-3xl">
-          <AnimatedSectionHeader
-            title="Frequently Asked Questions"
-            subtitle="Everything you need to know about Smart Picks India"
-            centered
-          />
-          <div className="mt-10">
-            <FAQAccordion faqs={homeFAQs} />
+          <div className="text-center mb-10">
+            <h2 id="faq-heading" className="section-title">Frequently asked questions</h2>
+            <p className="section-subtitle mx-auto">
+              Everything you need to know about Smart Picks India
+            </p>
           </div>
+          <FAQAccordion faqs={homeFAQs} />
           <div className="mt-8">
             <AffiliateDisclosure />
           </div>

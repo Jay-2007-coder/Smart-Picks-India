@@ -926,7 +926,7 @@ export default function AptitudePractice() {
 
   return (
     <div 
-      className="min-h-screen bg-[#09090B] text-zinc-100 flex flex-col font-sans antialiased relative overflow-hidden select-none"
+      className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 transition-colors duration-200 flex flex-col font-sans antialiased relative overflow-hidden select-none"
       style={{
         backgroundImage: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(234, 88, 12, 0.08) 0%, transparent 50%)`
       }}

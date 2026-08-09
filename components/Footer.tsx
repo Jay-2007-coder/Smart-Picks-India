@@ -1,146 +1,126 @@
-"use client";
 import Link from "next/link";
-import { ShoppingBag, Camera, MessageCircle, Video, ArrowUpRight, Heart } from "lucide-react";
-import { motion } from "framer-motion";
+import { ShoppingBag, Camera, MessageCircle, Video } from "lucide-react";
+
+/* ─────────────────────────────────────────────────────────
+   Footer — Server Component (no client JS needed)
+───────────────────────────────────────────────────────── */
 
 const footerLinks = {
-  "Quick Links": [
-    { href: "/", label: "Home" },
-    { href: "/deals", label: "Today's Deals" },
+  Products: [
+    { href: "/",              label: "Home"          },
+    { href: "/deals",         label: "Today's Deals" },
     { href: "/digital-store", label: "Digital Store" },
-    { href: "/student-hub", label: "Student Hub" },
-    { href: "/blog", label: "Blog" },
-    { href: "/about", label: "About Us" },
-    { href: "/contact", label: "Contact" },
-  ],
-  Categories: [
-    { href: "/category/tech", label: "Tech & Electronics" },
-    { href: "/category/kitchen", label: "Kitchen" },
-    { href: "/category/home", label: "Home & Living" },
-    { href: "/category/gadgets", label: "Gadgets" },
-    { href: "/category/fashion", label: "Fashion" },
-    { href: "/category/study", label: "Study & Office" },
+    { href: "/compare",       label: "Compare"       },
+    { href: "/search",        label: "Search"        },
   ],
   "Student Hub": [
-    { href: "/student-hub/resume-builder", label: "Resume Builder" },
-    { href: "/student-hub/resume-analyzer", label: "ATS Analyzer" },
-    { href: "/student-hub/portfolio-generator", label: "Portfolio Builder" },
-    { href: "/student-hub/coding-helper", label: "DSA Coding Helper" },
-    { href: "/student-hub/roadmaps", label: "Roadmaps" },
-    { href: "/student-hub/interview-generator", label: "Interview Prep" },
+    { href: "/student-hub",                      label: "Overview"       },
+    { href: "/student-hub/resume-analyzer",      label: "ATS Analyzer"   },
+    { href: "/student-hub/resume-builder",       label: "Resume Builder"  },
+    { href: "/student-hub/coding-helper",        label: "DSA Helper"      },
+    { href: "/student-hub/roadmaps",             label: "Career Roadmaps" },
+    { href: "/student-hub/interview-generator",  label: "Interview Prep"  },
+  ],
+  Company: [
+    { href: "/blog",      label: "Blog"      },
+    { href: "/about",     label: "About Us"  },
+    { href: "/contact",   label: "Contact"   },
+    { href: "/affiliate", label: "Affiliate" },
   ],
   Legal: [
-    { href: "/privacy-policy", label: "Privacy Policy" },
-    { href: "/disclaimer", label: "Disclaimer" },
-    { href: "/terms", label: "Terms & Conditions" },
+    { href: "/privacy-policy",       label: "Privacy Policy"      },
+    { href: "/terms",                label: "Terms & Conditions"   },
+    { href: "/disclaimer",           label: "Disclaimer"           },
     { href: "/disclaimer#affiliate", label: "Affiliate Disclosure" },
   ],
-};
+} as const;
 
 const socialLinks = [
-  { href: "https://www.instagram.com/indiasmartpicks/", icon: Camera, label: "Instagram" },
-  { href: "https://twitter.com", icon: MessageCircle, label: "Twitter" },
-  { href: "https://youtube.com", icon: Video, label: "YouTube" },
-];
+  { href: "https://www.instagram.com/indiasmartpicks/", icon: Camera,        label: "Instagram" },
+  { href: "https://twitter.com",                        icon: MessageCircle, label: "Twitter"   },
+  { href: "https://youtube.com",                        icon: Video,         label: "YouTube"   },
+] as const;
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-border/80 bg-muted/10 dark:bg-neutral-950/20 overflow-hidden">
-      {/* Gradient top glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-32 w-96 bg-brand-600/5 blur-3xl pointer-events-none" />
+    <footer className="border-t border-border bg-muted/30" role="contentinfo">
+      <div className="container-custom py-12 sm:py-16">
 
-      <div className="container-custom py-14 relative z-10">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {/* Brand */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <Link href="/" className="flex items-center gap-2 mb-4 group">
-              <motion.div whileHover={{ rotate: [0, -10, 10, -5, 0] }} transition={{ duration: 0.4 }}>
-                <ShoppingBag className="h-6 w-6 text-brand-600" />
-              </motion.div>
-              <span className="font-display font-bold text-lg">
+        {/* Main grid */}
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
+
+          {/* Brand column */}
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
+            <Link
+              href="/"
+              className="flex items-center gap-2 mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+              aria-label="Smart Picks India — home"
+            >
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white shrink-0"
+                aria-hidden="true"
+              >
+                <ShoppingBag className="h-4 w-4" strokeWidth={2} />
+              </div>
+              <span className="font-semibold text-sm text-foreground select-none">
                 Smart<span className="text-brand-600">Picks</span> India
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              India&apos;s trusted platform for handpicked Amazon deals, premium digital products, and student career resources.
+
+            <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-xs">
+              India&apos;s trusted platform for curated Amazon deals, digital
+              products, and free AI career tools for students.
             </p>
 
-            {/* Social Icons */}
-            <div className="mt-5 flex gap-2">
+            {/* Social links */}
+            <div className="flex items-center gap-2" aria-label="Social media links">
               {socialLinks.map((s) => (
-                <motion.a
+                <a
                   key={s.label}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={s.label}
-                  whileHover={{ scale: 1.15, y: -2 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2.5 rounded-xl bg-muted hover:bg-brand-50 dark:hover:bg-brand-950/40 hover:text-brand-600 transition-colors text-muted-foreground border border-transparent hover:border-brand-500/20"
+                  aria-label={`Follow us on ${s.label}`}
+                  className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <s.icon className="h-4 w-4" />
-                </motion.a>
+                  <s.icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+                </a>
               ))}
             </div>
-          </motion.div>
+          </div>
 
-          {/* Footer Link Columns */}
-          {Object.entries(footerLinks).map(([title, links], colIdx) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: (colIdx + 1) * 0.1 }}
-            >
-              <h3 className="font-black text-foreground mb-5 text-xs uppercase tracking-widest">{title}</h3>
-              <ul className="space-y-2.5">
+          {/* Link columns */}
+          {Object.entries(footerLinks).map(([title, links]) => (
+            <div key={title}>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.06em] text-foreground mb-4">
+                {title}
+              </h3>
+              <ul className="space-y-2.5" role="list">
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="group flex items-center gap-1 text-sm text-muted-foreground hover:text-brand-600 transition-colors"
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm"
                     >
-                      <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-200">
-                        <ArrowUpRight className="h-3 w-3 shrink-0" />
-                      </span>
                       {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        {/* Bottom Bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="mt-12 pt-6 border-t border-border"
-        >
-          <p className="text-xs text-muted-foreground text-center leading-relaxed max-w-3xl mx-auto">
-            <strong>Affiliate Disclosure:</strong> Smart Picks India is a participant in the Amazon Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to amazon.in. As an Amazon Associate, we earn from qualifying purchases at no extra cost to you.
+        {/* Bottom bar */}
+        <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} Smart Picks India. All rights reserved.
           </p>
-          <p className="mt-4 text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-            © {new Date().getFullYear()} Smart Picks India. Made with{" "}
-            <motion.span
-              animate={{ scale: [1, 1.3, 1] }}
-              transition={{ duration: 1.2, repeat: Infinity }}
-            >
-              <Heart className="h-3 w-3 fill-rose-500 text-rose-500" />
-            </motion.span>{" "}
-            in India. All rights reserved.
+          <p className="text-xs text-muted-foreground text-center sm:text-right max-w-md leading-relaxed">
+            Smart Picks India is an Amazon Associates affiliate. We earn from
+            qualifying purchases at no extra cost to you.
           </p>
-        </motion.div>
+        </div>
       </div>
     </footer>
   );

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Download, Plus, Trash2, Printer, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowLeft, FileText, Download, Plus, Trash2, Printer, ArrowUp, ArrowDown, Check, RefreshCw } from "lucide-react";
 
 interface Education {
   institution: string;
@@ -24,64 +24,128 @@ interface Experience {
   description: string;
 }
 
+const DEFAULT_PERSONAL = {
+  name: "Aarav Sharma",
+  title: "Software Engineering Student",
+  email: "aarav.sharma@email.com",
+  phone: "+91 98765 43210",
+  github: "github.com/aaravsharma",
+  linkedin: "linkedin.com/in/aaravsharma",
+  summary: "Dedicated and detail-oriented Computer Science student with strong fundamentals in algorithms, data structures, and full-stack web development. Experienced in building responsive React applications and REST APIs.",
+};
+
+const DEFAULT_EDUCATION: Education[] = [
+  {
+    institution: "Indian Institute of Technology, Delhi",
+    degree: "B.Tech in Computer Science and Engineering",
+    duration: "2022 - 2026",
+    score: "CGPA: 8.9 / 10.0",
+  },
+  {
+    institution: "Delhi Public School, R.K. Puram",
+    degree: "Class XII (CBSE)",
+    duration: "2022",
+    score: "Percentage: 96.4%",
+  },
+];
+
+const DEFAULT_PROJECTS: Project[] = [
+  {
+    title: "Smart Picks Deals Platform",
+    tech: "Next.js, Node.js, Express, MongoDB, TailwindCSS",
+    description: "Developed a deals aggregator website with user authentication, email alerts, and an interactive admin dashboard. Handled automated web scraping scripts to synchronize Amazon product prices and discounts.",
+  },
+  {
+    title: "Distributed Chat System",
+    tech: "Java, Socket Programming, Multithreading",
+    description: "Designed a multi-client chatting server implementing socket sockets, secure TLS messaging, and thread-pool execution, achieving concurrent chat rooms handling up to 50 active nodes.",
+  },
+];
+
+const DEFAULT_EXPERIENCE: Experience[] = [
+  {
+    company: "Tech Solutions India",
+    role: "Software Developer Intern",
+    duration: "May 2025 - July 2025",
+    description: "Refactored client onboarding portal components, leading to a 30% reduction in screen loading latency. Assisted senior engineers in migrating microservices databases to MongoDB Atlas.",
+  },
+];
+
+const DEFAULT_SKILLS = {
+  languages: "Java, C++, Python, JavaScript, SQL",
+  frameworks: "React, Next.js, Node.js, Express, TailwindCSS",
+  tools: "Git, GitHub, VS Code, Postman, Docker",
+};
+
 export default function ResumeBuilder() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Personal Details
-  const [personal, setPersonal] = useState({
-    name: "Aarav Sharma",
-    title: "Software Engineering Student",
-    email: "aarav.sharma@email.com",
-    phone: "+91 98765 43210",
-    github: "github.com/aaravsharma",
-    linkedin: "linkedin.com/in/aaravsharma",
-    summary: "Dedicated and detail-oriented Computer Science student with strong fundamentals in algorithms, data structures, and full-stack web development. Experienced in building responsive React applications and REST APIs.",
-  });
+  const [personal, setPersonal] = useState(DEFAULT_PERSONAL);
 
   // Education list
-  const [education, setEducation] = useState<Education[]>([
-    {
-      institution: "Indian Institute of Technology, Delhi",
-      degree: "B.Tech in Computer Science and Engineering",
-      duration: "2022 - 2026",
-      score: "CGPA: 8.9 / 10.0",
-    },
-    {
-      institution: "Delhi Public School, R.K. Puram",
-      degree: "Class XII (CBSE)",
-      duration: "2022",
-      score: "Percentage: 96.4%",
-    },
-  ]);
+  const [education, setEducation] = useState<Education[]>(DEFAULT_EDUCATION);
 
   // Projects
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      title: "Smart Picks Deals Platform",
-      tech: "Next.js, Node.js, Express, MongoDB, TailwindCSS",
-      description: "Developed a deals aggregator website with user authentication, email alerts, and an interactive admin dashboard. Handled automated web scraping scripts to synchronize Amazon product prices and discounts.",
-    },
-    {
-      title: "Distributed Chat System",
-      tech: "Java, Socket Programming, Multithreading",
-      description: "Designed a multi-client chatting server implementing socket sockets, secure TLS messaging, and thread-pool execution, achieving concurrent chat rooms handling up to 50 active nodes.",
-    },
-  ]);
+  const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
 
   // Experiences
-  const [experience, setExperience] = useState<Experience[]>([
-    {
-      company: "Tech Solutions India",
-      role: "Software Developer Intern",
-      duration: "May 2025 - July 2025",
-      description: "Refactored client onboarding portal components, leading to a 30% reduction in screen loading latency. Assisted senior engineers in migrating microservices databases to MongoDB Atlas.",
-    },
-  ]);
+  const [experience, setExperience] = useState<Experience[]>(DEFAULT_EXPERIENCE);
 
   // Skills
-  const [skills, setSkills] = useState({
-    languages: "Java, C++, Python, JavaScript, SQL",
-    frameworks: "React, Next.js, Node.js, Express, TailwindCSS",
-    tools: "Git, GitHub, VS Code, Postman, Docker",
-  });
+  const [skills, setSkills] = useState(DEFAULT_SKILLS);
+
+  // Theme Color
+  const [themeColor, setThemeColor] = useState<"slate" | "indigo" | "emerald" | "crimson">("slate");
+
+  // Load saved resume data from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem("smartpicks_resume_builder_data_v1");
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.personal) setPersonal(parsed.personal);
+        if (parsed.education) setEducation(parsed.education);
+        if (parsed.projects) setProjects(parsed.projects);
+        if (parsed.experience) setExperience(parsed.experience);
+        if (parsed.skills) setSkills(parsed.skills);
+        if (parsed.themeColor) setThemeColor(parsed.themeColor);
+      }
+    } catch (e) {
+      console.error("Failed to load saved resume data:", e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Save changes to localStorage
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const dataToSave = {
+        personal,
+        education,
+        projects,
+        experience,
+        skills,
+        themeColor,
+      };
+      localStorage.setItem("smartpicks_resume_builder_data_v1", JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Failed to auto-save resume builder data:", e);
+    }
+  }, [personal, education, projects, experience, skills, themeColor, isLoaded]);
+
+  // Reset to default sample resume
+  const handleResetDefaults = () => {
+    setPersonal(DEFAULT_PERSONAL);
+    setEducation(DEFAULT_EDUCATION);
+    setProjects(DEFAULT_PROJECTS);
+    setExperience(DEFAULT_EXPERIENCE);
+    setSkills(DEFAULT_SKILLS);
+    setThemeColor("slate");
+    localStorage.removeItem("smartpicks_resume_builder_data_v1");
+  };
 
   const handlePrint = () => {
     window.print();
@@ -137,8 +201,6 @@ export default function ResumeBuilder() {
     updated[index] = { ...updated[index], [field]: value };
     setExperience(updated);
   };
-
-  const [themeColor, setThemeColor] = useState<"slate" | "indigo" | "emerald" | "crimson">("slate");
 
   const colors = {
     slate: {
@@ -284,7 +346,17 @@ export default function ResumeBuilder() {
                 Fill in your academic profile and instantly export an ATS-friendly, single-page PDF.
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5" /> Auto-saved
+              </span>
+              <button
+                onClick={handleResetDefaults}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-xl text-xs font-bold transition-all cursor-pointer"
+                title="Reset to default sample resume data"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Reset Defaults
+              </button>
               <button
                 onClick={handlePrint}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer btn-shiny"

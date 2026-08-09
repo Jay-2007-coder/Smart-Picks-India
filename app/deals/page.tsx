@@ -22,7 +22,7 @@ export default function DealsPage() {
       oldPrice: p.oldPrice,
       category: p.category,
       affiliateLink: p.affiliateLink,
-      label: p.dealOfTheDay ? "⚡ Deal of the Day" : p.featured ? "🌟 Featured" : "🔥 Hot Deal",
+      label: p.dealOfTheDay ? "Deal of the Day" : p.featured ? "Featured" : "Hot Deal",
       expiresIn: "Ending soon",
       rating: p.rating,
     }));
@@ -31,22 +31,24 @@ export default function DealsPage() {
     <div className="container-custom pt-8 pb-24">
       <Breadcrumbs items={[{ label: "Deals" }]} />
 
-      <div className="mt-8 mb-12 text-center max-w-2xl mx-auto">
-        <div className="inline-flex items-center justify-center p-3 bg-brand-100 dark:bg-brand-900/30 rounded-full mb-4">
-          <Zap className="h-8 w-8 text-brand-600" />
+      {/* Header */}
+      <div className="mt-8 mb-10 max-w-2xl">
+        <div className="inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground mb-4">
+          <Zap className="h-3.5 w-3.5 text-brand-600" />
+          Verified Amazon India Price Drop Tracker
         </div>
-        <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">
           Today&apos;s Best Deals
         </h1>
-        <p className="text-lg text-muted-foreground">
-          Handpicked lightning deals and discounts from Amazon India. Grab them before they expire!
+        <p className="text-base text-muted-foreground leading-relaxed">
+          Handpicked discounts and community-submitted deals verified daily. Click any deal to check live prices on Amazon.
         </p>
       </div>
 
       <Suspense
         fallback={
           <div className="flex h-48 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         }
       >

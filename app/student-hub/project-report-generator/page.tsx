@@ -163,9 +163,68 @@ export default function ProjectReportGenerator() {
   const [copied, setCopied]       = useState(false);
   const [loadMsg, setLoadMsg]     = useState(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isLoaded, setIsLoaded]   = useState(false);
 
   const reportRef = useRef<HTMLDivElement>(null);
   const loadInterval = useRef<NodeJS.Timeout | null>(null);
+
+  /* Auto-restore saved inputs from localStorage */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("smartpicks_project_report_data_v1");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.reportType) setReportType(parsed.reportType);
+        if (parsed.domain) setDomain(parsed.domain);
+        if (parsed.title !== undefined) setTitle(parsed.title);
+        if (parsed.techStack !== undefined) setTechStack(parsed.techStack);
+        if (parsed.description !== undefined) setDescription(parsed.description);
+        if (parsed.teamSize !== undefined) setTeamSize(parsed.teamSize);
+        if (parsed.duration !== undefined) setDuration(parsed.duration);
+        if (parsed.objectives !== undefined) setObjectives(parsed.objectives);
+        if (parsed.collegeName !== undefined) setCollegeName(parsed.collegeName);
+        if (parsed.report !== undefined) setReport(parsed.report);
+      }
+    } catch (e) {
+      console.error("Failed to load saved project report data:", e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  /* Auto-save inputs to localStorage */
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const dataToSave = {
+        reportType,
+        domain,
+        title,
+        techStack,
+        description,
+        teamSize,
+        duration,
+        objectives,
+        collegeName,
+        report,
+      };
+      localStorage.setItem("smartpicks_project_report_data_v1", JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Failed to auto-save project report data:", e);
+    }
+  }, [reportType, domain, title, techStack, description, teamSize, duration, objectives, collegeName, report, isLoaded]);
+
+  const handleResetDefaults = () => {
+    setTitle("");
+    setTechStack("");
+    setDescription("");
+    setTeamSize("1");
+    setDuration("3 months");
+    setObjectives("");
+    setCollegeName("");
+    setReport("");
+    localStorage.removeItem("smartpicks_project_report_data_v1");
+  };
 
   /* Cycle through loading messages */
   useEffect(() => {
@@ -605,8 +664,20 @@ export default function ProjectReportGenerator() {
           <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-brand-500/6 blur-3xl pointer-events-none" />
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-500/20 bg-brand-500/8 text-brand-500 text-[10px] font-black uppercase tracking-widest">
-                <FileCode className="h-3.5 w-3.5" /> AI-Powered Report Generator
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-500/20 bg-brand-500/8 text-brand-500 text-[10px] font-black uppercase tracking-widest">
+                  <FileCode className="h-3.5 w-3.5" /> AI-Powered Report Generator
+                </div>
+                <span className="text-[11px] font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <Check className="h-3 w-3" /> Auto-saved
+                </span>
+                <button
+                  onClick={handleResetDefaults}
+                  className="text-[10px] font-bold text-muted-foreground hover:text-foreground bg-muted/60 hover:bg-muted px-2.5 py-1 rounded-full border border-border transition-colors cursor-pointer"
+                  title="Clear saved form inputs"
+                >
+                  Clear Inputs
+                </button>
               </div>
               <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground leading-tight">
                 Project Report<br />

@@ -1019,7 +1019,7 @@ export default function SmartNotesGenerator() {
 
   return (
     <div 
-      className="min-h-screen bg-[#09090B] text-zinc-100 flex flex-col font-sans antialiased relative overflow-hidden select-none"
+      className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 transition-colors duration-200 flex flex-col font-sans antialiased relative overflow-hidden select-none"
       style={{
         backgroundImage: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(168, 85, 247, 0.05) 0%, transparent 55%)`
       }}

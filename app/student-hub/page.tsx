@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import {
-  Sparkles,
   Calculator,
   Calendar,
   FileText,
@@ -190,8 +189,6 @@ const tools = [
 
 const ALL_CATEGORIES = ["All", "Academic", "Career", "AI"];
 
-
-
 /* ─── Floating Orb ───────────────────────────────────────────────────────────── */
 function FloatingOrb({ x, y, size, color, delay }: { x: string; y: string; size: number; color: string; delay: number }) {
   return (
@@ -204,15 +201,11 @@ function FloatingOrb({ x, y, size, color, delay }: { x: string; y: string; size:
   );
 }
 
-
-
 /* ─── Tool Card ──────────────────────────────────────────────────────────────── */
 function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index: number }) {
   const Icon = tool.icon;
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
-  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
   const ref = useRef<HTMLDivElement>(null);
 
   function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -237,19 +230,18 @@ function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index:
       {/* Glow on hover */}
       <motion.div
         className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ background: `radial-gradient(circle at center, ${tool.color}30, transparent 70%)` }}
+        style={{ background: `radial-gradient(circle at center, ${tool.color}25, transparent 70%)` }}
       />
 
       <Link href={tool.href} className="block h-full">
-        <div className="relative h-full bg-white/[0.03] border border-white/10 rounded-2xl p-5 overflow-hidden
-          hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 cursor-pointer">
+        <div className="relative h-full bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-2xl p-5 overflow-hidden shadow-sm dark:shadow-none hover:shadow-md hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 cursor-pointer">
 
           {/* Animated shine */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden rounded-2xl">
             <div
               className="absolute inset-0"
               style={{
-                background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%)",
+                background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)",
                 backgroundSize: "200% 100%",
                 animation: "shimmer 1.5s ease forwards",
               }}
@@ -262,7 +254,7 @@ function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index:
               whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
               transition={{ duration: 0.4 }}
               className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: `${tool.color}20`, border: `1px solid ${tool.color}30` }}
+              style={{ backgroundColor: `${tool.color}15`, border: `1px solid ${tool.color}30` }}
             >
               <Icon className="h-5 w-5" style={{ color: tool.color }} />
             </motion.div>
@@ -272,8 +264,8 @@ function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index:
                 className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest"
                 style={
                   tool.badge === "Most Used"
-                    ? { background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }
-                    : { background: "rgba(245,158,11,0.15)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.3)" }
+                    ? { background: "rgba(20,184,166,0.15)", color: "#0d9488", border: "1px solid rgba(20,184,166,0.3)" }
+                    : { background: "rgba(245,158,11,0.15)", color: "#d97706", border: "1px solid rgba(245,158,11,0.3)" }
                 }
               >
                 {tool.badge}
@@ -282,7 +274,7 @@ function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index:
           </div>
 
           {/* Title */}
-          <h3 className="font-extrabold text-white text-[14px] leading-snug mb-1.5 group-hover:text-white transition-colors flex items-center gap-1.5">
+          <h3 className="font-extrabold text-slate-900 dark:text-white text-[14px] leading-snug mb-1.5 transition-colors flex items-center gap-1.5">
             {tool.title}
             <motion.span
               initial={{ opacity: 0, x: -4 }}
@@ -293,7 +285,7 @@ function ToolCard({ tool, index }: { tool: (typeof tools)[0]["items"][0]; index:
           </h3>
 
           {/* Description */}
-          <p className="text-[11px] text-white/40 leading-relaxed font-medium">
+          <p className="text-[11px] text-slate-500 dark:text-white/40 leading-relaxed font-medium">
             {tool.description}
           </p>
 
@@ -337,16 +329,16 @@ export default function StudentHub() {
   const totalVisible = filteredTools.reduce((acc, s) => acc + s.items.length, 0);
 
   return (
-    <div className="min-h-screen bg-[#080b14] select-none">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#080b14] text-slate-900 dark:text-white transition-colors duration-200 select-none">
       {/* ── HERO ──────────────────────────────────────────────────────────────── */}
       <div className="relative overflow-hidden">
         {/* Ambient background blobs */}
-        <FloatingOrb x="5%" y="-20%" size={500} color="rgba(20,184,166,0.4)" delay={0} />
-        <FloatingOrb x="70%" y="-10%" size={400} color="rgba(99,102,241,0.3)" delay={1.5} />
-        <FloatingOrb x="45%" y="30%" size={300} color="rgba(245,158,11,0.2)" delay={3} />
+        <FloatingOrb x="5%" y="-20%" size={500} color="rgba(20,184,166,0.25)" delay={0} />
+        <FloatingOrb x="70%" y="-10%" size={400} color="rgba(99,102,241,0.2)" delay={1.5} />
+        <FloatingOrb x="45%" y="30%" size={300} color="rgba(245,158,11,0.15)" delay={3} />
 
         {/* Noise texture overlay */}
-        <div className="absolute inset-0 opacity-[0.015]"
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")" }}
         />
 
@@ -358,9 +350,8 @@ export default function StudentHub() {
             transition={{ duration: 0.5 }}
             className="flex justify-center mb-6"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border"
-              style={{ background: "rgba(20,184,166,0.1)", color: "#2dd4bf", borderColor: "rgba(20,184,166,0.3)" }}>
-              <GraduationCap className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border bg-teal-500/10 text-teal-700 dark:text-[#2dd4bf] border-teal-500/30">
+              <GraduationCap className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
               Student Hub — AI Powered
             </span>
           </motion.div>
@@ -370,13 +361,13 @@ export default function StudentHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-6xl lg:text-7xl font-black text-center text-white tracking-tight leading-[1.05] mb-6"
+            className="text-5xl sm:text-6xl lg:text-7xl font-black text-center text-slate-900 dark:text-white tracking-tight leading-[1.05] mb-6"
           >
             Your Complete
             <br />
             <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(135deg, #14b8a6 0%, #6366f1 50%, #f59e0b 100%)" }}
+              style={{ backgroundImage: "linear-gradient(135deg, #0d9488 0%, #4f46e5 50%, #d97706 100%)" }}
             >
               Placement Arsenal
             </span>
@@ -387,7 +378,7 @@ export default function StudentHub() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-white/50 text-sm sm:text-base font-semibold text-center max-w-xl mx-auto leading-relaxed mb-8"
+            className="text-slate-600 dark:text-white/50 text-sm sm:text-base font-semibold text-center max-w-xl mx-auto leading-relaxed mb-8"
           >
             15+ AI-powered tools for CGPA, resumes, mock interviews, DSA, aptitude, and more — all in one place.
           </motion.p>
@@ -409,10 +400,9 @@ export default function StudentHub() {
 
             {user && (user.role === "admin" || user.hubPlan === "pro") ? (
               <div
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider text-white border"
-                style={{ background: "rgba(99,102,241,0.15)", borderColor: "rgba(99,102,241,0.4)" }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 border bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800/40"
               >
-                <ShieldCheck className="h-4 w-4 text-indigo-400" />
+                <ShieldCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 {user.role === "admin" ? "⚡ Admin Active" : "⚡ Pro Active"}
               </div>
             ) : (
@@ -426,8 +416,6 @@ export default function StudentHub() {
             )}
           </motion.div>
 
-
-
           {/* ── SEARCH BAR ──────────────────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
@@ -435,16 +423,14 @@ export default function StudentHub() {
             transition={{ duration: 0.4, delay: 0.5 }}
             className="max-w-lg mx-auto"
           >
-            <div className="relative flex items-center rounded-2xl border transition-all duration-300"
-              style={{ background: "rgba(255,255,255,0.04)", borderColor: searchQuery ? "rgba(20,184,166,0.5)" : "rgba(255,255,255,0.08)" }}
-            >
-              <Search className="h-4 w-4 text-white/30 ml-4 shrink-0" />
+            <div className="relative flex items-center rounded-2xl border bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none transition-all duration-300">
+              <Search className="h-4 w-4 text-slate-400 dark:text-white/30 ml-4 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tools… Resume, CGPA, DSA, Interview…"
-                className="w-full bg-transparent border-none outline-none py-3.5 px-3 text-xs text-white/80 placeholder:text-white/25 font-semibold"
+                className="w-full bg-transparent border-none outline-none py-3.5 px-3 text-xs text-slate-900 dark:text-white/80 placeholder:text-slate-400 dark:placeholder:text-white/25 font-semibold"
               />
               <AnimatePresence>
                 {searchQuery && (
@@ -453,7 +439,7 @@ export default function StudentHub() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     onClick={() => setSearchQuery("")}
-                    className="mr-3 p-1 rounded-lg text-white/40 hover:text-white/70 transition-colors cursor-pointer"
+                    className="mr-3 p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:text-white/40 dark:hover:text-white/70 transition-colors cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
                   </motion.button>
@@ -480,8 +466,11 @@ export default function StudentHub() {
               style={
                 activeCategory === cat
                   ? { background: "linear-gradient(135deg, #14b8a6, #6366f1)", color: "white", boxShadow: "0 0 14px rgba(99,102,241,0.35)" }
-                  : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.08)" }
+                  : undefined
               }
+              {...(activeCategory !== cat && {
+                className: "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/40 border border-slate-200 dark:border-white/08 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white"
+              })}
             >
               {cat === "All" ? `All Tools (${tools.reduce((a, s) => a + s.items.length, 0)})` :
                cat === "Academic" ? "🎓 Academic" :
@@ -493,7 +482,7 @@ export default function StudentHub() {
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="ml-auto text-[10px] font-bold text-white/30"
+              className="ml-auto text-[10px] font-bold text-slate-400 dark:text-white/30"
             >
               {totalVisible} result{totalVisible !== 1 ? "s" : ""}
             </motion.span>
@@ -510,15 +499,15 @@ export default function StudentHub() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-white/10 rounded-3xl"
+              className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-slate-300 dark:border-white/10 rounded-3xl bg-white dark:bg-transparent"
             >
-              <Search className="h-10 w-10 text-white/15 mb-4" />
-              <p className="text-sm font-bold text-white/50">No tools found for "{searchQuery}"</p>
-              <p className="text-xs text-white/25 mt-1">Try a different keyword like "Resume" or "CGPA"</p>
+              <Search className="h-10 w-10 text-slate-400 dark:text-white/15 mb-4" />
+              <p className="text-sm font-bold text-slate-600 dark:text-white/50">No tools found for "{searchQuery}"</p>
+              <p className="text-xs text-slate-400 dark:text-white/25 mt-1">Try a different keyword like "Resume" or "CGPA"</p>
               <button
                 onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
                 className="mt-4 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer"
-                style={{ background: "rgba(20,184,166,0.1)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.25)" }}
+                style={{ background: "rgba(20,184,166,0.1)", color: "#0d9488", border: "1px solid rgba(20,184,166,0.25)" }}
               >
                 Clear filters
               </button>
@@ -541,8 +530,8 @@ export default function StudentHub() {
                         style={{ background: `linear-gradient(to bottom, ${section.accent}, transparent)` }}
                       />
                       <div>
-                        <h2 className="text-base font-black text-white tracking-tight">{section.label}</h2>
-                        <p className="text-[10px] text-white/30 font-semibold">{section.items.length} tools</p>
+                        <h2 className="text-base font-black text-slate-900 dark:text-white tracking-tight">{section.label}</h2>
+                        <p className="text-[10px] text-slate-400 dark:text-white/30 font-semibold">{section.items.length} tools</p>
                       </div>
                     </div>
                     <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${section.accent}30, transparent)` }} />

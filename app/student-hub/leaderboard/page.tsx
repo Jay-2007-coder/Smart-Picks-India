@@ -66,7 +66,7 @@ export default function LeaderboardPage() {
 
   return (
     <div 
-      className="min-h-screen bg-[#09090B] text-zinc-100 flex flex-col font-sans antialiased relative overflow-hidden select-none pb-16"
+      className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-zinc-100 transition-colors duration-200 flex flex-col font-sans antialiased relative overflow-hidden select-none pb-16"
       style={{
         backgroundImage: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(20, 184, 166, 0.04) 0%, transparent 60%)`
       }}

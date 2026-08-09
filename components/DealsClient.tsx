@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { formatPrice, calculateDiscount } from "@/lib/utils";
-import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles, ShoppingCart } from "lucide-react";
+import { Clock, Zap, ArrowUp, ArrowDown, Share2, Award, User, Sparkles, ExternalLink, BarChart2 } from "lucide-react";
 import { CommunityDealSkeleton, SkeletonGrid } from "@/components/Skeletons";
-import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface CommunityDeal {
   id: string;
@@ -46,6 +46,8 @@ interface DealsClientProps {
   }>;
 }
 
+const CATEGORIES = ["All", "Tech", "Kitchen", "Home", "Gadgets", "Fashion", "Study"];
+
 export default function DealsClient({ curatedDeals }: DealsClientProps) {
   const { user } = useAuth() as any;
   const router = useRouter();
@@ -62,7 +64,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
   const [selectedDiscount, setSelectedDiscount] = useState<string>("all");
   const [selectedSort, setSelectedSort] = useState<string>("highest-discount");
 
-  const filteredCuratedDeals = React.useMemo(() => {
+  const filteredCuratedDeals = useMemo(() => {
     let result = curatedDeals.map(d => ({
       ...d,
       discount: calculateDiscount(d.price, d.oldPrice)
@@ -182,45 +184,33 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
   };
 
   return (
-    <div className="mt-8 select-none">
-      {/* Premium Tab Navigation & Actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-4 mb-8">
-        <div className="flex p-1 bg-muted rounded-2xl border border-border/50 max-w-max relative z-0">
+    <div className="mt-8">
+      {/* ── Clean Vercel-style Tab Bar & Actions ─────────────────────────────── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5 mb-8">
+        <div className="inline-flex p-1 bg-muted rounded-lg border border-border self-start">
           <button
             onClick={() => setTabAndUrl("verified")}
-            className={`relative px-5 py-2 text-xs font-black rounded-xl transition-all duration-300 flex items-center gap-1.5 z-10 ${
+            className={cn(
+              "px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-150 flex items-center gap-1.5 cursor-pointer",
               activeTab === "verified"
-                ? "text-foreground"
+                ? "bg-background text-foreground shadow-sm font-semibold"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {activeTab === "verified" && (
-              <motion.span
-                layoutId="activeTabUnderline"
-                className="absolute inset-0 rounded-xl bg-card shadow-md z-[-1]"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
             )}
-            <Sparkles className={`h-3.5 w-3.5 ${activeTab === "verified" ? "text-red-500 fill-red-500/20" : ""}`} />
+          >
+            <Sparkles className="h-3.5 w-3.5 text-brand-600" />
             Verified Handpicked
           </button>
           <button
             onClick={() => setTabAndUrl("community")}
-            className={`relative px-5 py-2 text-xs font-black rounded-xl transition-all duration-300 flex items-center gap-2 z-10 ${
+            className={cn(
+              "px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-150 flex items-center gap-2 cursor-pointer",
               activeTab === "community"
-                ? "text-foreground"
+                ? "bg-background text-foreground shadow-sm font-semibold"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {activeTab === "community" && (
-              <motion.span
-                layoutId="activeTabUnderline"
-                className="absolute inset-0 rounded-xl bg-card shadow-md z-[-1]"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
             )}
+          >
             Community Shared
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
           </button>
         </div>
 
@@ -229,59 +219,56 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
             <select
               value={communitySort}
               onChange={(e) => setCommunitySort(e.target.value as "hot" | "new")}
-              className="h-10 rounded-2xl border border-input/80 bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500/20"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="hot">🔥 Hot Score</option>
-              <option value="new">🆕 Newly Posted</option>
+              <option value="hot">Hot Score</option>
+              <option value="new">Newly Posted</option>
             </select>
           )}
 
-          <Link
-            href="/submit-deal"
-            className="inline-flex h-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 px-5 text-xs font-bold text-white shadow-md hover:scale-103 hover:shadow-lg transition-all duration-300 border border-white/10"
-          >
-            <Share2 className="h-4 w-4 mr-2" /> Share a Deal
+          <Link href="/submit-deal" className="btn-primary btn-sm">
+            <Share2 className="h-3.5 w-3.5" />
+            Share a deal
           </Link>
         </div>
       </div>
 
-      {/* Verified Deals Panel */}
+      {/* ── Verified Deals Panel ───────────────────────────────────────────── */}
       {activeTab === "verified" && (
         <div className="space-y-6">
-          {/* Horizontal Filter Bar */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card border border-border/80 p-4.5 rounded-3xl shadow-sm">
-            {/* Category chips list */}
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs font-bold text-muted-foreground mr-1">Category:</span>
-              {["All", "Tech", "Kitchen", "Home", "Gadgets", "Fashion", "Study"].map((cat) => {
+          {/* Filter Toolbar */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card border border-border p-4 rounded-xl">
+            {/* Category chips */}
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <span className="text-xs font-medium text-muted-foreground mr-1.5">Category:</span>
+              {CATEGORIES.map((cat) => {
                 const catId = cat.toLowerCase();
                 const isActive = selectedCategory === catId;
                 return (
-                  <motion.button
+                  <button
                     key={cat}
                     onClick={() => setSelectedCategory(catId)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    className={cn(
+                      "px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer border",
                       isActive
-                        ? "bg-gradient-to-r from-brand-600 to-rose-600 text-white shadow-md shadow-brand-500/20 border-brand-500/30"
-                        : "bg-muted dark:bg-slate-900 text-muted-foreground hover:text-foreground border-transparent hover:border-border"
-                    }`}
+                        ? "bg-[#111827] text-white border-[#111827] dark:bg-white dark:text-gray-900 dark:border-white"
+                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
                   >
                     {cat}
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
 
-            <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex flex-wrap gap-3 items-center">
               {/* Discount Filter */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground">Discount:</span>
+                <span className="text-xs font-medium text-muted-foreground">Discount:</span>
                 <select
                   value={selectedDiscount}
                   onChange={(e) => setSelectedDiscount(e.target.value)}
-                  className="h-9 rounded-xl border border-border/80 bg-muted/30 dark:bg-slate-900 px-3 text-xs font-bold text-foreground focus-visible:outline-none transition-all duration-200"
+                  className="h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="all">All Discounts</option>
                   <option value="20">20%+ off</option>
@@ -292,11 +279,11 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
 
               {/* Sort Select */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground">Sort By:</span>
+                <span className="text-xs font-medium text-muted-foreground">Sort By:</span>
                 <select
                   value={selectedSort}
                   onChange={(e) => setSelectedSort(e.target.value)}
-                  className="h-9 rounded-xl border border-border/80 bg-muted/30 dark:bg-slate-900 px-3 text-xs font-bold text-foreground focus-visible:outline-none transition-all duration-200"
+                  className="h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="highest-discount">Highest Discount</option>
                   <option value="lowest-price">Lowest Price</option>
@@ -307,86 +294,72 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
           </div>
 
           {filteredCuratedDeals.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground rounded-3xl border border-dashed border-border/80 bg-card p-6 shadow-sm">
-              <p className="text-base font-bold text-foreground">No matching verified deals</p>
-              <p className="text-xs text-muted-foreground mt-1">Try relaxing your category or discount filters.</p>
+            <div className="text-center py-16 text-muted-foreground rounded-xl border border-dashed border-border bg-card p-6">
+              <p className="text-sm font-semibold text-foreground">No matching verified deals</p>
+              <p className="text-xs text-muted-foreground mt-1">Try clearing or broadening your category or discount filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredCuratedDeals.map((deal) => {
                 const discount = deal.discount;
                 return (
-                  <motion.div
+                  <article
                     key={deal.slug}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4 }}
-                    whileHover={{
-                      y: -6,
-                      boxShadow: "0 22px 48px -12px rgba(0,0,0,0.22), 0 0 28px 4px rgba(212,63,54,0.12)",
-                      borderColor: "rgba(212,63,54,0.38)"
-                    }}
-                    className="overflow-hidden flex flex-col group border border-border/80 dark:border-border/30 bg-card rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all duration-300 select-none"
+                    className="group card-hover flex flex-col overflow-hidden select-none"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-white border-b border-border/40 flex items-center justify-center">
+                    <div className="relative aspect-square bg-white dark:bg-white/[0.03] border-b border-border overflow-hidden flex items-center justify-center">
                       <Image
                         src={deal.image}
                         alt={deal.title}
                         fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.03]"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                        className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.02]"
                       />
-                      <div className="absolute top-3 left-3 z-10">
-                        <span className="badge bg-brand-600/90 backdrop-blur-md text-white font-black px-2.5 py-1 rounded-lg text-[11px] shadow-md border border-brand-500/20">
-                          {discount}% OFF
-                        </span>
-                      </div>
-                      {deal.label && (
-                        <div className="absolute top-3 right-3 z-10">
-                          <span className="badge bg-amber-500/90 backdrop-blur-md text-black font-black px-2.5 py-1 rounded-lg text-[9px] uppercase tracking-wider shadow-md border border-amber-400/20">
-                            ★ {deal.label}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 sm:p-5 flex flex-col flex-1">
-                      <span className="inline-flex max-w-max px-2 py-0.5 text-[9px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 rounded-md uppercase tracking-widest mb-2.5">
-                        {deal.category}
-                      </span>
-                      <h3 className="font-bold text-foreground text-sm mb-3 leading-snug line-clamp-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-                        <Link href={`/product/${deal.slug}`}>
-                          {deal.title}
-                        </Link>
-                      </h3>
-
-                      <div className="flex items-baseline gap-2 mt-auto mb-3.5">
-                        <span className="text-xl font-black text-foreground">{formatPrice(deal.price)}</span>
-                        <span className="text-xs font-medium text-muted-foreground/75 line-through">{formatPrice(deal.oldPrice)}</span>
-                        <span className="text-[9px] font-black text-brand-600 dark:text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded leading-none">
+                      <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
+                        <span className="badge-brand text-[10px]">
                           -{discount}%
                         </span>
+                        {deal.label && (
+                          <span className="badge-warning text-[10px]">
+                            {deal.label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-4 flex flex-col flex-1 gap-2">
+                      <span className="section-label text-[10px]">
+                        {deal.category}
+                      </span>
+                      <Link href={`/product/${deal.slug}`}>
+                        <h3 className="text-xs font-medium text-foreground leading-snug line-clamp-2 hover:text-brand-600 transition-colors">
+                          {deal.title}
+                        </h3>
+                      </Link>
+
+                      <div className="flex items-baseline gap-2 mt-auto pt-1">
+                        <span className="text-base font-bold text-foreground">{formatPrice(deal.price)}</span>
+                        <span className="text-xs text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
                       </div>
 
-                      <div className="flex items-center justify-between mb-4 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/5 dark:bg-amber-500/10 px-3 py-2 rounded-xl border border-amber-500/10">
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground bg-muted px-2.5 py-1.5 rounded-md mt-1">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 animate-pulse" /> Validity:
+                          <Clock className="h-3 w-3" /> Validity:
                         </span>
-                        <span>{deal.expiresIn}</span>
+                        <span className="font-medium text-foreground">{deal.expiresIn}</span>
                       </div>
 
                       <a
                         href={deal.affiliateLink}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
-                        className="w-full text-center py-2.5 rounded-xl font-black text-xs text-white bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 hover:shadow-lg transition-all duration-300 btn-shiny cursor-pointer inline-flex items-center justify-center gap-1.5"
+                        className="btn-primary btn-sm w-full justify-center mt-1"
                       >
-                        <ShoppingCart className="h-3.5 w-3.5" />
+                        <ExternalLink className="h-3.5 w-3.5" />
                         Buy on Amazon
                       </a>
                     </div>
-                  </motion.div>
+                  </article>
                 );
               })}
             </div>
@@ -394,17 +367,17 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
         </div>
       )}
 
-      {/* Community Deals Panel */}
+      {/* ── Community Deals Panel ──────────────────────────────────────────── */}
       {activeTab === "community" && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {loadingDeals ? (
-            <SkeletonGrid count={3} skeleton={CommunityDealSkeleton} className="flex flex-col gap-4" />
+            <SkeletonGrid count={3} skeleton={CommunityDealSkeleton} className="flex flex-col gap-3" />
           ) : communityDeals.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground rounded-3xl border border-dashed border-border/80 bg-card p-6 shadow-sm select-none">
-              <Award className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-              <p className="text-base font-bold text-foreground">No Community Shared Deals</p>
+            <div className="text-center py-16 text-muted-foreground rounded-xl border border-dashed border-border bg-card p-6">
+              <Award className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
+              <p className="text-sm font-semibold text-foreground">No Community Shared Deals</p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto mt-1 leading-relaxed">
-                Found a great budget discount online? Click &ldquo;Share a Deal&rdquo; above and help the community save money!
+                Found a great budget deal online? Click &ldquo;Share a deal&rdquo; above to share it with the community!
               </p>
             </div>
           ) : (
@@ -415,109 +388,103 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
               const hasDownvoted = userId ? deal.downvotes.includes(userId) : false;
 
               return (
-                <motion.div
+                <div
                   key={deal.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35 }}
-                  whileHover={{
-                    y: -4,
-                    boxShadow: "0 15px 30px -10px rgba(0,0,0,0.1), 0 0 20px 2px rgba(212,63,54,0.04)",
-                    borderColor: "rgba(212,63,54,0.2)"
-                  }}
-                  className="relative overflow-hidden flex border border-border/80 bg-card rounded-3xl p-5 shadow-sm transition-all duration-300 group"
+                  className="card-hover flex flex-col sm:flex-row p-4 gap-4 items-start sm:items-center"
                 >
-                  <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-red-500/5 blur-2xl pointer-events-none" />
-
-                  {/* Upvote Downvote Side Column */}
-                  <div className="flex flex-col items-center justify-center pr-5 border-r border-border/60">
+                  {/* Upvote / Downvote column */}
+                  <div className="flex sm:flex-col items-center justify-center shrink-0 gap-1 bg-muted/50 p-1.5 rounded-lg border border-border">
                     <button
                       onClick={() => handleVote(deal.id, "upvote")}
-                      className={`p-2 rounded-xl transition-all duration-200 ${
+                      className={cn(
+                        "p-1.5 rounded-md transition-colors cursor-pointer",
                         hasUpvoted
-                          ? "text-emerald-600 bg-emerald-500/10 shadow-sm"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                      title="Upvote deal"
+                          ? "text-green-600 bg-green-50 dark:bg-green-950/30"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                      aria-label="Upvote deal"
                     >
-                      <ArrowUp className="h-5 w-5 hover:scale-110 active:scale-90 transition-transform" />
+                      <ArrowUp className="h-4 w-4" />
                     </button>
-                    <span className="my-2 text-sm font-black text-foreground">{deal.upvotesCount - deal.downvotesCount}</span>
+                    <span className="text-xs font-semibold text-foreground px-1">
+                      {deal.upvotesCount - deal.downvotesCount}
+                    </span>
                     <button
                       onClick={() => handleVote(deal.id, "downvote")}
-                      className={`p-2 rounded-xl transition-all duration-200 ${
+                      className={cn(
+                        "p-1.5 rounded-md transition-colors cursor-pointer",
                         hasDownvoted
-                          ? "text-red-600 bg-red-500/10 shadow-sm"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                      title="Downvote deal"
+                          ? "text-red-600 bg-red-50 dark:bg-red-950/30"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                      aria-label="Downvote deal"
                     >
-                      <ArrowDown className="h-5 w-5 hover:scale-110 active:scale-90 transition-transform" />
+                      <ArrowDown className="h-4 w-4" />
                     </button>
                   </div>
 
-                  {/* Card Content details */}
-                  <div className="flex flex-col md:flex-row flex-1 pl-5 gap-5 items-center">
-                    {/* Compact Image */}
-                    <div className="relative w-32 h-24 shrink-0 overflow-hidden rounded-2xl bg-muted border border-border/50 shadow-inner">
-                      <Image
-                        src={deal.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&q=80"}
-                        alt={deal.title}
-                        fill
-                        sizes="128px"
-                        className="object-cover"
-                      />
+                  {/* Thumbnail */}
+                  <div className="relative w-24 h-20 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
+                    <Image
+                      src={deal.image || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&q=80"}
+                      alt={deal.title}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="section-label text-[10px]">
+                        {deal.category}
+                      </span>
+                      {discount && (
+                        <span className="badge-brand text-[10px]">
+                          -{discount}%
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 ml-auto">
+                        {deal.submittedBy?.profileImage ? (
+                          <img src={deal.submittedBy.profileImage} alt="" className="h-4 w-4 rounded-full object-cover" />
+                        ) : (
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                        Shared by {deal.submittedBy?.name || "Member"}
+                      </span>
                     </div>
 
-                    {/* Main metadata descriptions */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="text-[9px] font-black text-red-600 uppercase tracking-widest bg-red-500/5 px-2.5 py-1 rounded-lg">
-                          {deal.category}
-                        </span>
-                        {discount && (
-                          <span className="text-[9px] font-black text-white bg-red-600 px-2.5 py-1 rounded-lg">
-                            {discount}% OFF
-                          </span>
-                        )}
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-semibold">
-                          {deal.submittedBy?.profileImage ? (
-                            <img src={deal.submittedBy.profileImage} alt="" className="h-4.5 w-4.5 rounded-full object-cover" />
-                          ) : (
-                            <User className="h-3.5 w-3.5 text-muted-foreground/80" />
-                          )}
-                          Shared by {deal.submittedBy?.name || "Member"}
-                        </span>
-                      </div>
+                    <a
+                      href={deal.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="text-sm font-medium text-foreground hover:text-brand-600 transition-colors line-clamp-1"
+                    >
+                      {deal.title}
+                    </a>
 
-                      <h3 className="font-extrabold text-foreground text-base leading-snug hover:text-red-500 transition-colors truncate max-w-xl" title={deal.title}>
-                        <a href={deal.url} target="_blank" rel="noopener noreferrer nofollow">
-                          {deal.title}
-                        </a>
-                      </h3>
-
-                      <div className="flex items-baseline gap-2 mt-2">
-                        <span className="text-xl font-black text-foreground">{formatPrice(deal.price)}</span>
-                        {deal.oldPrice && (
-                          <span className="text-xs font-semibold text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <div className="w-full md:w-auto shrink-0 text-right">
-                      <a
-                        href={deal.url}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="inline-flex h-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 px-6 text-xs font-bold text-white hover:shadow-md transition-all duration-300 w-full md:w-auto"
-                      >
-                        Claim Deal
-                      </a>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-base font-bold text-foreground">{formatPrice(deal.price)}</span>
+                      {deal.oldPrice && (
+                        <span className="text-xs text-muted-foreground line-through">{formatPrice(deal.oldPrice)}</span>
+                      )}
                     </div>
                   </div>
-                </motion.div>
+
+                  {/* CTA */}
+                  <div className="shrink-0 w-full sm:w-auto">
+                    <a
+                      href={deal.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="btn-primary btn-sm w-full sm:w-auto justify-center"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Claim deal
+                    </a>
+                  </div>
+                </div>
               );
             })
           )}

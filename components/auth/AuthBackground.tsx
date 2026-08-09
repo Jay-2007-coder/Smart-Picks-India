@@ -1,189 +1,63 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { motion, useSpring } from "framer-motion";
+import React, { useEffect } from "react";
+import { motion, useSpring, useMotionValue } from "framer-motion";
 
 export function AuthBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  // Spring physics for smooth cursor glow
-  const cursorX = useSpring(0, { stiffness: 100, damping: 20 });
-  const cursorY = useSpring(0, { stiffness: 100, damping: 20 });
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Silky smooth spring physics for the cursor spotlight
+  const springX = useSpring(mouseX, { stiffness: 80, damping: 25 });
+  const springY = useSpring(mouseY, { stiffness: 80, damping: 25 });
 
   useEffect(() => {
-    // 1. Mouse Tracking for Cursor Glow
     const handleMouseMove = (e: MouseEvent) => {
-      cursorX.set(e.clientX - 150); // Offset by half the glow width
-      cursorY.set(e.clientY - 150);
+      mouseX.set(e.clientX - 250); // offset by half spotlight width (500px / 2)
+      mouseY.set(e.clientY - 250);
     };
     window.addEventListener("mousemove", handleMouseMove);
-
-    // 2. Canvas Particle Network
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let particles: Particle[] = [];
-    const numParticles = 80;
-    let animationFrameId: number;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-
-    // Particle Object
-    class Particle {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      size: number;
-      color: string;
-
-      constructor() {
-        this.x = Math.random() * canvas!.width;
-        this.y = Math.random() * canvas!.height;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = (Math.random() - 0.5) * 0.8;
-        this.size = Math.random() * 2 + 0.5;
-        this.color = `hsla(${Math.random() * 60 + 260}, 80%, 70%, ${Math.random() * 0.5 + 0.1})`; // Purples/Pinks
-      }
-
-      update(mouseX: number, mouseY: number) {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
-
-        // Mouse avoidance/attraction
-        const dx = mouseX - this.x;
-        const dy = mouseY - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 150) {
-          this.x -= dx * 0.01;
-          this.y -= dy * 0.01;
-        }
-      }
-
-      draw() {
-        if (!ctx) return;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-      }
-    }
-
-    // Init particles
-    for (let i = 0; i < numParticles; i++) {
-      particles.push(new Particle());
-    }
-
-    let mouse = { x: 0, y: 0 };
-    const trackMouseCanvas = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-    window.addEventListener("mousemove", trackMouseCanvas);
-
-    // Render loop
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      particles.forEach((p, i) => {
-        p.update(mouse.x, mouse.y);
-        p.draw();
-        
-        // Draw connection lines
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(124, 58, 237, ${0.2 - dist / 600})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
-      });
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mousemove", trackMouseCanvas);
-      window.removeEventListener("resize", resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [cursorX, cursorY]);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#050816]">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-slate-50 dark:bg-zinc-950 transition-colors duration-300 select-none">
       
-      {/* 1. Base Grid Overlay */}
+      {/* 1. Subtle Radial Ambient Lighting Pools */}
+      <div className="absolute -top-40 -left-40 w-[35rem] h-[35rem] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[140px]" />
+      <div className="absolute top-1/3 -right-20 w-[40rem] h-[40rem] bg-purple-500/10 dark:bg-purple-500/15 rounded-full blur-[160px]" />
+      <div className="absolute -bottom-40 left-1/3 w-[30rem] h-[30rem] bg-slate-400/10 dark:bg-zinc-700/10 rounded-full blur-[120px]" />
+
+      {/* 2. Interactive Cursor Spotlight Light Beam (Linear/Vercel style) */}
+      <motion.div
+        className="absolute z-10 w-[500px] h-[500px] rounded-full pointer-events-none opacity-60 dark:opacity-40 mix-blend-soft-light dark:mix-blend-screen"
+        style={{
+          x: springX,
+          y: springY,
+          background: "radial-gradient(circle, rgba(168,85,247,0.2) 0%, rgba(99,102,241,0.08) 45%, transparent 70%)",
+          filter: "blur(50px)"
+        }}
+      />
+
+      {/* 3. SVG Precision Dot Matrix Pattern with Radial Mask */}
       <div 
-        className="absolute inset-0 z-0 opacity-[0.03]"
+        className="absolute inset-0 z-10 opacity-[0.4] dark:opacity-[0.25]"
         style={{
-          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
+          backgroundImage: `radial-gradient(currentColor 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+          color: 'var(--border, #cbd5e1)',
+          maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)'
         }}
       />
 
-      {/* 2. Floating Gradient Orbs */}
-      <motion.div
-        animate={{
-          x: [-50, 150, -50],
-          y: [-50, 100, -50],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute -top-40 -left-40 w-96 h-96 bg-[#7C3AED]/20 rounded-full blur-[100px]"
-      />
-      <motion.div
-        animate={{
-          x: [100, -100, 100],
-          y: [50, -150, 50],
-          scale: [1, 1.3, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute top-1/3 -right-20 w-[30rem] h-[30rem] bg-[#EC4899]/15 rounded-full blur-[120px]"
-      />
-      <motion.div
-        animate={{
-          x: [-100, 50, -100],
-          y: [-50, -150, -50],
-          scale: [1.2, 1, 1.2],
-        }}
-        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-        className="absolute -bottom-40 left-1/4 w-[25rem] h-[25rem] bg-[#EF4444]/15 rounded-full blur-[100px]"
-      />
-
-      {/* 3. Canvas Particle Network */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-10 opacity-70 mix-blend-screen" />
-
-      {/* 4. Cursor Glow Orb */}
-      <motion.div
-        className="absolute z-20 w-[300px] h-[300px] rounded-full mix-blend-screen pointer-events-none"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, rgba(236, 72, 153, 0.05) 50%, transparent 70%)',
-          filter: 'blur(40px)'
-        }}
-      />
+      {/* 4. Fine SVG Grain Texture Overlay (Framer/Linear style) */}
+      <svg className="absolute inset-0 w-full h-full z-20 opacity-[0.035] dark:opacity-[0.05] pointer-events-none mix-blend-overlay">
+        <filter id="noiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+      </svg>
     </div>
   );
 }

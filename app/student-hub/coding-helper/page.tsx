@@ -283,7 +283,7 @@ export default function CodingHelper() {
 
   // ─── Main Page ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#080d1a] text-slate-200 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-200 transition-colors duration-200 relative overflow-x-hidden">
 
       {/* Ambient Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

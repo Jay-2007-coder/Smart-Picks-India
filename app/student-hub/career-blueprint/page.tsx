@@ -1856,7 +1856,7 @@ export default function CareerBlueprintHub() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#09090B] text-slate-100 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-slate-100 transition-colors duration-200 flex items-center justify-center py-12 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.1)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-md w-full bg-neutral-900/60 backdrop-blur-xl border border-neutral-800 rounded-3xl p-8 text-center shadow-2xl space-y-6 relative z-10">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500">

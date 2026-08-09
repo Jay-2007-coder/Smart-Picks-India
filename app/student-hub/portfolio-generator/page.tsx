@@ -16,7 +16,12 @@ import {
   Layers, 
   FileText,
   Mail,
-  Globe
+  Globe,
+  RefreshCw,
+  Palette,
+  Sparkles,
+  Terminal,
+  Layout
 } from "lucide-react";
 
 interface ProjectItem {
@@ -40,55 +45,182 @@ interface EducationItem {
   grade: string;
 }
 
+const DEFAULT_PORTFOLIO_NAME = "Aarav Sharma";
+const DEFAULT_PORTFOLIO_ROLE = "Full Stack Developer, Software Engineer, Problem Solver";
+const DEFAULT_PORTFOLIO_BIO = "Computer Science undergrad seeking impact opportunities. Passionate about building fast, scalable web applications, interactive interfaces, and distributed backends.";
+const DEFAULT_PORTFOLIO_EMAIL = "aarav@email.com";
+const DEFAULT_PORTFOLIO_GITHUB = "https://github.com";
+const DEFAULT_PORTFOLIO_LINKEDIN = "https://linkedin.com";
+const DEFAULT_PORTFOLIO_TWITTER = "https://twitter.com";
+const DEFAULT_PORTFOLIO_SKILLS = "React, Node.js, TypeScript, Next.js, PostgreSQL, Tailwind CSS, Python, Three.js";
+const DEFAULT_PORTFOLIO_ACCENT = "indigo" as const;
+
+const DEFAULT_PORTFOLIO_EXPERIENCE: ExperienceItem[] = [
+  {
+    company: "Tech Solutions Inc.",
+    role: "Software Engineering Intern",
+    duration: "June 2025 - August 2025",
+    desc: "Developed responsive React modules and optimized search database index queries, reducing load times by 15%. Collaborated with team using Git/Agile.",
+  }
+];
+
+const DEFAULT_PORTFOLIO_EDUCATION: EducationItem[] = [
+  {
+    institution: "Smart Institute of Technology",
+    degree: "B.Tech in Computer Science",
+    years: "2022 - 2026",
+    grade: "9.2 CGPA",
+  }
+];
+
+const DEFAULT_PORTFOLIO_PROJECTS: ProjectItem[] = [
+  {
+    name: "Smart Picks Deals Platform",
+    desc: "An affiliate deals platform built with Next.js, Express, and MongoDB. Integrates Web scraping pipelines, price trackers, and interactive data visualization panels.",
+    link: "https://github.com",
+    tech: "Next.js, MongoDB, Express, Puppeteer",
+  },
+  {
+    name: "Distributed Socket Chat",
+    desc: "A concurrent chat protocol application in Java using multi-threaded client-server sockets and custom security handshakes.",
+    link: "https://github.com",
+    tech: "Java, Sockets, Cryptography",
+  },
+];
+
+type PortfolioThemeId = "cyber3d" | "minimal" | "terminal" | "neobrutal";
+
+const PORTFOLIO_THEMES: { id: PortfolioThemeId; name: string; tag: string; icon: string; desc: string; badgeColor: string }[] = [
+  {
+    id: "cyber3d",
+    name: "3D Cyber Canvas",
+    tag: "Interactive 3D",
+    icon: "🌌",
+    desc: "Glowing particle canvas with Three.js & dark glassmorphism",
+    badgeColor: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
+  },
+  {
+    id: "minimal",
+    name: "Swiss Minimalist",
+    tag: "Clean & Modern",
+    icon: "✨",
+    desc: "Crisp typography, high contrast monochrome & subtle borders",
+    badgeColor: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20"
+  },
+  {
+    id: "terminal",
+    name: "Developer CLI Terminal",
+    tag: "Retro Hacker",
+    icon: "🖥️",
+    desc: "Command-line prompt aesthetic with green matrix monospaced text",
+    badgeColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+  },
+  {
+    id: "neobrutal",
+    name: "Bold Neobrutalism",
+    tag: "High Contrast Pop",
+    icon: "⚡",
+    desc: "3px solid black borders, hard drop-shadows & vibrant tags",
+    badgeColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+  }
+];
+
 export default function PortfolioGenerator() {
-  const [name, setName] = useState("Aarav Sharma");
-  const [role, setRole] = useState("Full Stack Developer, Software Engineer, Problem Solver");
-  const [bio, setBio] = useState("Computer Science undergrad seeking impact opportunities. Passionate about building fast, scalable web applications, interactive interfaces, and distributed backends.");
-  const [email, setEmail] = useState("aarav@email.com");
-  const [github, setGithub] = useState("https://github.com");
-  const [linkedin, setLinkedin] = useState("https://linkedin.com");
-  const [twitter, setTwitter] = useState("https://twitter.com");
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const [layoutTheme, setLayoutTheme] = useState<PortfolioThemeId>("cyber3d");
+  const [name, setName] = useState(DEFAULT_PORTFOLIO_NAME);
+  const [role, setRole] = useState(DEFAULT_PORTFOLIO_ROLE);
+  const [bio, setBio] = useState(DEFAULT_PORTFOLIO_BIO);
+  const [email, setEmail] = useState(DEFAULT_PORTFOLIO_EMAIL);
+  const [github, setGithub] = useState(DEFAULT_PORTFOLIO_GITHUB);
+  const [linkedin, setLinkedin] = useState(DEFAULT_PORTFOLIO_LINKEDIN);
+  const [twitter, setTwitter] = useState(DEFAULT_PORTFOLIO_TWITTER);
   const [customLink, setCustomLink] = useState("");
   
-  const [skills, setSkills] = useState("React, Node.js, TypeScript, Next.js, PostgreSQL, Tailwind CSS, Python, Three.js");
-  const [accentColor, setAccentColor] = useState<"slate" | "indigo" | "emerald" | "crimson">("indigo");
+  const [skills, setSkills] = useState(DEFAULT_PORTFOLIO_SKILLS);
+  const [accentColor, setAccentColor] = useState<"slate" | "indigo" | "emerald" | "crimson">(DEFAULT_PORTFOLIO_ACCENT);
 
-  const [experience, setExperience] = useState<ExperienceItem[]>([
-    {
-      company: "Tech Solutions Inc.",
-      role: "Software Engineering Intern",
-      duration: "June 2025 - August 2025",
-      desc: "Developed responsive React modules and optimized search database index queries, reducing load times by 15%. Collaborated with team using Git/Agile.",
-    }
-  ]);
-
-  const [education, setEducation] = useState<EducationItem[]>([
-    {
-      institution: "Smart Institute of Technology",
-      degree: "B.Tech in Computer Science",
-      years: "2022 - 2026",
-      grade: "9.2 CGPA",
-    }
-  ]);
-  
-  const [projects, setProjects] = useState<ProjectItem[]>([
-    {
-      name: "Smart Picks Deals Platform",
-      desc: "An affiliate deals platform built with Next.js, Express, and MongoDB. Integrates Web scraping pipelines, price trackers, and interactive data visualization panels.",
-      link: "https://github.com",
-      tech: "Next.js, MongoDB, Express, Puppeteer",
-    },
-    {
-      name: "Distributed Socket Chat",
-      desc: "A concurrent chat protocol application in Java using multi-threaded client-server sockets and custom security handshakes.",
-      link: "https://github.com",
-      tech: "Java, Sockets, Cryptography",
-    },
-  ]);
+  const [experience, setExperience] = useState<ExperienceItem[]>(DEFAULT_PORTFOLIO_EXPERIENCE);
+  const [education, setEducation] = useState<EducationItem[]>(DEFAULT_PORTFOLIO_EDUCATION);
+  const [projects, setProjects] = useState<ProjectItem[]>(DEFAULT_PORTFOLIO_PROJECTS);
 
   const [generatedHtml, setGeneratedHtml] = useState("");
   const [copied, setCopied] = useState(false);
   const [rightTab, setRightTab] = useState<"preview" | "code">("preview");
+
+  // Load saved data from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("smartpicks_portfolio_generator_data_v1");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.layoutTheme) setLayoutTheme(parsed.layoutTheme);
+        if (parsed.name) setName(parsed.name);
+        if (parsed.role) setRole(parsed.role);
+        if (parsed.bio) setBio(parsed.bio);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.github) setGithub(parsed.github);
+        if (parsed.linkedin) setLinkedin(parsed.linkedin);
+        if (parsed.twitter) setTwitter(parsed.twitter);
+        if (parsed.customLink !== undefined) setCustomLink(parsed.customLink);
+        if (parsed.skills) setSkills(parsed.skills);
+        if (parsed.accentColor) setAccentColor(parsed.accentColor);
+        if (parsed.experience) setExperience(parsed.experience);
+        if (parsed.education) setEducation(parsed.education);
+        if (parsed.projects) setProjects(parsed.projects);
+      }
+    } catch (e) {
+      console.error("Failed to load saved portfolio generator data:", e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Save changes to localStorage
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const dataToSave = {
+        layoutTheme,
+        name,
+        role,
+        bio,
+        email,
+        github,
+        linkedin,
+        twitter,
+        customLink,
+        skills,
+        accentColor,
+        experience,
+        education,
+        projects
+      };
+      localStorage.setItem("smartpicks_portfolio_generator_data_v1", JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Failed to auto-save portfolio generator data:", e);
+    }
+  }, [layoutTheme, name, role, bio, email, github, linkedin, twitter, customLink, skills, accentColor, experience, education, projects, isLoaded]);
+
+  // Reset to default sample portfolio
+  const handleResetDefaults = () => {
+    setLayoutTheme("cyber3d");
+    setName(DEFAULT_PORTFOLIO_NAME);
+    setRole(DEFAULT_PORTFOLIO_ROLE);
+    setBio(DEFAULT_PORTFOLIO_BIO);
+    setEmail(DEFAULT_PORTFOLIO_EMAIL);
+    setGithub(DEFAULT_PORTFOLIO_GITHUB);
+    setLinkedin(DEFAULT_PORTFOLIO_LINKEDIN);
+    setTwitter(DEFAULT_PORTFOLIO_TWITTER);
+    setCustomLink("");
+    setSkills(DEFAULT_PORTFOLIO_SKILLS);
+    setAccentColor(DEFAULT_PORTFOLIO_ACCENT);
+    setExperience(DEFAULT_PORTFOLIO_EXPERIENCE);
+    setEducation(DEFAULT_PORTFOLIO_EDUCATION);
+    setProjects(DEFAULT_PORTFOLIO_PROJECTS);
+    localStorage.removeItem("smartpicks_portfolio_generator_data_v1");
+  };
 
   const addProject = () => {
     setProjects([...projects, { name: "", desc: "", link: "", tech: "" }]);
@@ -146,6 +278,310 @@ export default function PortfolioGenerator() {
     };
     const activeColor = colorMap[accentColor];
 
+    // -------------------------------------------------------------
+    // TEMPLATE 1: SWISS MINIMALIST MODERN
+    // -------------------------------------------------------------
+    if (layoutTheme === "minimal") {
+      const minSkillsHtml = skillsArray.map(s => `<span class="badge">${s}</span>`).join(" ");
+      const minProjectsHtml = projects.map(p => `
+        <div class="card">
+          <h3>${p.name || "Untitled Project"}</h3>
+          <p>${p.desc || ""}</p>
+          <div style="margin-bottom:12px">${p.tech ? p.tech.split(',').map(t => `<span class="badge">${t.trim()}</span>`).join(' ') : ''}</div>
+          ${p.link ? `<a href="${p.link}" target="_blank" class="link">View Project &rarr;</a>` : ''}
+        </div>`).join("");
+
+      const minExpHtml = experience.map(exp => `
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0">${exp.role || "Role"}</h3>
+            <span style="font-size:0.8rem;color:var(--accent);font-weight:700">${exp.duration || ""}</span>
+          </div>
+          <h4 style="margin:4px 0 12px;color:var(--text-sub);font-size:0.95rem">${exp.company || ""}</h4>
+          <p style="margin:0">${exp.desc || ""}</p>
+        </div>`).join("");
+
+      const minEduHtml = education.map(edu => `
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0">${edu.degree || "Degree"}</h3>
+            <span style="font-size:0.8rem;color:var(--accent);font-weight:700">${edu.years || ""}</span>
+          </div>
+          <h4 style="margin:4px 0 8px;color:var(--text-sub);font-size:0.95rem">${edu.institution || ""}</h4>
+          ${edu.grade ? `<span class="badge">${edu.grade}</span>` : ""}
+        </div>`).join("");
+
+      const minHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${name} | Minimal Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card: #18181b;
+      --border: #27272a;
+      --accent: ${activeColor.primary};
+      --text: #fafafa;
+      --text-sub: #a1a1aa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; padding: 40px 20px; }
+    .container { max-width: 860px; margin: 0 auto; }
+    header { padding-bottom: 32px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .role-badge { display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--accent); padding: 4px 14px; font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; border-radius: 99px; }
+    .bio { font-size: 1.05rem; color: var(--text-sub); max-width: 720px; margin-bottom: 24px; font-weight: 400; }
+    .social-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .social-row a { color: var(--text); background: var(--card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+    .social-row a:hover { border-color: var(--accent); color: var(--accent); }
+    .section-title { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin: 44px 0 20px; color: var(--text); border-left: 3px solid var(--accent); padding-left: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; transition: transform 0.2s, border-color 0.2s; }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .badge { display: inline-block; background: rgba(255,255,255,0.05); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+    .link { color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 700; display: inline-block; }
+    footer { text-align: center; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-sub); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>${name}</h1>
+      <div class="role-badge">${role}</div>
+      <p class="bio">${bio}</p>
+      <div class="social-row">
+        ${email ? `<a href="mailto:${email}">✉ Email</a>` : ""}
+        ${github ? `<a href="${github}" target="_blank">💻 GitHub</a>` : ""}
+        ${linkedin ? `<a href="${linkedin}" target="_blank">💼 LinkedIn</a>` : ""}
+        ${twitter ? `<a href="${twitter}" target="_blank">🐦 Twitter</a>` : ""}
+        ${customLink ? `<a href="${customLink}" target="_blank">🌐 Website</a>` : ""}
+      </div>
+    </header>
+
+    <div class="section-title">Skills & Competencies</div>
+    <div style="margin-bottom: 24px">${minSkillsHtml}</div>
+
+    ${projects.length ? `<div class="section-title">Featured Projects</div><div class="grid">${minProjectsHtml}</div>` : ""}
+
+    ${experience.length ? `<div class="section-title">Work Experience</div><div>${minExpHtml}</div>` : ""}
+
+    ${education.length ? `<div class="section-title">Education</div><div>${minEduHtml}</div>` : ""}
+
+    <footer>&copy; ${new Date().getFullYear()} ${name}. All rights reserved.</footer>
+  </div>
+</body>
+</html>`;
+      setGeneratedHtml(minHtml.trim());
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // TEMPLATE 2: DEVELOPER CLI TERMINAL
+    // -------------------------------------------------------------
+    if (layoutTheme === "terminal") {
+      const cliSkillsHtml = skillsArray.map(s => `<span class="tag">${s}</span>`).join(" ");
+      const cliProjectsHtml = projects.map(p => `
+        <div class="cmd-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="color:var(--cyan);font-weight:700">&gt; ${p.name || "Untitled"}</span>
+            ${p.link ? `<a href="${p.link}" target="_blank" style="color:var(--text);font-size:0.8rem">[repo]</a>` : ""}
+          </div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin:4px 0 10px">${p.desc || ""}</p>
+          <div>${p.tech ? p.tech.split(',').map(t => `<span class="tag">${t.trim()}</span>`).join(' ') : ''}</div>
+        </div>`).join("");
+
+      const cliExpHtml = experience.map(exp => `
+        <div class="cmd-box">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--yellow);font-weight:700">${exp.role || ""} @ ${exp.company || ""}</span>
+            <span style="color:var(--text-muted);font-size:0.8rem">${exp.duration || ""}</span>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-top:6px">${exp.desc || ""}</p>
+        </div>`).join("");
+
+      const cliEduHtml = education.map(edu => `
+        <div class="cmd-box">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--cyan);font-weight:700">${edu.degree || ""}</span>
+            <span style="color:var(--text-muted);font-size:0.8rem">${edu.years || ""}</span>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin:4px 0">${edu.institution || ""}</p>
+          ${edu.grade ? `<span class="tag">${edu.grade}</span>` : ""}
+        </div>`).join("");
+
+      const cliHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${name} | Developer CLI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --term: #161b22;
+      --text: #39d353;
+      --text-light: #e6edf3;
+      --text-muted: #8b949e;
+      --cyan: #58a6ff;
+      --yellow: #d29922;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text-light); font-family: 'Fira Code', monospace; padding: 20px; line-height: 1.6; }
+    .term-window { max-width: 880px; margin: 20px auto; background: var(--term); border: 1px solid #30363d; border-radius: 12px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.6); }
+    .term-bar { background: #21262d; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #30363d; }
+    .dots { display: flex; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+    .term-title { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+    .term-body { padding: 28px; }
+    .prompt { color: var(--text); font-weight: 700; }
+    .cmd-title { font-size: 1.1rem; color: var(--cyan); margin: 28px 0 12px; font-weight: 700; border-bottom: 1px dashed #30363d; padding-bottom: 6px; }
+    .cmd-box { background: rgba(0,0,0,0.3); border: 1px solid #30363d; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+    .tag { display: inline-block; border: 1px solid var(--text); color: var(--text); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin: 2px; }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .blink { animation: blinker 1s linear infinite; }
+    @keyframes blinker { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div class="term-window">
+    <div class="term-bar">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="term-title">bash — ${name.toLowerCase().replace(/\s+/g, '')}.folio</div>
+      <div style="width:40px"></div>
+    </div>
+    <div class="term-body">
+      <p><span class="prompt">$ whoami</span></p>
+      <h1 style="color:var(--text-light);font-size:2.2rem;margin:6px 0">${name}</h1>
+      <p style="color:var(--yellow);font-weight:700;margin-bottom:12px">&gt; ${role}</p>
+      <p style="color:var(--text-muted);margin-bottom:20px">${bio}</p>
+
+      <p style="margin-top:16px"><span class="prompt">$ cat contact.json</span></p>
+      <div class="cmd-box" style="font-size:0.85rem">
+        ${email ? `<div>"email": "<a href="mailto:${email}">${email}</a>",</div>` : ""}
+        ${github ? `<div>"github": "<a href="${github}" target="_blank">${github}</a>",</div>` : ""}
+        ${linkedin ? `<div>"linkedin": "<a href="${linkedin}" target="_blank">${linkedin}</a>",</div>` : ""}
+        ${twitter ? `<div>"twitter": "<a href="${twitter}" target="_blank">${twitter}</a>"</div>` : ""}
+      </div>
+
+      <div class="cmd-title"><span class="prompt">$ ls skills/</span></div>
+      <div>${cliSkillsHtml}</div>
+
+      ${projects.length ? `<div class="cmd-title"><span class="prompt">$ ./render_projects.sh</span></div><div>${cliProjectsHtml}</div>` : ""}
+
+      ${experience.length ? `<div class="cmd-title"><span class="prompt">$ cat experience.log</span></div><div>${cliExpHtml}</div>` : ""}
+
+      ${education.length ? `<div class="cmd-title"><span class="prompt">$ cat education.log</span></div><div>${cliEduHtml}</div>` : ""}
+
+      <p style="margin-top:30px;color:var(--text-muted);font-size:0.8rem"><span class="prompt">$</span> echo "System operational." <span class="blink">_</span></p>
+    </div>
+  </div>
+</body>
+</html>`;
+      setGeneratedHtml(cliHtml.trim());
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // TEMPLATE 3: BOLD NEOBRUTALISM POP
+    // -------------------------------------------------------------
+    if (layoutTheme === "neobrutal") {
+      const neoSkillsHtml = skillsArray.map(s => `<span class="badge-pop">${s}</span>`).join(" ");
+      const neoProjectsHtml = projects.map(p => `
+        <div class="card-neo">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;font-size:1.3rem;font-weight:900">${p.name || "Untitled Project"}</h3>
+            ${p.link ? `<a href="${p.link}" target="_blank" class="btn-pop-sm">Link &rarr;</a>` : ""}
+          </div>
+          <p style="font-weight:600;margin-bottom:12px">${p.desc || ""}</p>
+          <div>${p.tech ? p.tech.split(',').map(t => `<span class="tag-sm">${t.trim()}</span>`).join(' ') : ''}</div>
+        </div>`).join("");
+
+      const neoExpHtml = experience.map(exp => `
+        <div class="card-neo">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0;font-size:1.2rem;font-weight:900">${exp.role || ""}</h3>
+            <span class="badge-pop" style="background:#000;color:#fff">${exp.duration || ""}</span>
+          </div>
+          <h4 style="margin:6px 0 8px;font-weight:800;color:#333">${exp.company || ""}</h4>
+          <p style="font-weight:600;margin:0">${exp.desc || ""}</p>
+        </div>`).join("");
+
+      const neoEduHtml = education.map(edu => `
+        <div class="card-neo">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0;font-size:1.2rem;font-weight:900">${edu.degree || ""}</h3>
+            <span style="font-weight:800">${edu.years || ""}</span>
+          </div>
+          <h4 style="margin:6px 0;font-weight:700">${edu.institution || ""}</h4>
+          ${edu.grade ? `<span class="badge-pop" style="font-size:0.75rem">${edu.grade}</span>` : ""}
+        </div>`).join("");
+
+      const neoHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${name} | Neobrutalist Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fef08a;
+      --accent: ${activeColor.primary};
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: #000000; font-family: 'Space Grotesk', sans-serif; padding: 30px 20px; line-height: 1.5; }
+    .container { max-width: 860px; margin: 0 auto; }
+    .hero-box { background: #ffffff; border: 4px solid #000; box-shadow: 7px 7px 0px #000; padding: 36px; border-radius: 20px; margin-bottom: 30px; }
+    h1 { font-size: 3.2rem; font-weight: 900; margin: 0 0 8px; text-transform: uppercase; letter-spacing: -0.02em; }
+    .badge-pop { display: inline-block; background: var(--accent); color: #fff; border: 2px solid #000; box-shadow: 3px 3px 0px #000; font-weight: 900; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; margin: 4px; }
+    .tag-sm { display: inline-block; background: #fff; color: #000; border: 2px solid #000; font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; margin: 2px; }
+    .card-neo { background: #ffffff; border: 3px solid #000; box-shadow: 5px 5px 0px #000; padding: 22px; border-radius: 16px; margin-bottom: 20px; transition: transform 0.15s; }
+    .card-neo:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0px #000; }
+    .sec-title { font-size: 1.6rem; font-weight: 900; text-transform: uppercase; margin: 40px 0 16px; display: inline-block; background: #fff; border: 3px solid #000; padding: 6px 16px; border-radius: 10px; box-shadow: 4px 4px 0px #000; }
+    .btn-pop-sm { display: inline-block; background: #000; color: #fff; border: 2px solid #000; font-weight: 900; padding: 4px 12px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; }
+    .social-btn { display: inline-block; background: #fff; color: #000; border: 2px solid #000; box-shadow: 3px 3px 0px #000; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.85rem; margin: 4px; }
+    .social-btn:hover { background: var(--accent); color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero-box">
+      <h1>${name}</h1>
+      <span class="badge-pop" style="background:#000;color:#fff">${role}</span>
+      <p style="font-size:1.1rem;font-weight:700;margin:16px 0 24px">${bio}</p>
+      <div>
+        ${email ? `<a href="mailto:${email}" class="social-btn">✉ Email</a>` : ""}
+        ${github ? `<a href="${github}" target="_blank" class="social-btn">💻 GitHub</a>` : ""}
+        ${linkedin ? `<a href="${linkedin}" target="_blank" class="social-btn">💼 LinkedIn</a>` : ""}
+        ${twitter ? `<a href="${twitter}" target="_blank" class="social-btn">🐦 Twitter</a>` : ""}
+        ${customLink ? `<a href="${customLink}" target="_blank" class="social-btn">🌐 Link</a>` : ""}
+      </div>
+    </div>
+
+    <div class="sec-title">Skills</div>
+    <div style="margin-bottom:24px">${neoSkillsHtml}</div>
+
+    ${projects.length ? `<div class="sec-title">Featured Projects</div><div>${neoProjectsHtml}</div>` : ""}
+
+    ${experience.length ? `<div class="sec-title">Work Experience</div><div>${neoExpHtml}</div>` : ""}
+
+    ${education.length ? `<div class="sec-title">Education</div><div>${neoEduHtml}</div>` : ""}
+  </div>
+</body>
+</html>`;
+      setGeneratedHtml(neoHtml.trim());
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // TEMPLATE 4: 3D CYBERPUNK CANVAS (DEFAULT)
+    // -------------------------------------------------------------
     const skillsHtml = skillsArray
       .map((s) => `<span class="skill-badge">${s}</span>`)
       .join("");
@@ -1153,15 +1589,13 @@ export default function PortfolioGenerator() {
 </body>
 </html>`;
 
-    
-
     setGeneratedHtml(html.trim());
   };
 
   // Run initial compile on load or input change
   useEffect(() => {
     generatePortfolioCode();
-  }, [name, role, bio, email, github, linkedin, twitter, customLink, skills, accentColor, projects, experience, education]);
+  }, [layoutTheme, name, role, bio, email, github, linkedin, twitter, customLink, skills, accentColor, projects, experience, education]);
 
   const handleDownload = () => {
     if (!generatedHtml) return;
@@ -1202,20 +1636,75 @@ export default function PortfolioGenerator() {
               Construct a responsive single-file personal website with a 3D Three.js particle background and instant deployment.
             </p>
           </div>
-          <span className="px-3 py-1.5 rounded-full text-xs font-black bg-brand-50 text-brand-600 dark:bg-brand-950/40 uppercase tracking-widest flex items-center gap-1">
-            <Layers className="h-4 w-4" /> 3D site builder
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5" /> Auto-saved
+            </span>
+            <button
+              onClick={handleResetDefaults}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-xl text-xs font-bold transition-all cursor-pointer"
+              title="Reset to default sample portfolio data"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Reset Defaults
+            </button>
+            <span className="px-3 py-1.5 rounded-full text-xs font-black bg-brand-50 text-brand-600 dark:bg-brand-950/40 uppercase tracking-widest flex items-center gap-1">
+              <Layers className="h-4 w-4" /> 3D site builder
+            </span>
+          </div>
         </div>
 
         {/* Workspace layout grid */}
         <div className="grid lg:grid-cols-12 gap-8 items-start">
           
-          {/* Controls columns (Form inputs) */}
+          {/* Controls column (Form inputs) */}
           <div className="lg:col-span-5 space-y-6 max-h-[85vh] overflow-y-auto pr-2 custom-scrollbar">
-            
+
+            {/* 1. Portfolio Design Theme Gallery Selector */}
+            <div className="bg-card border border-border/80 rounded-3xl p-5 shadow-sm space-y-4">
+              <div className="flex justify-between items-center border-b border-border/50 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-4 w-4 text-brand-500" />
+                  <h3 className="font-extrabold text-foreground text-sm">Select Design Theme</h3>
+                </div>
+                <span className="text-[10px] font-black uppercase text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded-md">
+                  {PORTFOLIO_THEMES.find(t => t.id === layoutTheme)?.tag}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                {PORTFOLIO_THEMES.map((theme) => {
+                  const isSelected = layoutTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      onClick={() => setLayoutTheme(theme.id)}
+                      className={`text-left p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
+                        isSelected
+                          ? "border-brand-500 bg-brand-500/5 shadow-sm scale-[1.02]"
+                          : "border-border/60 bg-muted/30 hover:border-brand-500/40 hover:bg-muted/60"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl">{theme.icon}</span>
+                        {isSelected && (
+                          <span className="h-2 w-2 rounded-full bg-brand-500 animate-pulse" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-foreground leading-snug">{theme.name}</h4>
+                        <p className="text-[10px] text-muted-foreground font-semibold leading-tight line-clamp-2 mt-0.5">
+                          {theme.desc}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Color accent toggles */}
             <div className="bg-card border border-border/80 rounded-3xl p-5 shadow-sm space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Choose Accent Accent</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Choose Accent Color</h3>
               <div className="flex gap-2">
                 {[
                   { name: "slate", color: "bg-slate-500" },

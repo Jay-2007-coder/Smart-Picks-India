@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useRef } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import confetti from "canvas-confetti";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import {
-  User, Mail, Phone, Lock, Eye, EyeOff, Loader2, CheckCircle2, Shield,
-  ArrowRight, ArrowLeft, Terminal, LayoutGrid, Heart
+  User, Mail, Phone, Lock, Eye, EyeOff, Loader2, Shield,
+  ArrowRight, ArrowLeft, Terminal, LayoutGrid
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // --- Zod Schema for all steps ---
 const registerSchema = z.object({
@@ -53,19 +53,13 @@ type RegisterFormValues = {
   interests: string[];
 };
 
-const STEPS = [
-  { id: 1, title: "Personal Details", icon: User },
-  { id: 2, title: "Security setup", icon: Lock },
-  { id: 3, title: "Ecosystem Prefs", icon: LayoutGrid }
-];
-
 const INTERESTS_LIST = [
   "📱 Gadgets", "💻 Laptops", "🎓 Student Deals",
   "📚 Study Resources", "🛍️ Shopping", "🎮 Gaming"
 ];
 
 function RegisterFormContent() {
-  const { register: registerAuth, socialLogin, user } = useAuth();
+  const { register: registerAuth, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -92,25 +86,7 @@ function RegisterFormContent() {
     if (user) router.push("/dashboard");
   }, [user, router]);
 
-  // Set refCode if it exists
   const refCode = searchParams.get("ref");
-
-  // Tilt Effect using Framer Motion
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["5deg", "-5deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-5deg", "5deg"]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const xPct = (e.clientX - rect.left) / rect.width - 0.5;
-    const yPct = (e.clientY - rect.top) / rect.height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-  const handleMouseLeave = () => { x.set(0); y.set(0); };
 
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
@@ -137,7 +113,6 @@ function RegisterFormContent() {
       confirmPassword: data.confirmPassword,
       acceptTerms: data.acceptTerms,
       refCode: refCode || "",
-      // Pass extras if API accepts them
       role: data.role,
       interests: data.interests
     } as any);
@@ -145,7 +120,7 @@ function RegisterFormContent() {
     setIsPending(false);
     if (res.success) {
       triggerConfetti();
-      setTimeout(() => router.push("/dashboard"), 1500);
+      setTimeout(() => router.push("/dashboard"), 1200);
     } else {
       setGeneralError(res.message);
       if (res.errors) {
@@ -155,244 +130,216 @@ function RegisterFormContent() {
   };
 
   const triggerConfetti = () => {
-    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#7C3AED', '#EC4899', '#EF4444'] });
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   };
 
-  const strengthScore = React.useMemo(() => {
-    let score = 0;
-    if (!passwordValue) return 0;
-    if (passwordValue.length >= 8) score++;
-    if (/[A-Z]/.test(passwordValue)) score++;
-    if (/[a-z]/.test(passwordValue)) score++;
-    if (/[0-9]/.test(passwordValue)) score++;
-    if (/[^A-Za-z0-9]/.test(passwordValue)) score++;
-    return score;
-  }, [passwordValue]);
-
-  const initials = watchAll.name ? watchAll.name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0,2) : "AI";
-
   return (
-    <motion.div
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="w-full relative"
-    >
-      <div className="absolute -inset-[1px] bg-gradient-to-b from-white/20 to-white/0 rounded-3xl z-0 pointer-events-none" />
-      <div className="bg-[#0b0f19]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 overflow-hidden min-h-[500px] flex flex-col">
-        
-        <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/10 rounded-full blur-[80px] pointer-events-none" />
-
-        {/* Progress Bar Header */}
-        <div className="mb-8 relative z-20">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Terminal className="w-5 h-5 text-violet-400" />
-              Initialize Identity
-            </h2>
-            <div className="text-xs font-black text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-              {Math.round((step / 3) * 100)}%
-            </div>
+    <div className="w-full card p-6 sm:p-8 border border-border bg-card shadow-sm rounded-xl select-none">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <div className="h-9 w-9 rounded-lg bg-muted border border-border flex items-center justify-center">
+            <Terminal className="w-4 h-4 text-foreground" />
           </div>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(s => (
-              <div key={s} className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: step >= s ? "100%" : "0%" }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className="h-full bg-gradient-to-r from-violet-500 to-pink-500"
-                />
-              </div>
-            ))}
-          </div>
+          <span className="text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border">
+            Step {step} of 3
+          </span>
         </div>
-
-        {/* Avatar Generator (only show when name is typed) */}
-        <AnimatePresence>
-          {watchAll.name.length > 2 && step === 1 && (
-            <motion.div 
-              initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-              className="flex justify-center mb-6"
-            >
-              <div className="relative group cursor-pointer">
-                <div className="absolute inset-0 bg-violet-500 rounded-full blur-[20px] opacity-50 group-hover:opacity-80 transition-opacity" />
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-violet-600 to-rose-600 flex items-center justify-center relative border-2 border-white/20 z-10 shadow-xl">
-                  <span className="text-xl font-black text-white tracking-wider">{initials}</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col relative z-20">
-          <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input {...register("name")} placeholder="Full Name" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
-                    </div>
-                    {errors.name && <p className="text-[10px] text-rose-400 mt-1">{errors.name.message}</p>}
-                  </div>
-                  <div>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">@</span>
-                      <input {...register("username")} placeholder="Username" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-8 pr-3 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input {...register("email")} type="email" placeholder="Email Address" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
-                  </div>
-                  {errors.email && <p className="text-[10px] text-rose-400 mt-1">{errors.email.message}</p>}
-                </div>
-                <div>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input {...register("phone")} type="tel" placeholder="Phone Number (e.g. +919876543210) (Optional)" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
-                  </div>
-                  {errors.phone && <p className="text-[10px] text-rose-400 mt-1">{errors.phone.message}</p>}
-                </div>
-              </motion.div>
-            )}
-
-            {step === 2 && (
-              <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4">
-                <div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input {...register("password")} type={showPassword ? "text" : "password"} placeholder="Master Password" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-10 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {passwordValue && (
-                    <div className="mt-2 flex gap-1 h-1 rounded-full overflow-hidden bg-white/5">
-                      {[1, 2, 3, 4].map((s) => (
-                        <div key={s} className={`h-full flex-1 transition-colors duration-300 ${strengthScore >= s ? s <= 2 ? "bg-rose-500" : s === 3 ? "bg-amber-500" : "bg-emerald-500" : "bg-transparent"}`} />
-                      ))}
-                    </div>
-                  )}
-                  {errors.password && <p className="text-[10px] text-rose-400 mt-1">{errors.password.message}</p>}
-                </div>
-                <div>
-                  <div className="relative">
-                    <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input {...register("confirmPassword")} type={showPassword ? "text" : "password"} placeholder="Confirm Password" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-10 text-white text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all" />
-                  </div>
-                  {errors.confirmPassword && <p className="text-[10px] text-rose-400 mt-1">{errors.confirmPassword.message}</p>}
-                </div>
-                <div className="flex items-start mt-4">
-                  <input {...register("acceptTerms")} id="terms" type="checkbox" className="mt-1 w-4 h-4 rounded border-slate-600 text-violet-500 focus:ring-violet-500 bg-white/5" />
-                  <label htmlFor="terms" className="ml-2 text-xs text-slate-400">
-                    I agree to the <Link href="/terms" className="text-violet-400 hover:underline">Terms</Link> & <Link href="/privacy" className="text-violet-400 hover:underline">Privacy Policy</Link>
-                  </label>
-                </div>
-                {errors.acceptTerms && <p className="text-[10px] text-rose-400">{errors.acceptTerms.message}</p>}
-              </motion.div>
-            )}
-
-            {step === 3 && (
-              <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-5">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Primary Role</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {["student", "professional", "shopper"].map(r => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => setValue("role", r as any)}
-                        className={`py-2 px-1 text-xs font-bold capitalize rounded-xl border transition-all ${watchAll.role === r ? "bg-violet-500/20 border-violet-500 text-white" : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"}`}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Select Interests</label>
-                  <div className="flex flex-wrap gap-2">
-                    {INTERESTS_LIST.map(interest => {
-                      const isSelected = watchAll.interests.includes(interest);
-                      return (
-                        <button
-                          key={interest}
-                          type="button"
-                          onClick={() => {
-                            if (isSelected) setValue("interests", watchAll.interests.filter(i => i !== interest));
-                            else setValue("interests", [...watchAll.interests, interest]);
-                          }}
-                          className={`py-1.5 px-3 rounded-full text-xs font-semibold border transition-all ${isSelected ? "bg-rose-500/20 border-rose-500 text-white" : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"}`}
-                        >
-                          {interest}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {(generalError || Object.keys(serverErrors).length > 0) && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }} 
-                animate={{ opacity: 1, height: 'auto' }} 
-                className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-400 space-y-1.5"
-              >
-                {generalError && <p className="font-bold">{generalError}</p>}
-                {Object.entries(serverErrors).map(([field, messages]) => (
-                  <p key={field} className="text-[11px] font-normal leading-relaxed">
-                    <span className="capitalize font-semibold text-rose-300">{field}:</span> {Array.isArray(messages) ? messages.join(", ") : messages}
-                  </p>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="mt-auto pt-8 flex gap-3">
-            {step > 1 && (
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="button" onClick={handlePrev} className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors">
-                <ArrowLeft className="w-5 h-5" />
-              </motion.button>
-            )}
-            
-            {step < 3 ? (
-              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="button" onClick={handleNext} className="flex-1 py-3 rounded-2xl font-black text-white text-sm relative overflow-hidden group shadow-[0_0_30px_-10px_rgba(124,58,237,0.4)]" style={{ background: "linear-gradient(135deg, #7C3AED, #EC4899)" }}>
-                <span className="relative flex items-center justify-center gap-2">Continue <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
-              </motion.button>
-            ) : (
-              <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={isPending} className="flex-1 py-3 rounded-2xl font-black text-white text-sm relative overflow-hidden group shadow-[0_0_40px_-10px_rgba(124,58,237,0.6)] disabled:opacity-70" style={{ background: "linear-gradient(135deg, #7C3AED, #EC4899, #EF4444)", backgroundSize: "200% 200%" }} animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }} transition={{ duration: 5, repeat: Infinity, ease: "linear" }}>
-                <span className="relative flex items-center justify-center gap-2">
-                  {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Deploy Account"}
-                </span>
-              </motion.button>
-            )}
-          </div>
-        </form>
-
-        <div className="mt-6 text-center relative z-20">
-          <p className="text-xs text-slate-500 font-medium">
-            Already registered? <Link href="/login" className="font-bold text-violet-400 hover:text-violet-300">Sign In</Link>
-          </p>
+        <h2 className="text-xl font-bold text-foreground tracking-tight">Create your account</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">Initialize your SmartPicks identity &amp; preferences.</p>
+        
+        {/* Progress Line */}
+        <div className="w-full bg-muted rounded-full h-1 mt-4 overflow-hidden">
+          <div
+            className="bg-foreground h-full transition-all duration-300 rounded-full"
+            style={{ width: `${(step / 3) * 100}%` }}
+          />
         </div>
       </div>
-    </motion.div>
+
+      {/* Error Notification */}
+      {(generalError || Object.keys(serverErrors).length > 0) && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 text-xs text-red-600 dark:text-red-400 space-y-1">
+          {generalError && <p className="font-semibold flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" />{generalError}</p>}
+          {Object.entries(serverErrors).map(([field, messages]) => (
+            <p key={field} className="text-[11px]">
+              <span className="capitalize font-semibold">{field}:</span> {Array.isArray(messages) ? messages.join(", ") : messages}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {step === 1 && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input {...register("name")} placeholder="John Doe" className="w-full h-10 bg-background border border-border rounded-lg pl-9 pr-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                {errors.name && <p className="text-[11px] text-red-600 mt-1">{errors.name.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Username</label>
+                <input {...register("username")} placeholder="johndoe" className="w-full h-10 bg-background border border-border rounded-lg px-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input {...register("email")} type="email" placeholder="name@example.com" className="w-full h-10 bg-background border border-border rounded-lg pl-9 pr-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              {errors.email && <p className="text-[11px] text-red-600 mt-1">{errors.email.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">Phone Number (Optional)</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input {...register("phone")} type="tel" placeholder="+919876543210" className="w-full h-10 bg-background border border-border rounded-lg pl-9 pr-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              {errors.phone && <p className="text-[11px] text-red-600 mt-1">{errors.phone.message}</p>}
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input {...register("password")} type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full h-10 bg-background border border-border rounded-lg pl-9 pr-10 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-[11px] text-red-600 mt-1">{errors.password.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input {...register("confirmPassword")} type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full h-10 bg-background border border-border rounded-lg pl-9 pr-10 text-xs text-foreground outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              {errors.confirmPassword && <p className="text-[11px] text-red-600 mt-1">{errors.confirmPassword.message}</p>}
+            </div>
+
+            <div className="flex items-start pt-2">
+              <input {...register("acceptTerms")} id="terms" type="checkbox" className="mt-0.5 h-4 w-4 rounded border-border text-brand-600 focus:ring-brand-600 bg-background cursor-pointer" />
+              <label htmlFor="terms" className="ml-2 text-xs text-muted-foreground">
+                I agree to the <Link href="/terms" className="text-foreground font-semibold hover:underline">Terms of Service</Link> &amp; <Link href="/privacy" className="text-foreground font-semibold hover:underline">Privacy Policy</Link>
+              </label>
+            </div>
+            {errors.acceptTerms && <p className="text-[11px] text-red-600">{errors.acceptTerms.message}</p>}
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-2">Primary Role</label>
+              <div className="grid grid-cols-3 gap-2">
+                {["student", "professional", "shopper"].map(r => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setValue("role", r as any)}
+                    className={cn(
+                      "py-2 px-2 text-xs font-semibold capitalize rounded-lg border transition-all cursor-pointer",
+                      watchAll.role === r
+                        ? "bg-foreground text-background border-foreground font-bold"
+                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-2">Select Interests</label>
+              <div className="flex flex-wrap gap-1.5">
+                {INTERESTS_LIST.map(interest => {
+                  const isSelected = watchAll.interests.includes(interest);
+                  return (
+                    <button
+                      key={interest}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) setValue("interests", watchAll.interests.filter(i => i !== interest));
+                        else setValue("interests", [...watchAll.interests, interest]);
+                      }}
+                      className={cn(
+                        "py-1 px-2.5 rounded-md text-xs font-medium border transition-all cursor-pointer",
+                        isSelected
+                          ? "bg-foreground text-background border-foreground font-semibold"
+                          : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                    >
+                      {interest}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2 pt-4 border-t border-border mt-6">
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="btn-secondary h-10 px-4 text-xs cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {step < 3 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="btn-primary flex-1 h-10 text-xs font-semibold justify-center cursor-pointer"
+            >
+              Continue
+              <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isPending}
+              className="btn-primary flex-1 h-10 text-xs font-semibold justify-center cursor-pointer disabled:opacity-50"
+            >
+              {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create account"}
+            </button>
+          )}
+        </div>
+      </form>
+
+      {/* Footer link */}
+      <div className="mt-6 text-center text-xs text-muted-foreground border-t border-border pt-4">
+        Already registered?{" "}
+        <Link href="/login" className="font-semibold text-foreground hover:underline">
+          Sign in
+        </Link>
+      </div>
+    </div>
   );
 }
 
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="flex h-screen items-center justify-center bg-[#050816]">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-foreground" />
       </div>
     }>
       <AuthLayout>

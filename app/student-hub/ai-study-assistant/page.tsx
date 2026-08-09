@@ -284,7 +284,7 @@ export default function AIStudyAssistant() {
   // ─── Auth Loading ────────────────────────────────────────────────────────────
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080d1a]">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-200 transition-colors duration-200 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-brand-600 to-violet-600 flex items-center justify-center shadow-2xl shadow-brand-500/30">
