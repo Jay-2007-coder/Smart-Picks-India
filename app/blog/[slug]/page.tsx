@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Calendar, Clock, Tag, ChevronRight } from "lucide-react";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { generateMetadata as generateSEOMetadata, generateArticleSchema, generateFAQSchema } from "@/lib/seo";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getValidBlogImage } from "@/lib/utils";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQAccordion from "@/components/FAQAccordion";
 import PinterestShareButton from "@/components/PinterestShareButton";
@@ -91,7 +91,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Featured Image */}
         <div className="relative aspect-[21/9] sm:aspect-[2/1] rounded-2xl overflow-hidden mb-10 border border-border shadow-sm">
-          <Image src={post.image} alt={post.title} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 1024px" />
+          <Image src={getValidBlogImage(post.image, post.category)} alt={post.title} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 1024px" />
         </div>
 
         <div className="grid lg:grid-cols-[1fr_300px] gap-12">

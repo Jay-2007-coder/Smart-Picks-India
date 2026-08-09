@@ -18,7 +18,7 @@ import {
   Search,
   X
 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getValidBlogImage } from "@/lib/utils";
 import type { BlogPost } from "@/data/blogPosts";
 import BlogCard from "@/components/BlogCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,6 +42,7 @@ const categoryInfo: Record<string, { label: string; icon: React.ComponentType<an
 };
 
 export function FeaturedBlogCard({ post }: { post: BlogPost }) {
+  const imageUrl = getValidBlogImage(post.image, post.category);
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -58,7 +59,7 @@ export function FeaturedBlogCard({ post }: { post: BlogPost }) {
       {/* Left side: Image */}
       <Link href={`/blog/${post.slug}`} className="relative block overflow-hidden min-h-[250px] md:min-h-[350px] bg-muted">
         <Image
-          src={post.image}
+          src={imageUrl}
           alt={post.title}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"

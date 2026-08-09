@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, Tag, ArrowRight } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getValidBlogImage } from "@/lib/utils";
 import type { BlogPost } from "@/data/blogPosts";
 import { motion } from "framer-motion";
 
@@ -13,6 +13,7 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({ post, priority = false, index = 0 }: BlogCardProps) {
+  const imageUrl = getValidBlogImage(post.image, post.category);
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -30,7 +31,7 @@ export default function BlogCard({ post, priority = false, index = 0 }: BlogCard
       <Link href={`/blog/${post.slug}`} className="relative block overflow-hidden">
         <div className="relative aspect-[2/1.3] bg-muted border-b border-border/10">
           <Image
-            src={post.image}
+            src={imageUrl}
             alt={post.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

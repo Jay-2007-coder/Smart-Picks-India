@@ -152,16 +152,32 @@ Return ONLY raw JSON with keys: title, excerpt, category, tags, image, readTime,
       }
     }
 
+    const CATEGORY_IMAGES: Record<string, string> = {
+      deals: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&q=80",
+      "buying-guides": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&q=80",
+      "student-hub": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80",
+      "tech-trends": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80",
+      tech: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80",
+      gadgets: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80",
+    };
+
+    function sanitizeImage(img: string | undefined, cat: string): string {
+      if (img && (img.startsWith("http://") || img.startsWith("https://"))) return img;
+      const catKey = (cat || "").toLowerCase();
+      return CATEGORY_IMAGES[catKey] || "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80";
+    }
+
     const title = blogObj.title;
     const slug = slugify(title);
+    const rawCategory = (blogObj.category || "buying-guides").toLowerCase().trim();
 
     const newBlog = {
       slug,
       title,
       excerpt: blogObj.excerpt || "",
       content: blogObj.content || "",
-      image: blogObj.image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80",
-      category: (blogObj.category || "buying-guides").toLowerCase().trim(),
+      image: sanitizeImage(blogObj.image, rawCategory),
+      category: rawCategory,
       tags: blogObj.tags || ["AI", "Smart Picks"],
       datePublished: todayStr,
       dateModified: todayStr,
