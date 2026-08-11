@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { products } from "@/data/products";
 import { blogPosts } from "@/data/blogPosts";
 import { saveLocalGeneratedBlog } from "@/lib/blogStore";
+import { saveBlogToMongo } from "@/lib/mongoClient";
 
 export const runtime = "nodejs";
 
@@ -192,11 +193,11 @@ Return ONLY raw JSON with keys: title, excerpt, category, tags, image, readTime,
       toc: blogObj.toc || [],
     };
 
-    // Add to local in-memory posts array & save to disk
-    if (!blogPosts.some((b) => b.slug === slug)) {
-      blogPosts.unshift(newBlog);
-    }
+    // Save to local JSON (works in dev, silent fail on Vercel)
     saveLocalGeneratedBlog(newBlog);
+
+    // Save directly to MongoDB Atlas (works on Vercel too!)
+    await saveBlogToMongo(newBlog);
 
     // Bust Next.js cache so /blog and the new post page show immediately
     revalidatePath("/blog");
