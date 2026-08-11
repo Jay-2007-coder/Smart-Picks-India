@@ -1,38 +1,45 @@
 import { MongoClient } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
-}
+let clientPromise: Promise<MongoClient> | null = null;
 
-// Reuse the same connection across hot reloads in dev / serverless invocations
-declare global {
-  // eslint-disable-next-line no-var
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
-}
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
-
-if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(MONGODB_URI);
-    global._mongoClientPromise = client.connect();
+function getClientPromise(): Promise<MongoClient> | null {
+  if (!MONGODB_URI) {
+    console.warn("⚠️ MONGODB_URI is not defined — skipping MongoDB connection");
+    return null;
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(MONGODB_URI);
-  clientPromise = client.connect();
+
+  if (clientPromise) return clientPromise;
+
+  // In development, reuse connection across hot reloads
+  if (process.env.NODE_ENV === "development") {
+    const g = global as any;
+    if (!g._mongoClientPromise) {
+      const client = new MongoClient(MONGODB_URI);
+      g._mongoClientPromise = client.connect();
+    }
+    clientPromise = g._mongoClientPromise;
+  } else {
+    const client = new MongoClient(MONGODB_URI);
+    clientPromise = client.connect();
+  }
+
+  return clientPromise;
 }
 
-export default clientPromise;
+export default getClientPromise;
 
 /** Save a blog post directly to MongoDB Atlas from Next.js/Vercel */
 export async function saveBlogToMongo(blog: Record<string, any>): Promise<void> {
   try {
-    const mongoClient = await clientPromise;
-    const db = mongoClient.db(); // uses default db from URI
+    const promise = getClientPromise();
+    if (!promise) {
+      console.warn("⚠️ Skipping MongoDB save — MONGODB_URI not configured");
+      return;
+    }
+    const mongoClient = await promise;
+    const db = mongoClient.db();
     const blogs = db.collection("blogs");
 
     // Upsert by slug so re-generating the same topic doesn't duplicate
@@ -45,4 +52,4 @@ export async function saveBlogToMongo(blog: Record<string, any>): Promise<void> 
   } catch (err) {
     console.error("❌ Failed to save blog to MongoDB:", err);
   }
-}
+}
