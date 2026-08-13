@@ -23,7 +23,7 @@ export default function CTASection({ affiliateLink, title, price, oldPrice }: CT
         href={affiliateLink}
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="btn-primary w-full justify-center text-base py-4 bg-amber-500 hover:bg-amber-600 mb-3"
+        className="btn-amazon w-full justify-center text-base py-4 mb-3"
         id={`cta-buy-${title.toLowerCase().replace(/\s+/g, "-")}`}
       >
         <ShoppingCart className="h-5 w-5" />

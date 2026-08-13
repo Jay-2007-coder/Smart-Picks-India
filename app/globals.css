@@ -223,6 +223,39 @@
            hover:bg-[#1f2937] active:bg-[#374151];
   }
 
+  /* Premium "Buy on Amazon" button — deep navy gradient with shimmer */
+  .btn-amazon {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl
+           text-sm font-semibold text-white select-none cursor-pointer
+           transition-all duration-200
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-40
+           px-5 py-2.5
+           relative overflow-hidden;
+    background: linear-gradient(135deg, #1e293b 0%, #1e3a5f 50%, #1e293b 100%);
+    border: 1px solid rgba(99, 155, 255, 0.18);
+    box-shadow: 0 2px 12px rgba(30, 58, 95, 0.35), inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .btn-amazon::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .btn-amazon:hover {
+    background: linear-gradient(135deg, #253347 0%, #1e4a7a 50%, #253347 100%);
+    box-shadow: 0 4px 18px rgba(30, 74, 122, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    transform: translateY(-1px);
+    border-color: rgba(99, 155, 255, 0.3);
+  }
+  .btn-amazon:active {
+    transform: translateY(0px);
+    box-shadow: 0 1px 6px rgba(30, 58, 95, 0.3);
+  }
+
+
+
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium
            transition-colors duration-150 select-none cursor-pointer

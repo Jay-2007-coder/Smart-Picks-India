@@ -165,7 +165,7 @@ export default function QuickViewModal({ product, onClose }: QuickViewModalProps
                 href={product.affiliateLink}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                className="btn-primary flex-1 py-3 text-xs uppercase font-extrabold tracking-wider text-center flex items-center justify-center gap-2"
+                className="btn-amazon flex-1 py-3 text-xs uppercase font-extrabold tracking-wider text-center flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="h-4 w-4" /> Buy on Amazon
               </a>

@@ -159,8 +159,8 @@ export default function FlashDealsSection() {
                     href={deal.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-accent-500 via-orange-500 to-rose-500 hover:from-accent-600 hover:to-rose-600 text-white font-bold text-xs py-2 w-full mt-2 shadow-sm border border-accent-400/20 transition-all duration-300 btn-shiny"
-                    whileHover={{ scale: 1.02, boxShadow: "0 8px 20px -4px rgba(249,115,22,0.3)" }}
+                    className="btn-amazon w-full justify-center mt-2"
+                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                   >
                     <ShoppingCart className="h-3.5 w-3.5" /> Buy on Amazon

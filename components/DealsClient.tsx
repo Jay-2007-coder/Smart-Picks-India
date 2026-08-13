@@ -353,7 +353,7 @@ export default function DealsClient({ curatedDeals }: DealsClientProps) {
                         href={deal.affiliateLink}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
-                        className="btn-primary btn-sm w-full justify-center mt-1"
+                        className="btn-amazon btn-sm w-full justify-center mt-1"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                         Buy on Amazon

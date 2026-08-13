@@ -189,7 +189,7 @@ export default function ProductCard({
             target="_blank"
             rel="noopener noreferrer nofollow"
             id={`buy-${product.slug}`}
-            className="btn-primary w-full justify-center mt-1"
+            className="btn-amazon w-full justify-center mt-1"
             aria-label={`Buy ${product.title} on Amazon`}
             onClick={(e) => e.stopPropagation()}
           >
