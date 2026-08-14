@@ -44,6 +44,9 @@ export const metadata: Metadata = {
     creator: "@smartpicksindia",
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: "QMeF7Tq_76JMjuDCdwSLy0lpmt9rTNpcIn-2VKSGIlY",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -57,6 +60,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://images-na.ssl-images-amazon.com" />
         {/* Pinterest Rich Pins */}
         <meta name="p:domain_verify" content="41b175c4987172b0c7266d50e7598ec6" />
+        {/* Google Search Console Verification */}
+        <meta name="google-site-verification" content="QMeF7Tq_76JMjuDCdwSLy0lpmt9rTNpcIn-2VKSGIlY" />
         {/* 
           Google Analytics 4 setup. 
           To configure, set NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX in .env.local 
