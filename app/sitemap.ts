@@ -1,12 +1,27 @@
 import { MetadataRoute } from "next";
+import { headers } from "next/headers";
 import { products } from "@/data/products";
 import { categories } from "@/data/categories";
 import { getAllBlogs } from "@/lib/blogStore";
 
 export const dynamic = "force-dynamic";
 
+async function getBaseUrl(): Promise<string> {
+  try {
+    const h = await headers();
+    const host = h.get("host");
+    const proto = h.get("x-forwarded-proto") || "https";
+    if (host && !host.includes("localhost")) {
+      return `${proto}://${host}`;
+    }
+  } catch {
+    // fallback
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
+  const baseUrl = await getBaseUrl();
 
   // Static Pages
   const routes = ["", "/deals", "/blog", "/about", "/contact", "/privacy-policy", "/disclaimer", "/terms"].map(
@@ -45,4 +60,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [...routes, ...categoryRoutes, ...productRoutes, ...blogRoutes];
 }
+
 
