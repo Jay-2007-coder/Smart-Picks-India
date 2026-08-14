@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,45 +9,13 @@ import {
   SafeAreaView,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { ShoppingCart, Flame, Star, Sparkles } from 'lucide-react-native';
+import { ShoppingCart, Flame, Star, Sparkles, TrendingUp, GraduationCap, ChevronRight } from 'lucide-react-native';
 import { COLORS } from '../theme';
+import { products } from '../data/products';
 
 export default function HomeScreen({ navigation }) {
-  const [featured] = useState([
-    {
-      id: '1',
-      title: 'boAt Airdopes Plus 311 TWS Earbuds',
-      price: '₹999',
-      oldPrice: '₹3,999',
-      discount: '75% OFF',
-      rating: 4.4,
-      category: 'Gadgets',
-      image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&q=80',
-      affiliateLink: 'https://www.amazon.in/dp/B0CXPR5M93?tag=smartpicks03a-21',
-    },
-    {
-      id: '2',
-      title: 'Noise Two Wireless On-Ear Headphones',
-      price: '₹1,699',
-      oldPrice: '₹4,999',
-      discount: '66% OFF',
-      rating: 4.4,
-      category: 'Gadgets',
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80',
-      affiliateLink: 'https://www.amazon.in/dp/B0B647DGB9?tag=smartpicks03a-21',
-    },
-    {
-      id: '3',
-      title: 'Lenovo LOQ 2024 Gaming Laptop i5-12450HX',
-      price: '₹78,990',
-      oldPrice: '₹96,590',
-      discount: '18% OFF',
-      rating: 4.3,
-      category: 'Tech',
-      image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&q=80',
-      affiliateLink: 'https://www.amazon.in/dp/B0D1YH49X4?tag=smartpicks03a-21',
-    },
-  ]);
+  const flashSales = products.filter((p) => p.oldPrice > p.price).slice(0, 5);
+  const dealOfTheDay = products.find((p) => p.dealOfTheDay) || products[0];
 
   const openAmazon = (url) => {
     WebBrowser.openBrowserAsync(url);
@@ -56,67 +24,113 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Banner */}
         <View style={styles.heroBanner}>
           <View style={styles.badgeContainer}>
             <Sparkles color="#f97316" size={14} />
             <Text style={styles.badgeText}>SMART PICKS INDIA</Text>
           </View>
-          <Text style={styles.heroTitle}>India's Best Verified Deals</Text>
-          <Text style={styles.heroSub}>Track price history, placement guides, and daily Amazon drops.</Text>
+          <Text style={styles.heroTitle}>Verified Amazon Price Drop Tracker</Text>
+          <Text style={styles.heroSub}>Track 90-day price history, student placement guides, and daily Amazon drops.</Text>
           <TouchableOpacity
             style={styles.heroButton}
             onPress={() => navigation.navigate('Deals')}
           >
             <Flame color="#ffffff" size={16} />
-            <Text style={styles.heroButtonText}>Explore Flash Sales</Text>
+            <Text style={styles.heroButtonText}>Explore 25+ Live Deals</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Student Hub Card */}
+        <TouchableOpacity
+          style={styles.studentBanner}
+          onPress={() => navigation.navigate('StudentHub')}
+        >
+          <View style={styles.studentLeft}>
+            <GraduationCap color="#f97316" size={24} />
+            <View>
+              <Text style={styles.studentTitle}>Student Placement Hub</Text>
+              <Text style={styles.studentSub}>ATS Resume Checker & CGPA Predictor</Text>
+            </View>
+          </View>
+          <ChevronRight color={COLORS.accent} size={18} />
+        </TouchableOpacity>
+
+        {/* Deal of the Day */}
+        {dealOfTheDay && (
+          <View style={styles.dodCard}>
+            <View style={styles.dodBadge}>
+              <Flame color="#ffffff" size={12} />
+              <Text style={styles.dodBadgeText}>DEAL OF THE DAY</Text>
+            </View>
+            <Image source={{ uri: dealOfTheDay.image }} style={styles.dodImage} />
+            <Text style={styles.dodTitle} numberOfLines={2}>{dealOfTheDay.title}</Text>
+            <View style={styles.priceRow}>
+              <Text style={styles.price}>₹{dealOfTheDay.price.toLocaleString('en-IN')}</Text>
+              <Text style={styles.oldPrice}>₹{dealOfTheDay.oldPrice.toLocaleString('en-IN')}</Text>
+              <Text style={styles.discountTag}>
+                {Math.round(((dealOfTheDay.oldPrice - dealOfTheDay.price) / dealOfTheDay.oldPrice) * 100)}% OFF
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.buyBtn}
+              onPress={() => openAmazon(dealOfTheDay.affiliateLink)}
+            >
+              <ShoppingCart color="#ffffff" size={14} />
+              <Text style={styles.buyBtnText}>Buy on Amazon India</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Flash Sales List */}
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleRow}>
-            <Flame color="#f97316" size={18} />
-            <Text style={styles.sectionTitle}>Featured Flash Sales</Text>
+            <TrendingUp color="#f97316" size={18} />
+            <Text style={styles.sectionTitle}>Trending Verified Deals</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('Deals')}>
             <Text style={styles.viewAll}>View All</Text>
           </TouchableOpacity>
         </View>
 
-        {featured.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.dealCard}
-            activeOpacity={0.9}
-            onPress={() => openAmazon(item.affiliateLink)}
-          >
-            <Image source={{ uri: item.image }} style={styles.dealImage} />
-            <View style={styles.discountBadge}>
-              <Text style={styles.discountText}>{item.discount}</Text>
-            </View>
-
-            <View style={styles.dealInfo}>
-              <Text style={styles.dealTitle} numberOfLines={2}>{item.title}</Text>
-              <View style={styles.ratingRow}>
-                <Star color="#eab308" size={12} fill="#eab308" />
-                <Text style={styles.ratingText}>{item.rating}</Text>
-                <Text style={styles.categoryTag}>{item.category}</Text>
+        {flashSales.map((item) => {
+          const discountPct = Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100);
+          return (
+            <TouchableOpacity
+              key={item.slug}
+              style={styles.dealCard}
+              activeOpacity={0.9}
+              onPress={() => openAmazon(item.affiliateLink)}
+            >
+              <Image source={{ uri: item.image }} style={styles.dealImage} />
+              <View style={styles.discountBadge}>
+                <Text style={styles.discountText}>{discountPct}% OFF</Text>
               </View>
 
-              <View style={styles.priceRow}>
-                <Text style={styles.price}>{item.price}</Text>
-                <Text style={styles.oldPrice}>{item.oldPrice}</Text>
-              </View>
+              <View style={styles.dealInfo}>
+                <Text style={styles.dealTitle} numberOfLines={2}>{item.title}</Text>
+                <View style={styles.ratingRow}>
+                  <Star color="#eab308" size={12} fill="#eab308" />
+                  <Text style={styles.ratingText}>{item.rating}</Text>
+                  <Text style={styles.categoryTag}>{item.category.toUpperCase()}</Text>
+                </View>
 
-              <TouchableOpacity
-                style={styles.buyBtn}
-                onPress={() => openAmazon(item.affiliateLink)}
-              >
-                <ShoppingCart color="#ffffff" size={14} />
-                <Text style={styles.buyBtnText}>Buy on Amazon</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
+                <View style={styles.priceRow}>
+                  <Text style={styles.price}>₹{item.price.toLocaleString('en-IN')}</Text>
+                  <Text style={styles.oldPrice}>₹{item.oldPrice.toLocaleString('en-IN')}</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.buyBtnSmall}
+                  onPress={() => openAmazon(item.affiliateLink)}
+                >
+                  <ShoppingCart color="#ffffff" size={12} />
+                  <Text style={styles.buyBtnTextSmall}>Buy on Amazon</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -131,7 +145,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   badgeContainer: {
     flexDirection: 'row',
@@ -145,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badgeText: { color: COLORS.accent, fontSize: 10, fontWeight: '800' },
-  heroTitle: { color: '#ffffff', fontSize: 22, fontWeight: '800', marginBottom: 6 },
+  heroTitle: { color: '#ffffff', fontSize: 20, fontWeight: '800', marginBottom: 6 },
   heroSub: { color: COLORS.textMuted, fontSize: 12, lineHeight: 18, marginBottom: 16 },
   heroButton: {
     backgroundColor: COLORS.accent,
@@ -157,6 +171,42 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   heroButtonText: { color: '#ffffff', fontWeight: '700', fontSize: 14 },
+  studentBanner: {
+    backgroundColor: COLORS.card,
+    borderRadius: 14,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(249, 115, 22, 0.3)',
+  },
+  studentLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  studentTitle: { color: '#ffffff', fontSize: 13, fontWeight: '800' },
+  studentSub: { color: COLORS.textMuted, fontSize: 11 },
+  dodCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+  },
+  dodBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ef4444',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  dodBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '900' },
+  dodImage: { width: '100%', height: 180, borderRadius: 12, backgroundColor: '#1e293b', marginBottom: 12 },
+  dodTitle: { color: '#ffffff', fontSize: 15, fontWeight: '800', lineHeight: 20, marginBottom: 8 },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -192,7 +242,7 @@ const styles = StyleSheet.create({
   ratingText: { color: '#f8fafc', fontSize: 11, fontWeight: '600' },
   categoryTag: {
     color: COLORS.textMuted,
-    fontSize: 10,
+    fontSize: 9,
     marginLeft: 6,
     backgroundColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 6,
@@ -202,16 +252,26 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginVertical: 4 },
   price: { color: '#ffffff', fontSize: 16, fontWeight: '800' },
   oldPrice: { color: COLORS.textMuted, fontSize: 12, textDecorationLine: 'line-through' },
+  discountTag: { color: '#22c55e', fontSize: 11, fontWeight: '800', marginLeft: 4 },
   buyBtn: {
     backgroundColor: '#1e3a5f',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(99,155,255,0.2)',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 8,
   },
-  buyBtnText: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
+  buyBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  buyBtnSmall: {
+    backgroundColor: '#1e3a5f',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  buyBtnTextSmall: { color: '#ffffff', fontSize: 10, fontWeight: '700' },
 });

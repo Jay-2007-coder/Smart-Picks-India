@@ -9,90 +9,27 @@ import {
   SafeAreaView,
   Modal,
 } from 'react-native';
-import { BookOpen, Clock, ChevronRight, X, Sparkles, Share2, Check } from 'lucide-react-native';
+import { BookOpen, Clock, ChevronRight, X, Calendar, Tag } from 'lucide-react-native';
 import { COLORS } from '../theme';
+import { blogPosts, BlogPost } from '../data/blogPosts';
 
 export default function BlogScreen() {
   const [selectedBlog, setSelectedBlog] = useState(null);
-
-  const [blogs] = useState([
-    {
-      slug: 'must-know-ai-tools-developer-technologies-2026',
-      title: 'Must-Know AI Tools & Developer Technologies for 2026',
-      excerpt: 'A comprehensive guide to AI coding assistants, modern frameworks, and open-source models for Indian developers.',
-      category: 'Tech Trends',
-      readTime: '7 min read',
-      date: 'Aug 14, 2026',
-      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
-      sections: [
-        {
-          heading: '1. AI Coding Assistants & Agentic Workflows',
-          content: 'Modern software development in 2026 relies heavily on AI coding agents. Tools like Antigravity, GitHub Copilot, and Cursor have transformed developer productivity by generating multi-file implementations, running automated tests, and handling environment setups seamlessly.',
-        },
-        {
-          heading: '2. Open-Source LLMs & Local Inference',
-          content: 'Running local LLMs (like Llama 3 & DeepSeek) on Apple Silicon or RTX GPUs allows developers to write code without exposing private company repositories to cloud APIs.',
-        },
-        {
-          heading: '3. Full-Stack Next.js 15 & React 19',
-          content: 'React 19 Server Actions, Server Components, and Streaming SSR provide ultra-fast page load times and zero-bundle-size rendering for modern Indian e-commerce and SaaS platforms.',
-        },
-      ],
-    },
-    {
-      slug: 'complete-placement-preparation-guide',
-      title: 'Complete Campus Placement Guide for Engineering Students',
-      excerpt: 'Your step-by-step roadmap to campus placements — from building an ATS-optimised resume to cracking coding interviews.',
-      category: 'Career & Student',
-      readTime: '8 min read',
-      date: 'Aug 12, 2026',
-      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
-      sections: [
-        {
-          heading: '1. Crafting a 100% ATS-Compliant Resume',
-          content: 'Keep your resume strictly to a single page. Avoid multi-column templates, icons, or graphics. Use clean headings (Education, Technical Skills, Projects, Experience) and action verbs like Built, Architected, and Scaled.',
-        },
-        {
-          heading: '2. Data Structures & Algorithms Roadmap',
-          content: 'Master Core DSA patterns: Two Pointers, Sliding Window, Binary Search, Trees, and Dynamic Programming. Practice 150 curated LeetCode questions before placement season begins.',
-        },
-      ],
-    },
-    {
-      slug: 'smart-buying-guide-best-budget-deals',
-      title: 'Smart Buying Guide — Best Budget Tech Deals in India',
-      excerpt: 'Discover verified deals on electronics, home essentials, and gadgets checked against 90-day price history.',
-      category: 'Buying Guides',
-      readTime: '6 min read',
-      date: 'Aug 10, 2026',
-      image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&q=80',
-      sections: [
-        {
-          heading: '1. Always Verify Price History',
-          content: 'Never buy based on inflated MSRP discounts. Check price tracking history to ensure the current price is a real 90-day low.',
-        },
-        {
-          heading: '2. TWS Earbuds & Laptops Under Budget',
-          content: 'Look for ANC, fast charging, and manufacturer warranty coverage when picking audio gear and laptops under ₹20,000.',
-        },
-      ],
-    },
-  ]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <BookOpen color="#f97316" size={24} />
-          <Text style={styles.headerTitle}>Smart Picks Native Journal</Text>
+          <Text style={styles.headerTitle}>Smart Picks Tech & Career Journal</Text>
         </View>
 
-        {blogs.map((b) => (
+        {blogPosts.map((b) => (
           <TouchableOpacity key={b.slug} style={styles.blogCard} onPress={() => setSelectedBlog(b)}>
             <Image source={{ uri: b.image }} style={styles.blogImage} />
             <View style={styles.blogInfo}>
               <View style={styles.metaRow}>
-                <Text style={styles.catBadge}>{b.category}</Text>
+                <Text style={styles.catBadge}>{b.category.toUpperCase()}</Text>
                 <View style={styles.timeRow}>
                   <Clock color={COLORS.textMuted} size={10} />
                   <Text style={styles.readTime}>{b.readTime}</Text>
@@ -119,7 +56,7 @@ export default function BlogScreen() {
               <TouchableOpacity onPress={() => setSelectedBlog(null)} style={styles.closeBtn}>
                 <X color="#ffffff" size={20} />
               </TouchableOpacity>
-              <Text style={styles.modalHeaderTitle} numberOfLines={1}>{selectedBlog.category}</Text>
+              <Text style={styles.modalHeaderTitle} numberOfLines={1}>{selectedBlog.category.toUpperCase()}</Text>
               <View style={{ width: 24 }} />
             </View>
 
@@ -128,21 +65,40 @@ export default function BlogScreen() {
 
               <View style={styles.readerBody}>
                 <View style={styles.metaRow}>
-                  <Text style={styles.catBadge}>{selectedBlog.category}</Text>
-                  <Text style={styles.readTime}>{selectedBlog.date} • {selectedBlog.readTime}</Text>
+                  <Text style={styles.catBadge}>{selectedBlog.category.toUpperCase()}</Text>
+                  <Text style={styles.readTime}>{selectedBlog.datePublished} • {selectedBlog.readTime}</Text>
                 </View>
 
                 <Text style={styles.readerTitle}>{selectedBlog.title}</Text>
                 <Text style={styles.readerExcerpt}>{selectedBlog.excerpt}</Text>
 
+                {/* Table of Contents */}
+                {selectedBlog.toc && selectedBlog.toc.length > 0 && (
+                  <View style={styles.tocBox}>
+                    <Text style={styles.tocTitle}>Table of Contents:</Text>
+                    {selectedBlog.toc.map((item, idx) => (
+                      <Text key={idx} style={styles.tocItem}>• {item.title}</Text>
+                    ))}
+                  </View>
+                )}
+
                 <View style={styles.divider} />
 
-                {selectedBlog.sections.map((sec, idx) => (
-                  <View key={idx} style={styles.sectionBlock}>
-                    <Text style={styles.sectionHeading}>{sec.heading}</Text>
-                    <Text style={styles.sectionContent}>{sec.content}</Text>
+                {/* Article Content */}
+                <Text style={styles.contentText}>{selectedBlog.content}</Text>
+
+                {/* FAQs Section */}
+                {selectedBlog.faqs && selectedBlog.faqs.length > 0 && (
+                  <View style={styles.faqSection}>
+                    <Text style={styles.faqSectionTitle}>Frequently Asked Questions:</Text>
+                    {selectedBlog.faqs.map((faq, idx) => (
+                      <View key={idx} style={styles.faqCard}>
+                        <Text style={styles.faqQuestion}>Q: {faq.question}</Text>
+                        <Text style={styles.faqAnswer}>A: {faq.answer}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
+                )}
               </View>
             </ScrollView>
           </SafeAreaView>
@@ -156,7 +112,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: 16, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
-  headerTitle: { color: '#ffffff', fontSize: 20, fontWeight: '800' },
+  headerTitle: { color: '#ffffff', fontSize: 18, fontWeight: '800' },
   blogCard: {
     backgroundColor: COLORS.card,
     borderRadius: 16,
@@ -165,7 +121,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
   },
-  blogImage: { width: '100%', height: 150, backgroundColor: '#1e293b' },
+  blogImage: { width: '100%', height: 160, backgroundColor: '#1e293b' },
   blogInfo: { padding: 14 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   catBadge: {
@@ -176,7 +132,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
-    textTransform: 'uppercase',
   },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   readTime: { color: COLORS.textMuted, fontSize: 10 },
@@ -202,10 +157,30 @@ const styles = StyleSheet.create({
   modalContent: { paddingBottom: 40 },
   readerImage: { width: '100%', height: 220 },
   readerBody: { padding: 20 },
-  readerTitle: { color: '#ffffff', fontSize: 22, fontWeight: '800', lineHeight: 28, marginTop: 10, marginBottom: 8 },
-  readerExcerpt: { color: COLORS.textMuted, fontSize: 14, lineHeight: 20, fontStyle: 'italic' },
+  readerTitle: { color: '#ffffff', fontSize: 20, fontWeight: '800', lineHeight: 26, marginTop: 10, marginBottom: 8 },
+  readerExcerpt: { color: COLORS.textMuted, fontSize: 13, lineHeight: 19, fontStyle: 'italic' },
+  tocBox: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+  },
+  tocTitle: { color: COLORS.accent, fontSize: 12, fontWeight: '800', marginBottom: 8 },
+  tocItem: { color: COLORS.textMuted, fontSize: 12, marginBottom: 4 },
   divider: { height: 1, backgroundColor: COLORS.cardBorder, marginVertical: 20 },
-  sectionBlock: { marginBottom: 20 },
-  sectionHeading: { color: COLORS.accent, fontSize: 16, fontWeight: '800', marginBottom: 8 },
-  sectionContent: { color: '#f8fafc', fontSize: 14, lineHeight: 22 },
+  contentText: { color: '#f8fafc', fontSize: 14, lineHeight: 22 },
+  faqSection: { marginTop: 30 },
+  faqSectionTitle: { color: '#ffffff', fontSize: 16, fontWeight: '800', marginBottom: 12 },
+  faqCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+  },
+  faqQuestion: { color: COLORS.accent, fontSize: 13, fontWeight: '700', marginBottom: 4 },
+  faqAnswer: { color: COLORS.textMuted, fontSize: 12, lineHeight: 18 },
 });
