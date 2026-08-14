@@ -45,21 +45,20 @@ export async function GET() {
 
     const categoryStats = Object.entries(categoryCounts).map(([name, count]) => ({
       name,
-      count,
-      percentage: Math.round((count / products.length) * 100),
+      value: count,
     }));
 
     return NextResponse.json({
       success: true,
       stats: {
         totalUsers: userCount || 28,
-        totalProducts: products.length,
-        totalSharedDeals: 0,
-        activeWatchlists: 4,
-        pricePoints: 1846,
-        revenue: 119,
-        salesCount: 3,
-        downloadsCount: 14,
+        totalProductsCatalog: products.length,
+        totalDeals: 0,
+        activeAlerts: 4,
+        priceHistoryPoints: 1846,
+        totalRevenue: 119,
+        totalDigitalSales: 3,
+        totalDownloads: 14,
         conversionRate: 11,
       },
       categoryStats,

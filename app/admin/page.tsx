@@ -1606,9 +1606,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto max-h-[380px] overflow-y-auto pr-1">
                     <table className="w-full text-left text-xs border-collapse">
-                      <thead>
+                      <thead className="sticky top-0 bg-background/95 backdrop-blur-sm z-10">
                         <tr className="border-b border-border/80 text-muted-foreground uppercase font-black tracking-wider text-[10px]">
                           <th className="py-3 px-3">Display Name</th>
                           <th className="py-3 px-3">Email Address</th>
