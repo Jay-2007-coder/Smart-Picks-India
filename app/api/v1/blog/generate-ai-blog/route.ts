@@ -624,3 +624,8 @@ The clearest advice for developers in 2026: ship products fast, use AI as a coll
     );
   }
 }
+
+export async function GET(request: Request) {
+  return POST(request);
+}
+
