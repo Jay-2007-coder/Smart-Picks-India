@@ -1,9 +1,11 @@
 import { MetadataRoute } from "next";
 import { products } from "@/data/products";
 import { categories } from "@/data/categories";
-import { blogPosts } from "@/data/blogPosts";
+import { getAllBlogs } from "@/lib/blogStore";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-picks-india.vercel.app";
 
   // Static Pages
@@ -32,13 +34,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  // Dynamic Blogs
-  const blogRoutes = blogPosts.map((b) => ({
+  // Dynamic Blogs (fetches both static + MongoDB generated blogs)
+  const allBlogs = await getAllBlogs().catch(() => []);
+  const blogRoutes = allBlogs.map((b) => ({
     url: `${baseUrl}/blog/${b.slug}`,
-    lastModified: b.dateModified,
+    lastModified: b.dateModified || new Date().toISOString(),
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
   return [...routes, ...categoryRoutes, ...productRoutes, ...blogRoutes];
 }
+
