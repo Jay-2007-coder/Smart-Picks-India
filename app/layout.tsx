@@ -66,11 +66,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Google Analytics 4 setup. 
           To configure, set NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX in .env.local 
         */}
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <Suspense fallback={null}>
-            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-          </Suspense>
-        )}
+        {/* Service Worker Registration for PWA & APK Builder */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </head>
 
       <body className={`${inter.variable} ${outfit.variable} font-sans`}>
