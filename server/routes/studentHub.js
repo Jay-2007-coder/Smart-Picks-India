@@ -1000,7 +1000,7 @@ The **${targetTopic}** is a critical component of **${subName}**. It forms the f
 ### 3. Practical Code / Execution Example
 \`\`\`${subName.toLowerCase().includes("java") ? "java" : subName.toLowerCase().includes("dbms") ? "sql" : "cpp"}
 // ${subName} - ${targetTopic} Implementation Example
-public class ${targetTopic.replace(/[^a-zA-Z0-0]/g, "") || "Main"}Demo {
+public class ${targetTopic.replace(/[^a-zA-Z0-9]/g, "") || "Main"}Demo {
     public static void main(String[] args) {
         System.out.println("Executing ${targetTopic} in ${subName}...");
         // Core execution logic for ${targetTopic}
