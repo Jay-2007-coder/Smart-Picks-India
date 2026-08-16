@@ -113,7 +113,7 @@ export function cleanGeminiJson(rawText) {
   let cleanText = rawText.trim();
   
   // 1. Try to extract from ```json ... ``` or ``` ... ```
-  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
+  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/i;
   const match = cleanText.match(codeBlockRegex);
   if (match && match[1]) {
     cleanText = match[1].trim();
@@ -137,29 +137,25 @@ export function cleanGeminiJson(rawText) {
     }
   }
   
-  // 3. Pre-process the JSON candidate to make it valid JSON
-  let processed = jsonCandidate.trim();
-  
-  // Robust String & Comment parser to remove comments and escape literal newlines in strings
-  processed = processed.replace(/("(?:[^"\\]|\\.)*")|(\/\/.*)|(\/\*[\s\S]*?\*\/)/g, (match, stringGroup) => {
-    if (stringGroup) {
-      // Escape literal newlines and carriage returns within string values
-      return stringGroup.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
-    }
-    // Discard comments
-    return "";
-  });
-
-  // Remove trailing commas before closing brackets/braces
-  processed = processed.replace(/,\s*(?=[\]}])/g, "");
-
+  // 3. Try standard JSON.parse first
   try {
-    return JSON.parse(processed);
-  } catch (err) {
-    console.error("JSON parse failed. Error:", err.message);
-    console.error("Processed output was:", processed);
-    // Fallback to original cleanText substring parsing in case processing broke something
-    return JSON.parse(cleanText.trim());
+    return JSON.parse(jsonCandidate);
+  } catch (e1) {
+    // 4. Try pre-processing to fix literal unescaped newlines inside quotes
+    try {
+      let processed = jsonCandidate
+        .replace(/("(?:[^"\\]|\\.)*")|(\/\/.*)|(\/\*[\s\S]*?\*\/)/g, (m, stringGroup) => {
+          if (stringGroup) {
+            return stringGroup.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
+          }
+          return "";
+        })
+        .replace(/,\s*(?=[\]}])/g, "");
+      return JSON.parse(processed);
+    } catch (e2) {
+      console.warn("cleanGeminiJson parse error:", e2.message);
+      throw e2;
+    }
   }
 }
 
