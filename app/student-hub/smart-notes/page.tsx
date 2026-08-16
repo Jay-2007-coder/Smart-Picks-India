@@ -586,6 +586,7 @@ export default function SmartNotesOS() {
         setFlashcards((prev) => [...formatted, ...prev]);
         setFlashcardIdx(0);
         playSuccess();
+        setIsGeneratingFlashcards(false);
         return;
       }
     } catch (e) {
@@ -637,6 +638,7 @@ export default function SmartNotesOS() {
         setSelectedQuizOption(null);
         setIsAnswerChecked(false);
         playSuccess();
+        setIsGeneratingQuiz(false);
         return;
       }
     } catch (e) {
@@ -741,6 +743,7 @@ export default function SmartNotesOS() {
       if (res.ok && data.success && data.mindmap && data.mindmap.label) {
         setMindMapData(data.mindmap);
         playSuccess();
+        setIsGeneratingMindMap(false);
         return;
       }
     } catch (e) {
