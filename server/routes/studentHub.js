@@ -1187,8 +1187,40 @@ ${filesContext || "No files uploaded."}`;
     }
 
     if (!aiOutput) {
+      const sub = subject || "Java";
       const fallbackQuiz = [
-        { type: "TrueFalse", question: `Reviewing ${subject || "study subjects"} regularly increases exam scores.`, options: ["True", "False"], answer: "True", explanation: "Distributed practice is proven to boost performance." }
+        {
+          id: `q-1`,
+          type: "MCQ",
+          question: `In ${sub}, which keyword enables a subclass to inherit fields and methods from a superclass?`,
+          options: ["implements", "extends", "inherits", "super"],
+          answer: "extends",
+          explanation: "The 'extends' keyword establishes class inheritance in Java."
+        },
+        {
+          id: `q-2`,
+          type: "TrueFalse",
+          question: `Constructors in ${sub} can be marked as static or final.`,
+          options: ["True", "False"],
+          answer: "False",
+          explanation: "Constructors belong to instance creation and cannot be marked static or final."
+        },
+        {
+          id: `q-3`,
+          type: "FillBlank",
+          question: `Multiple class inheritance is prevented in ${sub} to avoid the ________ Problem.`,
+          options: [],
+          answer: "Diamond",
+          explanation: "The Diamond Problem occurs when two superclasses define identical method signatures."
+        },
+        {
+          id: `q-4`,
+          type: "MCQ",
+          question: `Which data structure or execution area tracks active method call frames and local primitive variables?`,
+          options: ["Call Stack", "Heap Memory", "Garbage Collector", "Method Area"],
+          answer: "Call Stack",
+          explanation: "The Call Stack manages function call frames and local variables during execution."
+        }
       ];
       return res.status(200).json({ success: true, quiz: fallbackQuiz, isFallback: true });
     }
@@ -1197,8 +1229,27 @@ ${filesContext || "No files uploaded."}`;
       const quiz = cleanGeminiJson(aiOutput);
       res.status(200).json({ success: true, quiz });
     } catch (parseErr) {
-      console.error("Failed to parse quiz json:", parseErr.message);
-      res.status(500).json({ success: false, message: "AI quiz parsing failed. Try again." });
+      console.warn("Failed to parse quiz json, using structured fallback:", parseErr.message);
+      const sub = subject || "Java";
+      const fallbackQuiz = [
+        {
+          id: `q-1`,
+          type: "MCQ",
+          question: `In ${sub}, which keyword enables a subclass to inherit fields and methods from a superclass?`,
+          options: ["implements", "extends", "inherits", "super"],
+          answer: "extends",
+          explanation: "The 'extends' keyword establishes class inheritance in Java."
+        },
+        {
+          id: `q-2`,
+          type: "FillBlank",
+          question: `Multiple class inheritance is prevented in ${sub} to avoid the ________ Problem.`,
+          options: [],
+          answer: "Diamond",
+          explanation: "The Diamond Problem occurs when two superclasses define identical method signatures."
+        }
+      ];
+      return res.status(200).json({ success: true, quiz: fallbackQuiz, isFallback: true });
     }
   } catch (err) {
     next(err);

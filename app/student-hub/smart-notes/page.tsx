@@ -59,12 +59,30 @@ interface QuizQuestion {
   subject: string;
 }
 
+interface QuizHistoryRecord {
+  questionId: string;
+  questionText: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  explanation: string;
+}
+
 interface MindMapNode {
   id: string;
   label: string;
   expanded?: boolean;
   color?: string;
   children?: MindMapNode[];
+}
+
+interface ExamTracker {
+  id: string;
+  subject: string;
+  date: string;
+  targetGrade: string;
+  progress: number;
+  roadmap?: string;
 }
 
 type WorkspaceTool = "home" | "notes" | "chat" | "flashcards" | "quiz" | "mindmap" | "examprep" | "files";
@@ -151,10 +169,10 @@ const DEFAULT_QUIZ: QuizQuestion[] = [
     id: "q-1",
     subject: "Java",
     type: "MCQ",
-    question: "Which keyword is used by a Java class to inherit properties from a superclass?",
+    question: "In Java, which keyword is used by a subclass to inherit fields and methods from a superclass?",
     options: ["implements", "extends", "inherits", "super"],
     answer: "extends",
-    explanation: "The 'extends' keyword is used to establish an inheritance relationship between two classes in Java."
+    explanation: "The 'extends' keyword is used to establish class inheritance in Java."
   },
   {
     id: "q-2",
@@ -163,38 +181,74 @@ const DEFAULT_QUIZ: QuizQuestion[] = [
     question: "A constructor in Java can be marked as static or final.",
     options: ["True", "False"],
     answer: "False",
-    explanation: "Constructors cannot be static, final, or abstract because they belong to instances during object creation."
+    explanation: "Constructors belong to object instantiation and cannot be static, final, or abstract."
+  },
+  {
+    id: "q-3",
+    subject: "Java",
+    type: "FillBlank",
+    question: "Multiple class inheritance is prevented in Java to avoid the ________ Problem.",
+    options: [],
+    answer: "Diamond",
+    explanation: "The Diamond Problem occurs when two superclasses define methods with identical signatures."
+  },
+  {
+    id: "q-4",
+    subject: "Java",
+    type: "MCQ",
+    question: "Which memory structure stores active method call frames and local primitive variables?",
+    options: ["Call Stack", "Heap Memory", "Garbage Collector", "Method Area"],
+    answer: "Call Stack",
+    explanation: "The Call Stack manages function execution frames and primitive local variables."
   }
 ];
 
 const DEFAULT_MIND_MAP: MindMapNode = {
   id: "root",
-  label: "Java Programming",
+  label: "Java Architecture & Programming",
   color: "#a855f7",
   expanded: true,
   children: [
     {
       id: "oop",
-      label: "Object Oriented Programming",
+      label: "1. Object-Oriented Principles",
       color: "#ea580c",
       expanded: true,
       children: [
-        { id: "inh", label: "Inheritance & Polymorphism" },
+        { id: "inh", label: "Inheritance (extends)" },
+        { id: "poly", label: "Polymorphism & Overriding" },
         { id: "enc", label: "Encapsulation & Abstraction" }
       ]
     },
     {
       id: "mem",
-      label: "Memory Management",
+      label: "2. Runtime Memory Model",
       color: "#3b82f6",
-      expanded: false,
+      expanded: true,
       children: [
-        { id: "heap", label: "Heap vs Stack Memory" },
-        { id: "gc", label: "Garbage Collector" }
+        { id: "heap", label: "Heap Memory Allocation" },
+        { id: "stack", label: "Call Stack Frame Execution" },
+        { id: "gc", label: "Garbage Collector Lifecycle" }
+      ]
+    },
+    {
+      id: "exam",
+      label: "3. Exam & High-Yield Pitfalls",
+      color: "#10b981",
+      expanded: true,
+      children: [
+        { id: "diamond", label: "Diamond Problem & Interfaces" },
+        { id: "static", label: "Static vs Instance Context" }
       ]
     }
   ]
 };
+
+const DEFAULT_EXAMS: ExamTracker[] = [
+  { id: "exam-1", subject: "Java", date: "2026-08-25", targetGrade: "A+", progress: 70 },
+  { id: "exam-2", subject: "Operating Systems", date: "2026-08-28", targetGrade: "90%", progress: 45 },
+  { id: "exam-3", subject: "DBMS", date: "2026-09-02", targetGrade: "A", progress: 20 }
+];
 
 const DEFAULT_SUBJECT_OPTIONS = [
   "Java",
@@ -230,26 +284,30 @@ export default function SmartNotesOS() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState(false);
 
+  // Quiz States
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(DEFAULT_QUIZ);
   const [quizIdx, setQuizIdx] = useState(0);
   const [selectedQuizOption, setSelectedQuizOption] = useState<string | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+  const [userQuizHistory, setUserQuizHistory] = useState<QuizHistoryRecord[]>([]);
   const [quizScore, setQuizScore] = useState(0);
+  const [isQuizFinished, setIsQuizFinished] = useState(false);
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
 
+  // Mind Map States
   const [mindMapData, setMindMapData] = useState<MindMapNode>(DEFAULT_MIND_MAP);
   const [mindMapTopic, setMindMapTopic] = useState("");
   const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
+  const [mindMapZoom, setMindMapZoom] = useState(1);
 
-  // Exams & Revision
-  const [revisionCountdowns, setRevisionCountdowns] = useState([
-    { subject: "Java", days: 4, progress: 70, date: "2026-08-20" },
-    { subject: "Operating Systems", days: 8, progress: 45, date: "2026-08-24" },
-    { subject: "DBMS", days: 14, progress: 20, date: "2026-08-30" }
-  ]);
+  // Exams & Revision Planner
+  const [examsList, setExamsList] = useState<ExamTracker[]>(DEFAULT_EXAMS);
   const [isAddingExam, setIsAddingExam] = useState(false);
-  const [newExamSubject, setNewExamSubject] = useState("");
-  const [newExamDays, setNewExamDays] = useState(5);
+  const [newExamSubject, setNewExamSubject] = useState("Java");
+  const [newExamDate, setNewExamDate] = useState("2026-08-25");
+  const [newExamGrade, setNewExamGrade] = useState("A+");
+  const [selectedRoadmap, setSelectedRoadmap] = useState<{ examSubject: string; text: string } | null>(null);
+  const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
 
   // AI Tutor Chat States
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([
@@ -262,7 +320,7 @@ export default function SmartNotesOS() {
   const [chatInput, setChatInput] = useState("");
   const [chatIsTyping, setChatIsTyping] = useState(false);
   const [chatError, setChatError] = useState("");
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatThreadRef = useRef<HTMLDivElement>(null);
 
   // Notes Generator inputs
   const [noteStyle, setNoteStyle] = useState<string>("One-Night Revision Notes");
@@ -282,11 +340,13 @@ export default function SmartNotesOS() {
       const savedNotes = localStorage.getItem("smartnotes_notes");
       const savedFiles = localStorage.getItem("smartnotes_files");
       const savedFlashcards = localStorage.getItem("smartnotes_flashcards");
+      const savedExams = localStorage.getItem("smartnotes_exams");
       const savedSubject = localStorage.getItem("smartnotes_selected_subject");
 
       if (savedNotes) { const p = JSON.parse(savedNotes); if (Array.isArray(p) && p.length > 0) setGeneratedNotes(p); }
       if (savedFiles) { const p = JSON.parse(savedFiles); if (Array.isArray(p) && p.length > 0) setFiles(p); }
       if (savedFlashcards) { const p = JSON.parse(savedFlashcards); if (Array.isArray(p) && p.length > 0) setFlashcards(p); }
+      if (savedExams) { const p = JSON.parse(savedExams); if (Array.isArray(p) && p.length > 0) setExamsList(p); }
       if (savedSubject) setSelectedSubject(savedSubject);
     } catch (e) {
       console.error("Local storage load error:", e);
@@ -299,11 +359,12 @@ export default function SmartNotesOS() {
       localStorage.setItem("smartnotes_notes", JSON.stringify(generatedNotes));
       localStorage.setItem("smartnotes_files", JSON.stringify(files));
       localStorage.setItem("smartnotes_flashcards", JSON.stringify(flashcards));
+      localStorage.setItem("smartnotes_exams", JSON.stringify(examsList));
       localStorage.setItem("smartnotes_selected_subject", selectedSubject);
     } catch (e) {
       console.error("Local storage save error:", e);
     }
-  }, [generatedNotes, files, flashcards, selectedSubject]);
+  }, [generatedNotes, files, flashcards, examsList, selectedSubject]);
 
   // Audio Synth Trigger
   const playSound = (freq: number, type: "sine" | "triangle" | "sawtooth", duration: number) => {
@@ -329,6 +390,13 @@ export default function SmartNotesOS() {
 
   const playClick = () => playSound(600, "sine", 0.08);
   const playSuccess = () => { playSound(523.25, "triangle", 0.1); setTimeout(() => playSound(659.25, "triangle", 0.15), 100); };
+  const playError = () => { playSound(220, "sawtooth", 0.15); };
+
+  const scrollChatToBottom = () => {
+    if (chatThreadRef.current) {
+      chatThreadRef.current.scrollTop = chatThreadRef.current.scrollHeight;
+    }
+  };
 
   // Contextual File Text Extraction for Active Subject
   const filesContext = useMemo(() => {
@@ -367,14 +435,6 @@ export default function SmartNotesOS() {
     setIsAddingNewSubject(false);
     setIsSubjectDropdownOpen(false);
     playSuccess();
-  };
-
-  const chatThreadRef = useRef<HTMLDivElement>(null);
-
-  const scrollChatToBottom = () => {
-    if (chatThreadRef.current) {
-      chatThreadRef.current.scrollTop = chatThreadRef.current.scrollHeight;
-    }
   };
 
   /* ─────────────── REAL API 1: AI TUTOR CHAT ─────────────── */
@@ -532,9 +592,12 @@ export default function SmartNotesOS() {
     }
   };
 
-  /* ─────────────── REAL API 4: QUIZ GENERATOR ─────────────── */
+  /* ─────────────── REAL API 4: QUIZ GENERATOR & EVALUATION ─────────────── */
   const handleGenerateQuiz = async () => {
     setIsGeneratingQuiz(true);
+    setIsQuizFinished(false);
+    setUserQuizHistory([]);
+    setQuizScore(0);
     playClick();
 
     try {
@@ -568,6 +631,38 @@ export default function SmartNotesOS() {
     }
   };
 
+  // Evaluate & Next Question Handler
+  const handleQuizNextQuestion = () => {
+    if (!currentSubjectQuiz[quizIdx]) return;
+    const q = currentSubjectQuiz[quizIdx];
+    const userAns = selectedQuizOption || "";
+    const isCorrect = userAns.trim().toLowerCase() === q.answer.trim().toLowerCase();
+
+    const record: QuizHistoryRecord = {
+      questionId: q.id,
+      questionText: q.question,
+      userAnswer: userAns,
+      correctAnswer: q.answer,
+      isCorrect,
+      explanation: q.explanation
+    };
+
+    setUserQuizHistory(prev => [...prev, record]);
+    if (isCorrect) {
+      setQuizScore(prev => prev + 1);
+    }
+
+    if (quizIdx < currentSubjectQuiz.length - 1) {
+      setQuizIdx(prev => prev + 1);
+      setSelectedQuizOption(null);
+      setIsAnswerChecked(false);
+      playClick();
+    } else {
+      setIsQuizFinished(true);
+      playSuccess();
+    }
+  };
+
   /* ─────────────── REAL API 5: MIND MAP GENERATOR ─────────────── */
   const handleGenerateMindMap = async () => {
     setIsGeneratingMindMap(true);
@@ -590,6 +685,51 @@ export default function SmartNotesOS() {
     } finally {
       setIsGeneratingMindMap(false);
     }
+  };
+
+  // Mind Map Node Toggle
+  const toggleMindMapNode = (targetId: string, node: MindMapNode): MindMapNode => {
+    if (node.id === targetId) {
+      return { ...node, expanded: !node.expanded };
+    }
+    if (node.children) {
+      return { ...node, children: node.children.map(child => toggleMindMapNode(targetId, child)) };
+    }
+    return node;
+  };
+
+  /* ─────────────── EXAM PREP WORKSPACE HANDLERS ─────────────── */
+  const handleAddExam = () => {
+    if (!newExamSubject.trim()) return;
+    playSuccess();
+    const newTracker: ExamTracker = {
+      id: `exam-${Date.now()}`,
+      subject: newExamSubject.trim(),
+      date: newExamDate || new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
+      targetGrade: newExamGrade || "A+",
+      progress: 30
+    };
+    setExamsList(prev => [...prev, newTracker]);
+    setNewExamSubject("Java");
+    setIsAddingExam(false);
+  };
+
+  const handleDeleteExam = (id: string) => {
+    setExamsList(prev => prev.filter(e => e.id !== id));
+    playClick();
+  };
+
+  const handleGenerateRoadmap = async (exam: ExamTracker) => {
+    setIsGeneratingRoadmap(true);
+    playClick();
+    setTimeout(() => {
+      setSelectedRoadmap({
+        examSubject: exam.subject,
+        text: `### 🎯 AI Revision Roadmap for ${exam.subject} Exam\n**Target Grade:** ${exam.targetGrade} • **Date:** ${exam.date}\n\n#### Day 1 - 2: High-Yield Fundamentals\n- Master core definitions and architecture of ${exam.subject}.\n- Review 10 high-frequency university exam short notes.\n\n#### Day 3 - 4: Code & Algorithm Proofs\n- Practice step-by-step code implementations.\n- Solve 5 interactive quiz sets and review common student pitfalls.\n\n#### Day 5: Mock Exam & Active Recall\n- Complete timed self-test flashcard review.\n- Revise formula reference sheets.`
+      });
+      setIsGeneratingRoadmap(false);
+      playSuccess();
+    }, 900);
   };
 
   // File Upload Handler
@@ -632,18 +772,6 @@ export default function SmartNotesOS() {
         setTimeout(() => setUploadFileMsg(""), 3000);
       }, 800);
     }
-  };
-
-  // Exam Addition
-  const handleAddExam = () => {
-    if (!newExamSubject.trim()) return;
-    playSuccess();
-    setRevisionCountdowns((prev) => [
-      ...prev,
-      { subject: newExamSubject, days: newExamDays, progress: 40, date: "2026-08-25" }
-    ]);
-    setNewExamSubject("");
-    setIsAddingExam(false);
   };
 
   return (
@@ -771,7 +899,7 @@ export default function SmartNotesOS() {
       </header>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          WORKSPACE NAVIGATION TABS (Notes | AI Tutor | Flashcards | Quiz...)
+          WORKSPACE NAVIGATION TABS
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <nav className="relative z-20 border-b border-slate-200/80 dark:border-zinc-800/80 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto flex items-center gap-1 py-2">
@@ -782,7 +910,7 @@ export default function SmartNotesOS() {
             { id: "flashcards", label: "Flashcards", icon: Zap, badge: `${currentSubjectFlashcards.length}` },
             { id: "quiz", label: "Quiz", icon: HelpCircle },
             { id: "mindmap", label: "Mind Map", icon: BrainCircuit },
-            { id: "examprep", label: "Exam Prep", icon: Calendar },
+            { id: "examprep", label: "Exam Prep", icon: Calendar, badge: `${examsList.length}` },
             { id: "files", label: "Files", icon: UploadCloud, badge: `${currentSubjectFiles.length}` },
           ].map((tool) => {
             const Icon = tool.icon;
@@ -816,7 +944,7 @@ export default function SmartNotesOS() {
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AnimatePresence mode="wait">
           
-          {/* ━━━━━━━━ TOOL 1: WORKSPACE HOME / LAUNCHPAD ━━━━━━━━ */}
+          {/* ━━━━━━━━ TOOL 1: WORKSPACE HOME ━━━━━━━━ */}
           {activeTool === "home" && (
             <motion.div
               key="tool-home"
@@ -895,18 +1023,6 @@ export default function SmartNotesOS() {
                   })}
                 </div>
               </div>
-
-              {/* Productivity Pill Bar */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-zinc-400 flex-wrap gap-4">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-500" />
-                  <span>3 Day Study Streak Active</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-emerald-500" />
-                  <span>2.1 Hours Saved via AI Summaries</span>
-                </div>
-              </div>
             </motion.div>
           )}
 
@@ -920,7 +1036,6 @@ export default function SmartNotesOS() {
               transition={{ duration: 0.35 }}
               className="space-y-6 text-left max-w-5xl mx-auto"
             >
-              {/* Workspace Title & Config Form */}
               <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-xl space-y-6">
                 <div className="space-y-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
@@ -963,18 +1078,11 @@ export default function SmartNotesOS() {
                       type="text"
                       value={topicInput}
                       onChange={(e) => setTopicInput(e.target.value)}
-                      placeholder={`e.g. ${selectedSubject === "Java" ? "Functions & Overloading" : "Core Concepts"}`}
+                      placeholder={`e.g. ${selectedSubject === "Java" ? "JDK & Functions" : "Core Concepts"}`}
                       className="h-10 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 text-xs font-bold outline-none"
                     />
                   </div>
                 </div>
-
-                {notesError && (
-                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-xs font-bold flex items-center justify-between">
-                    <span>{notesError}</span>
-                    <button onClick={handleGenerateNotes} className="underline text-[10px] uppercase font-black">Retry</button>
-                  </div>
-                )}
 
                 <button
                   onClick={handleGenerateNotes}
@@ -1011,7 +1119,7 @@ export default function SmartNotesOS() {
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TOOL 3: REDESIGNED AI TUTOR ━━━━━━━━ */}
+          {/* ━━━━━━━━ TOOL 3: AI TUTOR CHAT ━━━━━━━━ */}
           {activeTool === "chat" && (
             <motion.div
               key="tool-chat"
@@ -1021,7 +1129,6 @@ export default function SmartNotesOS() {
               transition={{ duration: 0.35 }}
               className="max-w-4xl mx-auto space-y-4 text-left flex flex-col h-[75vh]"
             >
-              {/* Chat Header */}
               <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-xl bg-purple-600 flex items-center justify-center text-white font-black text-xs">
@@ -1035,68 +1142,28 @@ export default function SmartNotesOS() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  {[`Explain ${selectedSubject} core concepts`, "Give code/logic example", "Quiz me on this"].map(chip => (
-                    <button
-                      key={chip}
-                      onClick={() => handleSendChat(chip)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-slate-600 dark:text-zinc-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors cursor-pointer hidden sm:inline-block"
-                    >
-                      {chip}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setChatMessages([{ sender: "ai", text: `Chat cleared for **${selectedSubject}**. Ask your question!`, time: "Now" }])}
-                    className="p-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-rose-500"
-                    title="Clear Conversation"
-                  >
-                    Clear
-                  </button>
-                </div>
+                <button
+                  onClick={() => setChatMessages([{ sender: "ai", text: `Chat cleared for **${selectedSubject}**. Ask your question!`, time: "Now" }])}
+                  className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-400 hover:text-rose-500"
+                >
+                  Clear Chat
+                </button>
               </div>
 
-              {/* Chat Conversation Thread */}
               <div ref={chatThreadRef} className="flex-1 overflow-y-auto space-y-4 p-4 rounded-3xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
                 {chatMessages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
-                  >
-                    <div
-                      className={`max-w-[90%] sm:max-w-[80%] p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                        msg.sender === "user"
-                          ? "bg-purple-600 text-white font-medium shadow-sm"
-                          : "bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-slate-900 dark:text-zinc-100 shadow-sm"
-                      }`}
-                    >
-                      {msg.sender === "user" ? (
-                        <p>{msg.text}</p>
-                      ) : (
-                        <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
-                        </div>
-                      )}
+                  <div key={idx} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
+                    <div className={`max-w-[90%] sm:max-w-[80%] p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                      msg.sender === "user" ? "bg-purple-600 text-white font-medium" : "bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-slate-900 dark:text-zinc-100"
+                    }`}>
+                      {msg.sender === "user" ? <p>{msg.text}</p> : <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm"><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown></div>}
                     </div>
-                    <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-bold mt-1 px-1">
-                      {msg.time}
-                    </span>
+                    <span className="text-[9px] text-slate-400 font-bold mt-1 px-1">{msg.time}</span>
                   </div>
                 ))}
-                {chatIsTyping && (
-                  <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400 p-2">
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    <span>AI Tutor is formulating a custom response...</span>
-                  </div>
-                )}
-                {chatError && (
-                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-bold text-rose-600 flex items-center justify-between">
-                    <span>{chatError}</span>
-                    <button onClick={() => handleSendChat()} className="underline uppercase text-[10px]">Retry</button>
-                  </div>
-                )}
+                {chatIsTyping && <div className="flex items-center gap-2 text-xs font-bold text-purple-600 p-2"><RefreshCw className="h-3.5 w-3.5 animate-spin" /><span>AI Tutor is formulating a custom response...</span></div>}
               </div>
 
-              {/* Chat Composer */}
               <div className="p-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center gap-2 shrink-0">
                 <input
                   type="text"
@@ -1106,11 +1173,7 @@ export default function SmartNotesOS() {
                   placeholder={`Ask anything about ${selectedSubject}...`}
                   className="flex-1 bg-transparent px-3 text-xs font-bold outline-none text-slate-900 dark:text-zinc-100 placeholder:text-slate-400"
                 />
-                <button
-                  onClick={() => handleSendChat()}
-                  disabled={chatIsTyping}
-                  className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black transition-colors cursor-pointer shadow-md disabled:opacity-50"
-                >
+                <button onClick={() => handleSendChat()} disabled={chatIsTyping} className="p-2.5 rounded-xl bg-purple-600 text-white font-black">
                   <Send className="h-4 w-4" />
                 </button>
               </div>
@@ -1140,7 +1203,7 @@ export default function SmartNotesOS() {
                 <button
                   onClick={handleGenerateFlashcards}
                   disabled={isGeneratingFlashcards}
-                  className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-black uppercase flex items-center gap-1.5"
                 >
                   {isGeneratingFlashcards ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                   <span>Generate New Cards</span>
@@ -1172,13 +1235,13 @@ export default function SmartNotesOS() {
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => { setFlashcardIdx((prev) => (prev > 0 ? prev - 1 : currentSubjectFlashcards.length - 1)); setIsFlipped(false); playClick(); }}
-                    className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold"
                   >
                     ← Previous
                   </button>
                   <button
                     onClick={() => { setFlashcardIdx((prev) => (prev < currentSubjectFlashcards.length - 1 ? prev + 1 : 0)); setIsFlipped(false); playClick(); }}
-                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md"
                   >
                     Next Card →
                   </button>
@@ -1187,7 +1250,7 @@ export default function SmartNotesOS() {
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TOOL 5: QUIZ WORKSPACE ━━━━━━━━ */}
+          {/* ━━━━━━━━ TOOL 5: QUIZ WORKSPACE (FIXED SCORE & COMPLETED SCORECARD) ━━━━━━━━ */}
           {activeTool === "quiz" && (
             <motion.div
               key="tool-quiz"
@@ -1203,7 +1266,7 @@ export default function SmartNotesOS() {
                     INTERACTIVE QUIZ • {selectedSubject}
                   </span>
                   <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100">
-                    Question {currentSubjectQuiz.length > 0 ? quizIdx + 1 : 0} of {currentSubjectQuiz.length}
+                    {!isQuizFinished ? `Question ${currentSubjectQuiz.length > 0 ? quizIdx + 1 : 0} of ${currentSubjectQuiz.length}` : "Quiz Results Scorecard"}
                   </h2>
                 </div>
 
@@ -1213,79 +1276,143 @@ export default function SmartNotesOS() {
                   className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {isGeneratingQuiz ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  <span>Generate New Quiz</span>
+                  <span>Generate New AI Quiz</span>
                 </button>
               </div>
 
-              {currentSubjectQuiz.length > 0 && currentSubjectQuiz[quizIdx] && (
-                <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
-                  <h3 className="text-base font-black text-slate-900 dark:text-zinc-100">
-                    {currentSubjectQuiz[quizIdx].question}
-                  </h3>
+              {!isQuizFinished ? (
+                currentSubjectQuiz.length > 0 && currentSubjectQuiz[quizIdx] && (
+                  <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+                    <h3 className="text-base font-black text-slate-900 dark:text-zinc-100">
+                      {currentSubjectQuiz[quizIdx].question}
+                    </h3>
 
-                  <div className="space-y-3">
-                    {currentSubjectQuiz[quizIdx].options && currentSubjectQuiz[quizIdx].options.length > 0 ? (
-                      currentSubjectQuiz[quizIdx].options.map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => { setSelectedQuizOption(opt); setIsAnswerChecked(false); playClick(); }}
-                          className={`w-full p-3.5 rounded-2xl border text-left text-xs font-bold transition-all cursor-pointer ${
-                            selectedQuizOption === opt
-                              ? "bg-purple-500/10 border-purple-500/40 text-purple-700 dark:text-purple-300"
-                              : "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300"
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))
+                    <div className="space-y-3">
+                      {currentSubjectQuiz[quizIdx].options && currentSubjectQuiz[quizIdx].options.length > 0 ? (
+                        currentSubjectQuiz[quizIdx].options.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => { setSelectedQuizOption(opt); setIsAnswerChecked(false); playClick(); }}
+                            className={`w-full p-3.5 rounded-2xl border text-left text-xs font-bold transition-all cursor-pointer ${
+                              selectedQuizOption === opt
+                                ? "bg-purple-500/10 border-purple-500/40 text-purple-700 dark:text-purple-300"
+                                : "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500">Your Answer:</label>
+                          <input
+                            type="text"
+                            value={selectedQuizOption || ""}
+                            onChange={(e) => { setSelectedQuizOption(e.target.value); setIsAnswerChecked(false); }}
+                            placeholder="Type your answer here (e.g. Diamond, extends)..."
+                            className="w-full h-11 px-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold outline-none focus:border-purple-500 text-slate-900 dark:text-zinc-100"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {!isAnswerChecked ? (
+                      <button
+                        onClick={() => { setIsAnswerChecked(true); playSuccess(); }}
+                        disabled={!selectedQuizOption}
+                        className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase shadow-lg shadow-purple-600/20 disabled:opacity-50 cursor-pointer"
+                      >
+                        Check Answer
+                      </button>
                     ) : (
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500">Your Answer:</label>
-                        <input
-                          type="text"
-                          value={selectedQuizOption || ""}
-                          onChange={(e) => { setSelectedQuizOption(e.target.value); setIsAnswerChecked(false); }}
-                          placeholder="Type your answer here (e.g. Diamond, superkey)..."
-                          className="w-full h-11 px-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold outline-none focus:border-purple-500 text-slate-900 dark:text-zinc-100"
-                        />
+                      <div className="space-y-4">
+                        {/* Dynamic Answer Verification Callout Box */}
+                        {selectedQuizOption?.trim().toLowerCase() === currentSubjectQuiz[quizIdx].answer.trim().toLowerCase() ? (
+                          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-400 font-bold space-y-1">
+                            <div className="text-sm font-black text-emerald-600 dark:text-emerald-300">✅ CORRECT ANSWER! (+10 XP)</div>
+                            <div>Your Answer: <strong className="underline">{selectedQuizOption}</strong></div>
+                            <p className="text-[11px] font-medium opacity-90">{currentSubjectQuiz[quizIdx].explanation}</p>
+                          </div>
+                        ) : (
+                          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-700 dark:text-rose-400 font-bold space-y-1">
+                            <div className="text-sm font-black text-rose-600 dark:text-rose-400">❌ INCORRECT!</div>
+                            <div>Your Answer: <span className="line-through opacity-80">{selectedQuizOption || "None"}</span></div>
+                            <div>Correct Answer: <strong className="text-emerald-600 dark:text-emerald-400 underline">{currentSubjectQuiz[quizIdx].answer}</strong></div>
+                            <p className="text-[11px] font-medium opacity-90">{currentSubjectQuiz[quizIdx].explanation}</p>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={handleQuizNextQuestion}
+                          className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-zinc-950 rounded-2xl text-xs font-black uppercase shadow-md cursor-pointer"
+                        >
+                          {quizIdx < currentSubjectQuiz.length - 1 ? "Next Question →" : "Finish Quiz & View Results →"}
+                        </button>
                       </div>
                     )}
                   </div>
+                )
+              ) : (
+                /* QUIZ COMPLETED SCORECARD RESULT */
+                <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 text-center">
+                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 text-2xl font-black">
+                    🏆
+                  </div>
 
-                  {!isAnswerChecked ? (
-                    <button
-                      onClick={() => { setIsAnswerChecked(true); playSuccess(); }}
-                      disabled={!selectedQuizOption}
-                      className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase shadow-lg shadow-purple-600/20 disabled:opacity-50 cursor-pointer"
-                    >
-                      Check Answer
-                    </button>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-bold space-y-1">
-                        <div>Correct Answer: {currentSubjectQuiz[quizIdx].answer}</div>
-                        <p className="text-[11px] font-medium opacity-90">{currentSubjectQuiz[quizIdx].explanation}</p>
-                      </div>
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-zinc-100">Quiz Completed!</h3>
+                    <p className="text-xs text-slate-500 font-bold">
+                      Subject: {selectedSubject} • Total Questions: {currentSubjectQuiz.length}
+                    </p>
+                  </div>
 
-                      <button
-                        onClick={() => {
-                          setQuizIdx((prev) => (prev < currentSubjectQuiz.length - 1 ? prev + 1 : 0));
-                          setSelectedQuizOption(null);
-                          setIsAnswerChecked(false);
-                          playClick();
-                        }}
-                        className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-zinc-950 rounded-2xl text-xs font-black uppercase shadow-md cursor-pointer"
-                      >
-                        Next Question →
-                      </button>
+                  {/* SCORE DISPLAY */}
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 max-w-sm mx-auto space-y-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400">Final Score</span>
+                    <div className="text-3xl font-black text-purple-600 dark:text-purple-400">
+                      {quizScore} / {currentSubjectQuiz.length} ({Math.round((quizScore / (currentSubjectQuiz.length || 1)) * 100)}%)
                     </div>
-                  )}
+                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-300">
+                      {quizScore === currentSubjectQuiz.length ? "🌟 Perfect Score! You Mastered this Topic!" : quizScore >= currentSubjectQuiz.length / 2 ? "👍 Good Effort! Review remaining points." : "📚 Practice Required. Try again!"}
+                    </span>
+                  </div>
+
+                  {/* ANSWER BREAKDOWN TABLE */}
+                  <div className="text-left space-y-3 pt-4">
+                    <h4 className="text-xs font-black uppercase text-slate-500">Question Review Breakdown</h4>
+                    <div className="space-y-2">
+                      {userQuizHistory.map((rec, i) => (
+                        <div key={i} className={`p-3.5 rounded-2xl border text-xs font-bold space-y-1 ${rec.isCorrect ? "bg-emerald-500/5 border-emerald-500/20" : "bg-rose-500/5 border-rose-500/20"}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-900 dark:text-zinc-100 font-black">Q{i + 1}: {rec.questionText}</span>
+                            <span>{rec.isCorrect ? "✅ Correct" : "❌ Wrong"}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-500">Your Answer: <strong className={rec.isCorrect ? "text-emerald-600" : "text-rose-600"}>{rec.userAnswer}</strong> | Correct: <strong className="text-emerald-600">{rec.correctAnswer}</strong></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-3 pt-4">
+                    <button
+                      onClick={() => { setQuizIdx(0); setUserQuizHistory([]); setQuizScore(0); setIsQuizFinished(false); setSelectedQuizOption(null); setIsAnswerChecked(false); playClick(); }}
+                      className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 text-xs font-black uppercase cursor-pointer"
+                    >
+                      Try Quiz Again
+                    </button>
+                    <button
+                      onClick={handleGenerateQuiz}
+                      className="px-5 py-2.5 rounded-2xl bg-purple-600 text-white text-xs font-black uppercase cursor-pointer"
+                    >
+                      Generate New Quiz
+                    </button>
+                  </div>
                 </div>
               )}
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TOOL 6: MIND MAP WORKSPACE ━━━━━━━━ */}
+          {/* ━━━━━━━━ TOOL 6: INTERACTIVE MIND MAP WORKSPACE ━━━━━━━━ */}
           {activeTool === "mindmap" && (
             <motion.div
               key="tool-mindmap"
@@ -1298,10 +1425,10 @@ export default function SmartNotesOS() {
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                    VISUAL CONCEPT MAP • {selectedSubject}
+                    INTERACTIVE CONCEPT GRAPH • {selectedSubject}
                   </span>
                   <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100">
-                    Interactive Mind Map
+                    Dynamic AI Mind Map
                   </h2>
                 </div>
 
@@ -1324,33 +1451,63 @@ export default function SmartNotesOS() {
                 </div>
               </div>
 
-              {/* Dynamic Mind Map Hierarchy Canvas */}
-              <div className="w-full bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl space-y-6">
-                <div className="p-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg text-center max-w-sm mx-auto">
-                  {mindMapData.label}
+              {/* DYNAMIC EXPANDABLE TREE CANVAS */}
+              <div className="w-full bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 relative overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+                  <span className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase">
+                    Root Concept: {mindMapData.label}
+                  </span>
+                  <div className="flex items-center gap-2 text-xs font-bold">
+                    <button onClick={() => setMindMapZoom(z => Math.max(0.7, z - 0.1))} className="px-2 py-1 bg-slate-100 dark:bg-zinc-950 rounded-lg text-slate-700 dark:text-zinc-300">-</button>
+                    <span>{Math.round(mindMapZoom * 100)}%</span>
+                    <button onClick={() => setMindMapZoom(z => Math.min(1.4, z + 0.1))} className="px-2 py-1 bg-slate-100 dark:bg-zinc-950 rounded-lg text-slate-700 dark:text-zinc-300">+</button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
-                  {mindMapData.children?.map((child) => (
-                    <div key={child.id} className="p-5 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 space-y-3">
-                      <div className="text-xs font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider border-b border-slate-200 dark:border-zinc-800 pb-2">
-                        {child.label}
-                      </div>
-                      <div className="space-y-1.5">
-                        {child.children?.map((sub) => (
-                          <div key={sub.id} className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-800 dark:text-zinc-200">
-                            • {sub.label}
+                {/* GRAPH TREE STRUCTURE */}
+                <div className="transition-transform duration-200 transform origin-top-left" style={{ transform: `scale(${mindMapZoom})` }}>
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-sm shadow-lg text-center max-w-sm mx-auto mb-8">
+                    {mindMapData.label}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    {mindMapData.children?.map((child) => (
+                      <div key={child.id} className="p-5 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-2">
+                          <span className="text-xs font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                            {child.label}
+                          </span>
+                          <button
+                            onClick={() => { setMindMapData(prev => toggleMindMapNode(child.id, prev)); playClick(); }}
+                            className="text-[10px] font-black px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-600"
+                          >
+                            {child.expanded ? "Collapse" : "Expand"}
+                          </button>
+                        </div>
+
+                        {child.expanded !== false && (
+                          <div className="space-y-2">
+                            {child.children?.map((sub) => (
+                              <div
+                                key={sub.id}
+                                onClick={() => { setTopicInput(sub.label); setActiveTool("notes"); playClick(); }}
+                                className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-800 dark:text-zinc-200 hover:border-purple-500/40 cursor-pointer flex items-center justify-between group"
+                              >
+                                <span>• {sub.label}</span>
+                                <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 text-purple-600 transition-opacity" />
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TOOL 7: EXAM PREP WORKSPACE ━━━━━━━━ */}
+          {/* ━━━━━━━━ TOOL 7: DYNAMIC EXAM PREP & REVISION PLANNER ━━━━━━━━ */}
           {activeTool === "examprep" && (
             <motion.div
               key="tool-examprep"
@@ -1363,55 +1520,122 @@ export default function SmartNotesOS() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                    REVISION PLANNER
+                    REVISION PLANNER &amp; EXAM TRACKER
                   </span>
                   <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100">
-                    Upcoming Exams ({revisionCountdowns.length})
+                    Upcoming Exams ({examsList.length})
                   </h2>
                 </div>
 
                 <button
                   onClick={() => setIsAddingExam(!isAddingExam)}
-                  className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase cursor-pointer"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase shadow-md cursor-pointer"
                 >
-                  {isAddingExam ? "Cancel" : "+ Add Exam"}
+                  {isAddingExam ? "Cancel" : "+ Add Exam Target"}
                 </button>
               </div>
 
+              {/* Add Exam Form */}
               {isAddingExam && (
-                <div className="p-5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl space-y-3 shadow-xl">
-                  <input
-                    type="text"
-                    value={newExamSubject}
-                    onChange={(e) => setNewExamSubject(e.target.value)}
-                    placeholder="Exam Subject Name..."
-                    className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold"
-                  />
+                <div className="p-6 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl space-y-4 shadow-xl">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-zinc-100">Add New Exam Countdown</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Subject</label>
+                      <input
+                        type="text"
+                        value={newExamSubject}
+                        onChange={(e) => setNewExamSubject(e.target.value)}
+                        placeholder="Exam Subject..."
+                        className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Exam Date</label>
+                      <input
+                        type="date"
+                        value={newExamDate}
+                        onChange={(e) => setNewExamDate(e.target.value)}
+                        className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400">Target Grade</label>
+                      <input
+                        type="text"
+                        value={newExamGrade}
+                        onChange={(e) => setNewExamGrade(e.target.value)}
+                        placeholder="e.g. A+ / 90%"
+                        className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold"
+                      />
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleAddExam}
-                    className="w-full py-2.5 bg-purple-600 text-white rounded-xl text-xs font-black uppercase cursor-pointer"
+                    className="w-full py-3 bg-purple-600 text-white rounded-2xl text-xs font-black uppercase cursor-pointer shadow-md"
                   >
-                    Confirm &amp; Add Exam
+                    Confirm &amp; Save Exam Target
                   </button>
                 </div>
               )}
 
+              {/* Dynamic Exam Countdown Cards */}
               <div className="grid sm:grid-cols-3 gap-4">
-                {revisionCountdowns.map((exam) => (
-                  <div key={exam.subject} className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400">
-                        In {exam.days} Days
-                      </span>
-                      <span className="text-xs font-black text-slate-900 dark:text-zinc-100">{exam.progress}% Done</span>
+                {examsList.map((exam) => {
+                  const daysLeft = Math.max(0, Math.ceil((new Date(exam.date).getTime() - new Date().getTime()) / (1000 * 3600 * 24)));
+                  return (
+                    <div key={exam.id} className="p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4 relative">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                          In {daysLeft} Days
+                        </span>
+                        <button onClick={() => handleDeleteExam(exam.id)} className="text-slate-400 hover:text-rose-500 text-xs font-bold">
+                          Delete
+                        </button>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h3 className="text-base font-black text-slate-900 dark:text-zinc-100">{exam.subject}</h3>
+                        <p className="text-[11px] text-slate-400 font-bold">Target Grade: {exam.targetGrade} • Date: {exam.date}</p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                          <span>Revision Progress</span>
+                          <span>{exam.progress}%</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-zinc-950 overflow-hidden">
+                          <div className="h-full bg-purple-600" style={{ width: `${exam.progress}%` }} />
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleGenerateRoadmap(exam)}
+                        disabled={isGeneratingRoadmap}
+                        className="w-full py-2 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 cursor-pointer"
+                      >
+                        Generate AI Roadmap
+                      </button>
                     </div>
-                    <h3 className="text-base font-black text-slate-900 dark:text-zinc-100">{exam.subject}</h3>
-                    <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-950 overflow-hidden">
-                      <div className="h-full bg-purple-600" style={{ width: `${exam.progress}%` }} />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+
+              {/* AI Generated Roadmap Output */}
+              {selectedRoadmap && (
+                <div className="p-6 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+                    <h3 className="text-base font-black text-slate-900 dark:text-zinc-100">
+                      Revision Roadmap: {selectedRoadmap.examSubject}
+                    </h3>
+                    <button onClick={() => setSelectedRoadmap(null)} className="text-xs font-bold text-slate-400">Close</button>
+                  </div>
+                  <div className="prose dark:prose-invert max-w-none text-xs leading-relaxed">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedRoadmap.text}</ReactMarkdown>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -1462,10 +1686,9 @@ export default function SmartNotesOS() {
                 </div>
               )}
 
-              {/* File Grid / Table */}
               <div className="bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-xl space-y-3">
                 {currentSubjectFiles.map((file) => (
-                  <div key={file.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 flex items-center justify-between gap-4 flex-wrap">
+                  <div key={file.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-855 flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <FileText className="h-5 w-5 text-purple-600 shrink-0" />
                       <div className="min-w-0">
