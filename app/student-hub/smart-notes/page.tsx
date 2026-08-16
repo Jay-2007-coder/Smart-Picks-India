@@ -369,6 +369,14 @@ export default function SmartNotesOS() {
     playSuccess();
   };
 
+  const chatThreadRef = useRef<HTMLDivElement>(null);
+
+  const scrollChatToBottom = () => {
+    if (chatThreadRef.current) {
+      chatThreadRef.current.scrollTop = chatThreadRef.current.scrollHeight;
+    }
+  };
+
   /* ─────────────── REAL API 1: AI TUTOR CHAT ─────────────── */
   const handleSendChat = async (presetMsg?: string) => {
     const text = presetMsg || chatInput;
@@ -382,7 +390,7 @@ export default function SmartNotesOS() {
     setChatInput("");
     setChatIsTyping(true);
 
-    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    setTimeout(scrollChatToBottom, 50);
 
     try {
       const res = await fetch("/api/v1/student-hub/smart-notes/chat", {
@@ -410,7 +418,7 @@ export default function SmartNotesOS() {
       setChatError("Network connection error. Please retry.");
     } finally {
       setChatIsTyping(false);
-      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      setTimeout(scrollChatToBottom, 50);
     }
   };
 
@@ -1016,7 +1024,7 @@ export default function SmartNotesOS() {
               </div>
 
               {/* Chat Conversation Thread */}
-              <div className="flex-1 overflow-y-auto space-y-4 p-4 rounded-3xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
+              <div ref={chatThreadRef} className="flex-1 overflow-y-auto space-y-4 p-4 rounded-3xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
                 {chatMessages.map((msg, idx) => (
                   <div
                     key={idx}
@@ -1054,7 +1062,6 @@ export default function SmartNotesOS() {
                     <button onClick={() => handleSendChat()} className="underline uppercase text-[10px]">Retry</button>
                   </div>
                 )}
-                <div ref={chatEndRef} />
               </div>
 
               {/* Chat Composer */}
