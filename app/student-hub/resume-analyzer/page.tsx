@@ -8,7 +8,8 @@ import {
   XCircle, ArrowRight, Copy, Check, ChevronDown, Target,
   UploadCloud, X, File, FileType2, User, Award,
   BarChart2, Lightbulb, Gauge, BookOpen, Briefcase as BriefcaseIcon,
-  GraduationCap, FolderOpen, BadgeCheck, Phone
+  GraduationCap, FolderOpen, BadgeCheck, Phone, ChevronRight, Layers,
+  Sliders, Wand2, Percent, ListFilter, LayoutDashboard
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,6 +32,8 @@ interface AnalyzerResult {
   bulletImprovements: BulletImprovement[];
   overallFeedback: string;
 }
+
+type TabType = "overview" | "keywords" | "sections" | "verbs" | "quant" | "summary";
 
 /* ─────────────── LOADING STEPS ─────────────── */
 const STEPS = [
@@ -166,7 +169,6 @@ Requirements:
 
 const CATEGORY_ORDER = ["Engineering", "Data & AI", "Infrastructure", "Product", "Design"];
 
-/* ─────────────── SECTION META ─────────────── */
 const SECTION_META: Record<string, { label: string; icon: React.ElementType }> = {
   contactInfo:    { label: "Contact Info",    icon: Phone         },
   summary:        { label: "Summary",         icon: User          },
@@ -179,83 +181,83 @@ const SECTION_META: Record<string, { label: string; icon: React.ElementType }> =
 
 /* ─────────────── HELPERS ─────────────── */
 function scoreTheme(s: number) {
-  if (s >= 80) return { label: "Strong Match",   color: "#10b981", glow: "rgba(16,185,129,0.25)", cls: "text-emerald-400", bar: "bg-emerald-500" };
-  if (s >= 55) return { label: "Moderate Match", color: "#f59e0b", glow: "rgba(245,158,11,0.25)",  cls: "text-amber-400",  bar: "bg-amber-500"  };
-  return             { label: "Weak Match",       color: "#ef4444", glow: "rgba(239,68,68,0.25)",   cls: "text-rose-400",   bar: "bg-rose-500"   };
+  if (s >= 80) return { label: "Strong Match",   color: "#10b981", glow: "rgba(16,185,129,0.25)", cls: "text-emerald-600 dark:text-emerald-400", bar: "bg-emerald-500", badgeBg: "bg-emerald-500/10 border-emerald-500/20" };
+  if (s >= 55) return { label: "Moderate Match", color: "#f59e0b", glow: "rgba(245,158,11,0.25)",  cls: "text-amber-600 dark:text-amber-400",  bar: "bg-amber-500", badgeBg: "bg-amber-500/10 border-amber-500/20" };
+  return             { label: "Weak Match",       color: "#ef4444", glow: "rgba(239,68,68,0.25)",   cls: "text-rose-600 dark:text-rose-400",   bar: "bg-rose-500", badgeBg: "bg-rose-500/10 border-rose-500/20" };
 }
 
 function sectionColor(s: number) {
-  if (s >= 75) return { bar: "bg-emerald-500", text: "text-emerald-400" };
-  if (s >= 45) return { bar: "bg-amber-500",   text: "text-amber-400"   };
-  return               { bar: "bg-rose-500",    text: "text-rose-400"    };
+  if (s >= 75) return { bar: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" };
+  if (s >= 45) return { bar: "bg-amber-500",   text: "text-amber-600 dark:text-amber-400"   };
+  return               { bar: "bg-rose-500",    text: "text-rose-600 dark:text-rose-400"    };
 }
 
 function verbColor(s: number) {
-  if (s >= 75) return { cls: "text-emerald-400", label: "Excellent", bar: "bg-emerald-500" };
-  if (s >= 50) return { cls: "text-amber-400",   label: "Average",   bar: "bg-amber-500"  };
-  return               { cls: "text-rose-400",    label: "Weak",      bar: "bg-rose-500"   };
+  if (s >= 75) return { cls: "text-emerald-600 dark:text-emerald-400", label: "Excellent", bar: "bg-emerald-500" };
+  if (s >= 50) return { cls: "text-amber-600 dark:text-amber-400",   label: "Average",   bar: "bg-amber-500"  };
+  return               { cls: "text-rose-600 dark:text-rose-400",    label: "Weak",      bar: "bg-rose-500"   };
 }
 
 function quantColor(s: number) {
-  if (s >= 60) return { cls: "text-emerald-400", label: "Good" };
-  if (s >= 35) return { cls: "text-amber-400",   label: "Low"  };
-  return               { cls: "text-rose-400",    label: "Poor" };
+  if (s >= 60) return { cls: "text-emerald-600 dark:text-emerald-400", label: "Good" };
+  if (s >= 35) return { cls: "text-amber-600 dark:text-amber-400",   label: "Low"  };
+  return               { cls: "text-rose-600 dark:text-rose-400",    label: "Poor" };
 }
 
 function kwColor(status: string) {
-  if (status === "good")    return { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", dot: "bg-emerald-500" };
-  if (status === "low")     return { bg: "bg-amber-500/10",   text: "text-amber-400",   border: "border-amber-500/20",   dot: "bg-amber-500"   };
-  return                           { bg: "bg-rose-500/10",    text: "text-rose-400",    border: "border-rose-500/20",    dot: "bg-rose-500"    };
+  if (status === "good")    return { bg: "bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-400", border: "border-emerald-500/20", dot: "bg-emerald-500" };
+  if (status === "low")     return { bg: "bg-amber-500/10",   text: "text-amber-700 dark:text-amber-400",   border: "border-amber-500/20",   dot: "bg-amber-500"   };
+  return                           { bg: "bg-rose-500/10",    text: "text-rose-700 dark:text-rose-400",    border: "border-rose-500/20",    dot: "bg-rose-500"    };
 }
 
 function FileIcon({ ext }: { ext: string }) {
-  if (ext === "pdf")  return <FileType2 className="h-5 w-5 text-rose-400" />;
-  if (ext === "docx") return <FileText  className="h-5 w-5 text-blue-400" />;
-  return <File className="h-5 w-5 text-muted-foreground" />;
+  if (ext === "pdf")  return <FileType2 className="h-5 w-5 text-rose-500" />;
+  if (ext === "docx") return <FileText  className="h-5 w-5 text-blue-500" />;
+  return <File className="h-5 w-5 text-slate-400 dark:text-zinc-500" />;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
 export default function ResumeAnalyzer() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth() as any;
 
-  const [resumeMode,      setResumeMode]      = useState<"paste" | "upload">("paste");
-  const [resumeText,      setResumeText]      = useState("");
-  const [uploadedFile,    setUploadedFile]    = useState<File | null>(null);
-  const [fileParseMsg,    setFileParseMsg]    = useState("");
-  const [parsedFromFile,  setParsedFromFile]  = useState(false);
-  const [isDragging,      setIsDragging]      = useState(false);
+  /* State */
+  const [resumeMode, setResumeMode] = useState<"paste" | "upload">("paste");
+  const [resumeText, setResumeText] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileParseMsg, setFileParseMsg] = useState("");
+  const [parsedFromFile, setParsedFromFile] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const [jdMode,          setJdMode]          = useState<"paste" | "template">("paste");
-  const [jobDescription,  setJobDescription]  = useState("");
-  const [jdTemplateKey,   setJdTemplateKey]   = useState("");
-  const [jdDropOpen,      setJdDropOpen]      = useState(false);
+  const [jdMode, setJdMode] = useState<"paste" | "template">("paste");
+  const [jobDescription, setJobDescription] = useState("");
+  const [jdTemplateKey, setJdTemplateKey] = useState("");
+  const [jdDropOpen, setJdDropOpen] = useState(false);
 
-  const [loading,         setLoading]         = useState(false);
-  const [stepIdx,         setStepIdx]         = useState(0);
-  const [error,           setError]           = useState("");
-  const [result,          setResult]          = useState<AnalyzerResult | null>(null);
-  const [copiedIdx,       setCopiedIdx]       = useState<number | null>(null);
-  const [openBullet,      setOpenBullet]      = useState<number | null>(null);
-  const [summarycopied,   setSummaryCopied]   = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<AnalyzerResult | null>(null);
+  
+  // Results Tab state
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
+  
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [summarycopied, setSummaryCopied] = useState(false);
 
-  const stepTimer   = useRef<NodeJS.Timeout | null>(null);
+  const stepTimer = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const resultsRef  = useRef<HTMLDivElement>(null);
-  const jdDropRef   = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const jdDropRef = useRef<HTMLDivElement>(null);
 
+  // Cycle processing animation steps
   useEffect(() => {
     if (loading) {
       setStepIdx(0);
-      stepTimer.current = setInterval(() => setStepIdx(p => (p + 1) % STEPS.length), 1600);
+      stepTimer.current = setInterval(() => setStepIdx((p) => (p + 1) % STEPS.length), 1400);
     } else {
       if (stepTimer.current) clearInterval(stepTimer.current);
     }
     return () => { if (stepTimer.current) clearInterval(stepTimer.current); };
   }, [loading]);
-
-  useEffect(() => {
-    if (result) setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
-  }, [result]);
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -265,7 +267,7 @@ export default function ResumeAnalyzer() {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  /* ── File parsing ── */
+  /* File parsing */
   const parseFile = useCallback(async (file: File) => {
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     setFileParseMsg("Reading file..."); setParsedFromFile(false);
@@ -279,14 +281,14 @@ export default function ResumeAnalyzer() {
         setFileParseMsg("Parsing PDF — loading engine...");
         const pdfjsLib = await import("pdfjs-dist");
         pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-        const buf  = await file.arrayBuffer();
-        const pdf  = await pdfjsLib.getDocument({ data: buf }).promise;
-        let full   = "";
+        const buf = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        let full = "";
         for (let i = 1; i <= pdf.numPages; i++) {
           setFileParseMsg(`Parsing PDF page ${i}/${pdf.numPages}...`);
           const pg = await pdf.getPage(i);
           const ct = await pg.getTextContent();
-          full    += ct.items.map((x: any) => x.str).join(" ") + "\n";
+          full += ct.items.map((x: any) => x.str).join(" ") + "\n";
         }
         setResumeText(full.trim()); setParsedFromFile(true);
         setFileParseMsg(`✓ Extracted ${full.trim().length} chars from ${pdf.numPages}-page PDF`); return;
@@ -294,13 +296,13 @@ export default function ResumeAnalyzer() {
       if (ext === "docx") {
         setFileParseMsg("Parsing Word document...");
         const mammoth = await import("mammoth");
-        const buf     = await file.arrayBuffer();
-        const out     = await mammoth.extractRawText({ arrayBuffer: buf });
+        const buf = await file.arrayBuffer();
+        const out = await mammoth.extractRawText({ arrayBuffer: buf });
         setResumeText(out.value.trim()); setParsedFromFile(true);
         setFileParseMsg(`✓ Extracted ${out.value.trim().length} chars from .docx`); return;
       }
       setFileParseMsg("⚠ Unsupported format. Use PDF, DOCX, or TXT.");
-    } catch { setFileParseMsg("⚠ Failed to parse file. Paste the text manually."); }
+    } catch { setFileParseMsg("⚠ Failed to parse file. Paste text manually."); }
   }, []);
 
   const handleFileChange = (file: File) => {
@@ -326,51 +328,55 @@ export default function ResumeAnalyzer() {
     e.preventDefault();
     const rText = resumeText.trim();
     const jdText = jobDescription.trim();
-    if (!rText || !jdText) { setError("Please provide both your resume and a job description."); return; }
+    if (!rText || !jdText) { setError("Please provide both your resume and a target job description."); return; }
     setLoading(true); setError(""); setResult(null);
     try {
-      const res  = await fetch("/api/v1/student-hub/resume-analyzer", {
+      const res = await fetch("/api/v1/student-hub/resume-analyzer", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeText: rText, jobDescription: jdText }),
       });
       const data = await res.json();
-      if (res.ok && data.success) setResult(data.result);
-      else setError(data.message || "Failed to analyze. Please try again.");
+      if (res.ok && data.success) {
+        setResult(data.result);
+        setActiveTab("overview");
+      } else {
+        setError(data.message || "Failed to analyze. Please try again.");
+      }
     } catch { setError("Network error — check your connection."); }
-    finally  { setLoading(false); }
+    finally { setLoading(false); }
   };
 
-  /* ── Auth guards ── */
+  /* Auth guards */
   if (authLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950">
       <div className="flex flex-col items-center gap-3">
-        <RefreshCw className="h-8 w-8 text-brand-600 animate-spin" />
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Checking access...</p>
+        <RefreshCw className="h-8 w-8 text-emerald-600 animate-spin" />
+        <p className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest">Verifying access...</p>
       </div>
     </div>
   );
+
   if (!user) return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950 py-12 px-4">
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="max-w-sm w-full bg-card border border-border/80 rounded-3xl p-8 text-center shadow-lg space-y-6">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-rose-500/10 flex items-center justify-center">
-          <Lock className="h-7 w-7 text-rose-500" />
+        className="max-w-sm w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-xl space-y-6">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+          <Lock className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-black tracking-tight">Access Restricted</h2>
-          <p className="text-xs text-muted-foreground leading-relaxed">Sign in to use the AI Resume Analyzer and ATS Grader.</p>
+          <h2 className="text-xl font-black text-slate-900 dark:text-zinc-50 tracking-tight">Access Restricted</h2>
+          <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">Sign in to use the AI Resume Analyzer and ATS Grader.</p>
         </div>
         <Link href="/login?redirect=/student-hub/resume-analyzer"
-          className="flex h-11 w-full items-center justify-center bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-black shadow transition-all active:scale-95">
+          className="flex h-11 w-full items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-600/20 transition-all active:scale-95">
           Sign In to Continue
         </Link>
-        <Link href="/student-hub" className="block text-[11px] font-black text-muted-foreground hover:text-foreground">Back to Hub</Link>
+        <Link href="/student-hub" className="block text-[11px] font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100">Back to Hub</Link>
       </motion.div>
     </div>
   );
 
-  /* ── Main ── */
-  const theme  = result ? scoreTheme(result.matchScore) : null;
+  const theme = result ? scoreTheme(result.matchScore) : null;
   const radius = 60; const circ = 2 * Math.PI * radius;
 
   const grouped = CATEGORY_ORDER.reduce<Record<string, { key: string; t: typeof JD_TEMPLATES[string] }[]>>((acc, cat) => {
@@ -379,678 +385,672 @@ export default function ResumeAnalyzer() {
   }, {});
 
   return (
-    <div className="min-h-screen select-none">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 relative overflow-hidden select-none pb-24 transition-colors duration-300">
+      
+      {/* Ambient Gradients */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[25%] w-[45%] h-[45%] rounded-full bg-emerald-500/5 dark:bg-emerald-950/20 blur-[130px]" />
+        <div className="absolute top-[25%] right-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-500/5 dark:bg-cyan-950/15 blur-[130px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/5 dark:bg-purple-950/15 blur-[130px]" />
+      </div>
 
-      {/* ══ HERO ══ */}
-      <div className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-brand-500/8 blur-3xl" />
-          <div className="absolute -top-10 right-1/4 h-64 w-64 rounded-full bg-emerald-500/8 blur-3xl" />
-          <div className="absolute top-0 right-0 h-60 w-60 rounded-full bg-cyan-500/6 blur-3xl" />
-        </div>
-        <div className="container-custom max-w-5xl relative z-10 py-10">
-          <Link href="/student-hub"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground mb-8 transition-colors group">
-            <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Hub
+      {/* Top Header Navigation */}
+      <header className="relative z-20 border-b border-slate-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link
+            href="/student-hub"
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Student Hub</span>
           </Link>
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row items-start gap-6 sm:items-center justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Full ATS Suite</span>
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>Beat The ATS Filter</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          STEP 1: UPLOAD & INPUT STAGE (MINIMAL & FOCUSED)
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <AnimatePresence mode="wait">
+        {!loading && !result && (
+          <motion.main
+            key="step-upload"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.4 }}
+            className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center space-y-10"
+          >
+            {/* Hero Section */}
+            <div className="space-y-3 max-w-2xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>AI Resume &amp; JD Matcher</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-none">
+              <h1 className="text-4xl sm:text-6xl font-black text-slate-900 dark:text-zinc-50 tracking-tight leading-[1.08]">
                 Beat the{" "}
-                <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-cyan-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
                   ATS Filter
                 </span>
               </h1>
-              <p className="text-sm text-muted-foreground font-semibold max-w-md leading-relaxed">
-                Complete ATS analysis — match score, section health, keyword heatmap, verb strength, quantification audit, tailored summary, and AI bullet rewrites.
+              <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-400 font-medium leading-relaxed">
+                Upload or paste your resume alongside any Job Description to run 7-section ATS grading, keyword density audits, and AI bullet rewrites.
               </p>
             </div>
-            <div className="flex sm:flex-col gap-2 shrink-0">
-              {[
-                { icon: "🎯", label: "7-Section Health Check" },
-                { icon: "🔑", label: "Keyword Density Map"    },
-                { icon: "💪", label: "Action Verb Audit"      },
-                { icon: "📊", label: "Quantification Score"   },
-                { icon: "✍️", label: "Tailored Summary"       },
-              ].map(f => (
-                <div key={f.label} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-border/60 text-[10px] font-black text-muted-foreground whitespace-nowrap">
-                  <span>{f.icon}</span> {f.label}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </div>
 
-      {/* ══ CONTENT ══ */}
-      <div className="container-custom max-w-5xl py-10">
-        <div className="grid lg:grid-cols-5 gap-8 items-start">
+            {/* Input Form Card */}
+            <form onSubmit={handleAnalyze} className="space-y-6 text-left max-w-3xl mx-auto">
+              
+              <div className="grid sm:grid-cols-2 gap-6 items-start">
+                
+                {/* 1. RESUME INPUT CARD */}
+                <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-zinc-200 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>Your Resume</span>
+                    </label>
 
-          {/* ━━━ LEFT PANEL ━━━ */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-            className="lg:col-span-2">
-            <form onSubmit={handleAnalyze} className="space-y-5 sticky top-24">
-
-              {/* RESUME */}
-              <div className="bg-card border border-border/70 rounded-2xl shadow-sm overflow-hidden">
-                <div className="flex items-center gap-2 px-5 pt-5 pb-3">
-                  <div className="h-6 w-6 rounded-lg bg-brand-500/15 flex items-center justify-center">
-                    <FileText className="h-3.5 w-3.5 text-brand-400" />
-                  </div>
-                  <span className="text-xs font-black uppercase tracking-widest text-foreground flex-1">Your Resume</span>
-                  <div className="flex rounded-lg bg-muted/40 border border-border/40 p-0.5 text-[10px] font-black">
-                    {(["paste", "upload"] as const).map(m => (
-                      <button key={m} type="button"
-                        onClick={() => { setResumeMode(m); if (m === "paste") { setUploadedFile(null); setFileParseMsg(""); setParsedFromFile(false); }}}
-                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer
-                          ${resumeMode === m ? "bg-brand-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                        {m === "upload" ? "📎 Upload" : "📝 Paste"}
+                    {/* Mode Toggle */}
+                    <div className="flex rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-0.5 text-[10px] font-black">
+                      <button
+                        type="button"
+                        onClick={() => { setResumeMode("paste"); setUploadedFile(null); setFileParseMsg(""); setParsedFromFile(false); }}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          resumeMode === "paste"
+                            ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                            : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        Paste Text
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() => setResumeMode("upload")}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          resumeMode === "upload"
+                            ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm"
+                            : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        Upload File
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="px-5 pb-5">
-                  <AnimatePresence mode="wait">
-                    {resumeMode === "paste" && (
-                      <motion.div key="paste" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <div className="flex justify-end mb-1.5">
-                          <span className={`text-[10px] font-bold ${resumeText.length > 50 ? "text-emerald-400" : "text-muted-foreground"}`}>{resumeText.length} chars</span>
-                        </div>
-                        <textarea value={resumeText} onChange={e => setResumeText(e.target.value)}
-                          placeholder="Paste your education, skills, work history, and projects here..."
-                          rows={9} required={resumeMode === "paste"}
-                          className="w-full rounded-xl border border-border/50 bg-background/60 p-3 text-xs font-semibold
-                            focus:outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/10
-                            resize-none leading-relaxed transition-all placeholder:text-muted-foreground/40" />
-                      </motion.div>
-                    )}
-                    {resumeMode === "upload" && (
-                      <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-                        <div
-                          onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                          onDragLeave={() => setIsDragging(false)}
-                          onDrop={e => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files[0]) handleFileChange(e.dataTransfer.files[0]); }}
-                          onClick={() => fileInputRef.current?.click()}
-                          className={`border-2 border-dashed rounded-xl p-8 cursor-pointer text-center transition-all
-                            ${isDragging ? "border-brand-500 bg-brand-500/10"
-                              : uploadedFile ? "border-emerald-500/40 bg-emerald-500/5"
-                              : "border-border/50 hover:border-brand-500/40 hover:bg-brand-500/5"}`}>
-                          <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden"
-                            onChange={e => { if (e.target.files?.[0]) handleFileChange(e.target.files[0]); }} />
-                          {uploadedFile ? (
-                            <div className="space-y-2">
-                              <FileIcon ext={uploadedFile.name.split(".").pop() ?? ""} />
-                              <p className="text-xs font-black text-foreground truncate max-w-[180px] mx-auto">{uploadedFile.name}</p>
-                              <p className="text-[10px] text-muted-foreground font-semibold">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
-                              <button type="button" onClick={e => { e.stopPropagation(); setUploadedFile(null); setResumeText(""); setFileParseMsg(""); setParsedFromFile(false); }}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[10px] font-black text-rose-400 hover:bg-rose-500/20 cursor-pointer">
-                                <X className="h-3 w-3" /> Remove
+
+                  {resumeMode === "upload" ? (
+                    <div className="space-y-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.docx,.txt"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleFileChange(f);
+                        }}
+                      />
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault(); setIsDragging(false);
+                          const f = e.dataTransfer.files?.[0];
+                          if (f) handleFileChange(f);
+                        }}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[180px] ${
+                          isDragging
+                            ? "border-emerald-500 bg-emerald-500/10"
+                            : uploadedFile
+                            ? "border-emerald-500/40 bg-emerald-500/5"
+                            : "border-slate-200 dark:border-zinc-800 hover:border-emerald-500/40 bg-slate-50/50 dark:bg-zinc-950/50"
+                        }`}
+                      >
+                        {uploadedFile ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-900 dark:text-zinc-100">
+                              <FileIcon ext={uploadedFile.name.split(".").pop()?.toLowerCase() ?? ""} />
+                              <span className="truncate max-w-[180px]">{uploadedFile.name}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation(); setUploadedFile(null); setResumeText(""); setFileParseMsg(""); setParsedFromFile(false);
+                                }}
+                                className="text-slate-400 hover:text-rose-500 ml-1"
+                              >
+                                <X className="h-3.5 w-3.5" />
                               </button>
                             </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <UploadCloud className="h-8 w-8 text-brand-400/50 mx-auto" />
-                              <p className="text-xs font-black text-foreground">Drop your resume here</p>
-                              <p className="text-[10px] text-muted-foreground">or click to browse</p>
-                              <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-wider">PDF · DOCX · TXT</p>
+                            {fileParseMsg && (
+                              <p className={`text-[10px] font-bold ${fileParseMsg.startsWith("✓") ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                                {fileParseMsg}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <UploadCloud className="h-8 w-8 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                            <div className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                              Click or Drag &amp; Drop Resume
                             </div>
-                          )}
-                        </div>
-                        <AnimatePresence>
-                          {fileParseMsg && (
-                            <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                              className={`flex items-center gap-2 p-3 rounded-xl text-[11px] font-bold border
-                                ${parsedFromFile ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
-                                  : fileParseMsg.startsWith("⚠") ? "bg-rose-500/5 border-rose-500/20 text-rose-400"
-                                  : "bg-brand-500/5 border-brand-500/20 text-brand-400"}`}>
-                              {parsedFromFile ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                                : fileParseMsg.startsWith("⚠") ? <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                                : <RefreshCw className="h-3.5 w-3.5 shrink-0 animate-spin" />}
-                              {fileParseMsg}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                        {parsedFromFile && resumeText && (
-                          <div className="rounded-xl border border-border/40 bg-muted/20 p-3 space-y-1.5">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Extracted Preview</p>
-                            <p className="text-[10px] text-muted-foreground font-semibold line-clamp-4 leading-relaxed">{resumeText.slice(0, 300)}...</p>
+                            <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                              Supports PDF, DOCX, or TXT
+                            </p>
                           </div>
                         )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </div>
+                    </div>
+                  ) : (
+                    <textarea
+                      value={resumeText}
+                      onChange={(e) => setResumeText(e.target.value)}
+                      placeholder="Paste your full resume text here (experience, skills, projects, education)..."
+                      className="w-full h-44 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl p-3 text-xs font-medium text-slate-900 dark:text-zinc-100 outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 resize-none"
+                    />
+                  )}
                 </div>
-              </div>
 
-              {/* JD */}
-              <div className="bg-card border border-border/70 rounded-2xl shadow-sm overflow-hidden">
-                <div className="flex items-center gap-2 px-5 pt-5 pb-3">
-                  <div className="h-6 w-6 rounded-lg bg-purple-500/15 flex items-center justify-center">
-                    <Briefcase className="h-3.5 w-3.5 text-purple-400" />
-                  </div>
-                  <span className="text-xs font-black uppercase tracking-widest text-foreground flex-1">Job Description</span>
-                  <div className="flex rounded-lg bg-muted/40 border border-border/40 p-0.5 text-[10px] font-black">
-                    {(["template", "paste"] as const).map(m => (
-                      <button key={m} type="button" onClick={() => setJdMode(m)}
-                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer
-                          ${jdMode === m ? "bg-purple-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                        {m === "template" ? "📋 Templates" : "📝 Paste"}
+                {/* 2. JOB DESCRIPTION INPUT CARD */}
+                <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-zinc-200 flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                      <span>Target Job Description</span>
+                    </label>
+
+                    {/* Template Dropdown */}
+                    <div className="relative" ref={jdDropRef}>
+                      <button
+                        type="button"
+                        onClick={() => setJdDropOpen(!jdDropOpen)}
+                        className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-[10px] font-black text-cyan-700 dark:text-cyan-400 hover:border-cyan-500/40 transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        <Wand2 className="h-3 w-3" />
+                        <span>Presets</span>
+                        <ChevronDown className="h-3 w-3" />
                       </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="px-5 pb-5 space-y-3">
-                  <AnimatePresence>
-                    {jdMode === "template" && (
-                      <motion.div key="tmpl" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                        <div ref={jdDropRef} className="relative mb-3">
-                          <button type="button" onClick={() => setJdDropOpen(p => !p)}
-                            className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-border/60 bg-background/60 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all cursor-pointer">
-                            {jdTemplateKey ? (
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="text-base">{JD_TEMPLATES[jdTemplateKey].icon}</span>
-                                <div className="text-left min-w-0">
-                                  <p className="text-xs font-black text-foreground truncate">{JD_TEMPLATES[jdTemplateKey].label}</p>
-                                  <p className="text-[9px] text-muted-foreground">{JD_TEMPLATES[jdTemplateKey].category}</p>
-                                </div>
-                              </div>
-                            ) : <span className="text-xs font-semibold text-muted-foreground">Select a Job Role Template...</span>}
-                            <motion.div animate={{ rotate: jdDropOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            </motion.div>
-                          </button>
-                          <AnimatePresence>
-                            {jdDropOpen && (
-                              <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
-                                className="absolute z-50 top-full mt-1.5 w-full bg-popover border border-border/80 rounded-2xl shadow-xl overflow-hidden">
-                                <div className="max-h-[300px] overflow-y-auto">
-                                  {CATEGORY_ORDER.map(cat => (
-                                    <div key={cat}>
-                                      <div className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-muted/30 sticky top-0">{cat}</div>
-                                      {grouped[cat]?.map(({ key, t }) => (
-                                        <button key={key} type="button" onClick={() => selectJdTemplate(key)}
-                                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-muted/40 transition-colors cursor-pointer ${jdTemplateKey === key ? "bg-purple-500/10" : ""}`}>
-                                          <span className="text-base shrink-0">{t.icon}</span>
-                                          <p className="text-xs font-black text-foreground flex-1">{t.label}</p>
-                                          {jdTemplateKey === key && <Check className="h-3.5 w-3.5 text-purple-400 shrink-0" />}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+
+                      {jdDropOpen && (
+                        <div className="absolute right-0 top-8 z-50 w-64 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl p-2 max-h-64 overflow-y-auto">
+                          {Object.entries(grouped).map(([cat, list]) => (
+                            <div key={cat} className="space-y-1 mb-2">
+                              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-2 block">
+                                {cat}
+                              </span>
+                              {list.map(({ key, t }) => (
+                                <button
+                                  key={key}
+                                  type="button"
+                                  onClick={() => selectJdTemplate(key)}
+                                  className="w-full flex items-center gap-2 p-2 rounded-xl text-left text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                                >
+                                  <span>{t.icon}</span>
+                                  <span className="truncate">{t.label}</span>
+                                </button>
+                              ))}
+                            </div>
+                          ))}
                         </div>
-                        {jdTemplateKey && (
-                          <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1.5 mb-2">
-                            <CheckCircle2 className="h-3 w-3 text-emerald-400" /> Template loaded — edit below if needed
-                          </p>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <div className="flex justify-end">
-                    <span className={`text-[10px] font-bold ${jobDescription.length > 50 ? "text-emerald-400" : "text-muted-foreground"}`}>{jobDescription.length} chars</span>
+                      )}
+                    </div>
                   </div>
-                  <textarea value={jobDescription} onChange={e => { setJobDescription(e.target.value); if (jdMode === "template") setJdTemplateKey(""); }}
-                    placeholder={jdMode === "template" ? "Select a template above, or type your JD here..." : "Paste the full job post requirements, skills, and qualifications..."}
-                    rows={9} required
-                    className="w-full rounded-xl border border-border/50 bg-background/60 p-3 text-xs font-semibold
-                      focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10
-                      resize-none leading-relaxed transition-all placeholder:text-muted-foreground/40" />
+
+                  <textarea
+                    value={jobDescription}
+                    onChange={(e) => { setJobDescription(e.target.value); setJdTemplateKey(""); }}
+                    placeholder="Paste the target job description or click Presets to pick an engineering role..."
+                    className="w-full h-44 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl p-3 text-xs font-medium text-slate-900 dark:text-zinc-100 outline-none focus:border-cyan-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 resize-none"
+                  />
+                </div>
+
+              </div>
+
+              {error && (
+                <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Action Button */}
+              <button
+                type="submit"
+                className="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-black text-sm uppercase tracking-wider shadow-xl shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Run ATS Analysis</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+            </form>
+          </motion.main>
+        )}
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            STEP 2: ANALYZING STAGE (PROCESSING ANIMATION)
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {loading && (
+          <motion.main
+            key="step-analyzing"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.4 }}
+            className="relative z-10 max-w-xl mx-auto px-4 py-24 text-center flex flex-col items-center justify-center min-h-[60vh]"
+          >
+            <div className="relative h-28 w-28 mb-8 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 opacity-20 blur-2xl animate-pulse" />
+              <div className="absolute h-24 w-24 rounded-full border border-emerald-500/30 animate-spin" style={{ animationDuration: "6s" }} />
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-600/30">
+                <Gauge className="h-6 w-6 text-white animate-pulse" />
+              </div>
+            </div>
+
+            <h3 className="text-xl font-black text-slate-900 dark:text-zinc-100 tracking-tight mb-2">
+              Evaluating ATS Match Score
+            </h3>
+
+            <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 min-h-6">
+              {STEPS[stepIdx].label}
+            </p>
+
+            <div className="w-48 h-1.5 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden mt-6">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"
+                initial={{ width: "10%" }}
+                animate={{ width: `${((stepIdx + 1) / STEPS.length) * 100}%` }}
+                transition={{ duration: 0.4 }}
+              />
+            </div>
+          </motion.main>
+        )}
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            STEP 3: RESULTS EXPERIENCE (SCORE & INSIGHT TABS)
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {result && theme && !loading && (
+          <motion.main
+            key="step-results"
+            ref={resultsRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8"
+          >
+            {/* Top Bar: Action Buttons */}
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-4 flex-wrap gap-4">
+              <button
+                onClick={() => { setResult(null); setError(""); }}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Analyze Another Resume</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-bold hover:text-slate-900 dark:hover:text-white transition-all shadow-sm cursor-pointer"
+                >
+                  Export Report
+                </button>
+              </div>
+            </div>
+
+            {/* HERO SCORE SNAPSHOT CARD */}
+            <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-2xl shadow-xl text-center relative overflow-hidden space-y-6">
+              
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-slate-200 dark:border-zinc-800 pb-6 text-left">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                    MATCH COMPATIBILITY RATING
+                  </span>
+                  <h2 className="text-3xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+                    ATS Audit Results
+                  </h2>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                    {result.overallFeedback}
+                  </p>
+                </div>
+
+                {/* Animated Circular Match Gauge */}
+                <div className="relative h-32 w-32 shrink-0 flex items-center justify-center">
+                  <svg className="h-full w-full -rotate-90">
+                    <circle cx="64" cy="64" r={radius} className="stroke-slate-100 dark:stroke-zinc-800" strokeWidth="8" fill="transparent" />
+                    <motion.circle
+                      cx="64" cy="64" r={radius}
+                      stroke={theme.color} strokeWidth="8" fill="transparent"
+                      strokeDasharray={circ}
+                      initial={{ strokeDashoffset: circ }}
+                      animate={{ strokeDashoffset: circ - (result.matchScore / 100) * circ }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center">
+                    <span className="text-3xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+                      {result.matchScore}%
+                    </span>
+                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-0.5 ${theme.badgeBg} ${theme.cls}`}>
+                      {theme.label}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Error */}
-              <AnimatePresence>
-                {error && (
-                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="flex flex-col gap-2 p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl text-xs text-rose-500 font-bold">
-                    <div className="flex gap-2 items-start"><AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />{error}</div>
-                    {error.includes("limit") && (
-                      <Link href="/student-hub/upgrade"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-[9px] uppercase tracking-wider font-black self-start">
-                        <Zap className="h-3 w-3 fill-current animate-pulse" /> Upgrade to Pro
-                      </Link>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Metric Highlights Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850">
+                  <span className="text-[9px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Missing Keywords</span>
+                  <span className="text-base font-black text-rose-600 dark:text-rose-400">{result.missingKeywords.length} Critical</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850">
+                  <span className="text-[9px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Action Verbs</span>
+                  <span className={`text-base font-black ${verbColor(result.actionVerbScore).cls}`}>{result.actionVerbScore}% Score</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850">
+                  <span className="text-[9px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Quantification</span>
+                  <span className={`text-base font-black ${quantColor(result.quantificationScore).cls}`}>{result.quantificationScore}% Score</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850">
+                  <span className="text-[9px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Unquantified Bullets</span>
+                  <span className="text-base font-black text-amber-600 dark:text-amber-400">{result.unquantifiedBullets.length} Found</span>
+                </div>
+              </div>
 
-              {/* CTA */}
-              <motion.button type="submit" disabled={loading || (resumeMode === "upload" && !parsedFromFile && !resumeText)}
-                whileHover={{ scale: loading ? 1 : 1.02 }} whileTap={{ scale: loading ? 1 : 0.98 }}
-                className="relative w-full h-14 rounded-2xl font-black text-sm text-white overflow-hidden cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/15">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-brand-600 to-emerald-700" />
-                {!loading && <div className="absolute inset-0 opacity-25" style={{ background: "linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.5) 50%,transparent 60%)", backgroundSize: "200% 100%", animation: "shimmer 2.5s linear infinite" }} />}
-                <span className="relative flex items-center justify-center gap-2">
-                  {loading ? <><RefreshCw className="h-4 w-4 animate-spin" /> Analyzing...</> : <><ShieldCheck className="h-4 w-4" /> Run Full ATS Analysis</>}
-                </span>
-              </motion.button>
+            </div>
 
-              {result && !loading && (
-                <button type="button" onClick={() => { setResult(null); setResumeText(""); setJobDescription(""); setUploadedFile(null); setFileParseMsg(""); setParsedFromFile(false); setJdTemplateKey(""); }}
-                  className="w-full h-10 rounded-xl border border-border/60 text-[10px] font-black text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-all cursor-pointer">
-                  ↺ Analyze Another Resume
-                </button>
-              )}
-            </form>
-          </motion.div>
+            {/* TAB NAVIGATION BAR */}
+            <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm overflow-x-auto">
+              {[
+                { id: "overview", label: "Overview", icon: LayoutDashboard },
+                { id: "keywords", label: `Keywords (${result.missingKeywords.length})`, icon: Key },
+                { id: "sections", label: "Sections", icon: Layers },
+                { id: "verbs", label: "Action Verbs", icon: Gauge },
+                { id: "quant", label: "Quantification", icon: BarChart2 },
+                { id: "summary", label: "Tailored Summary", icon: User },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as TabType)}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-950 shadow-sm"
+                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* ━━━ RIGHT PANEL ━━━ */}
-          <div ref={resultsRef} className="lg:col-span-3 space-y-5">
+            {/* TAB CONTENT VIEWS */}
             <AnimatePresence mode="wait">
-
-              {/* LOADING */}
-              {loading && (
-                <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center min-h-[500px] space-y-8">
-                  <div className="relative h-28 w-28">
-                    <div className="absolute inset-0 rounded-full border-2 border-emerald-500/20 animate-spin" style={{ animationDuration: "3s" }} />
-                    <div className="absolute inset-2.5 rounded-full border-2 border-brand-500/25 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }} />
-                    <div className="absolute inset-5 rounded-full border-2 border-cyan-500/35 animate-spin" style={{ animationDuration: "1.5s" }} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {React.createElement(STEPS[stepIdx].icon, { className: "h-9 w-9 text-emerald-400" })}
-                    </div>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <h4 className="font-black text-foreground text-base">Running Full ATS Analysis</h4>
-                    <AnimatePresence mode="wait">
-                      <motion.p key={stepIdx} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.25 }}
-                        className="text-xs text-muted-foreground font-semibold">{STEPS[stepIdx].label}</motion.p>
-                    </AnimatePresence>
-                    <div className="flex gap-1.5 justify-center mt-3">
-                      {STEPS.map((_, i) => (
-                        <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === stepIdx ? "w-6 bg-emerald-500" : "w-1.5 bg-border"}`} />
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* EMPTY */}
-              {!loading && !result && (
-                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="flex flex-col items-center justify-center min-h-[500px] text-center space-y-5 border-2 border-dashed border-border/50 rounded-3xl p-8">
-                  <div className="relative">
-                    <div className="h-20 w-20 rounded-3xl bg-emerald-500/10 flex items-center justify-center mx-auto">
-                      <ShieldCheck className="h-10 w-10 text-emerald-400/40" />
-                    </div>
-                    <motion.div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center"
-                      animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
-                      <span className="text-[8px]">✨</span>
-                    </motion.div>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-black text-foreground text-base">Full ATS Suite Ready</h4>
-                    <p className="text-xs text-muted-foreground max-w-xs leading-relaxed mx-auto font-semibold">
-                      Upload or paste your resume · select a JD template · hit <span className="text-emerald-400 font-black">Run Full ATS Analysis</span>
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 w-full max-w-sm">
-                    {[
-                      { icon: "🎯", t: "ATS Match Score"    },
-                      { icon: "🏥", t: "Section Health"     },
-                      { icon: "🔑", t: "Keyword Heatmap"    },
-                      { icon: "💪", t: "Verb Strength"      },
-                      { icon: "📊", t: "Quantification Audit"},
-                      { icon: "✍️", t: "Tailored Summary"   },
-                    ].map(f => (
-                      <div key={f.t} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card border border-border/40 text-[10px] font-bold text-muted-foreground">
-                        <span>{f.icon}</span>{f.t}
+              
+              {/* TAB 1: OVERVIEW & BULLET REWRITES */}
+              {activeTab === "overview" && (
+                <motion.div
+                  key="tab-overview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6 text-left"
+                >
+                  {/* AI Bullet Rewrites */}
+                  {result.bulletImprovements.length > 0 && (
+                    <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-black uppercase text-slate-900 dark:text-zinc-100 tracking-wider flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          <span>AI Powered Bullet Rewrites ({result.bulletImprovements.length})</span>
+                        </h3>
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
 
-              {/* RESULTS */}
-              {!loading && result && theme && (
-                <motion.div key="results" initial="hidden" animate="show"
-                  variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
-                  className="space-y-5">
-
-                  {/* ── 1. SCORE CARD ── */}
-                  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                    className="bg-card border border-border/70 rounded-3xl p-6 shadow-sm overflow-hidden relative">
-                    <div className="absolute top-6 left-1/2 -translate-x-1/2 h-40 w-40 rounded-full blur-3xl opacity-30 pointer-events-none" style={{ background: theme.glow }} />
-                    <div className="relative flex flex-col sm:flex-row items-center gap-8">
-                      <div className="relative h-36 w-36 shrink-0">
-                        <svg className="h-full w-full -rotate-90" viewBox="0 0 144 144">
-                          <circle cx="72" cy="72" r={radius} className="stroke-border" strokeWidth="10" fill="none" />
-                          <motion.circle cx="72" cy="72" r={radius} stroke={theme.color} strokeWidth="10" fill="none"
-                            strokeDasharray={circ}
-                            initial={{ strokeDashoffset: circ }}
-                            animate={{ strokeDashoffset: circ - (result.matchScore / 100) * circ }}
-                            transition={{ duration: 1.2, ease: "easeOut" }} strokeLinecap="round" />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-3xl font-black text-foreground">{result.matchScore}%</span>
-                          <span className={`text-[9px] font-black uppercase tracking-wider ${theme.cls}`}>{theme.label}</span>
-                        </div>
-                      </div>
-                      <div className="flex-1 w-full space-y-3">
-                        <div>
-                          <h3 className="text-base font-black text-foreground">ATS Compatibility Score</h3>
-                          <p className="text-[11px] text-muted-foreground font-semibold mt-0.5">Based on keyword compliance, experience alignment, and JD technical requirements.</p>
-                        </div>
-                        {[
-                          { label: "Keyword Match",   pct: Math.min(100, result.matchScore + 5) },
-                          { label: "Skill Alignment", pct: Math.max(10,  result.matchScore - 10) },
-                          { label: "ATS Formatting",  pct: Math.min(100, result.matchScore + 15) },
-                        ].map(bar => (
-                          <div key={bar.label} className="space-y-1">
-                            <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
-                              <span>{bar.label}</span><span>{bar.pct}%</span>
+                      <div className="space-y-3">
+                        {result.bulletImprovements.map((item, idx) => (
+                          <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 space-y-2">
+                            <div className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-start gap-2">
+                              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 shrink-0">
+                                Original
+                              </span>
+                              <span className="line-through opacity-80">{item.original}</span>
                             </div>
-                            <div className="h-1.5 rounded-full bg-border/50 overflow-hidden">
-                              <motion.div className={`h-full rounded-full ${theme.bar}`}
-                                initial={{ width: 0 }} animate={{ width: `${bar.pct}%` }}
-                                transition={{ duration: 1, ease: "easeOut", delay: 0.3 }} />
+                            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-start justify-between gap-2 pt-1 border-t border-slate-200 dark:border-zinc-900">
+                              <div className="flex items-start gap-2">
+                                <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                                  Improved
+                                </span>
+                                <span>{item.improved}</span>
+                              </div>
+                              <button
+                                onClick={() => copyBullet(item.improved, idx)}
+                                className="p-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white shrink-0 cursor-pointer"
+                                title="Copy Bullet"
+                              >
+                                {copiedIdx === idx ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                              </button>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </motion.div>
-
-                  {/* ── 2. SECTION HEALTH ── */}
-                  {result.sectionScores && (
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                      className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                          <BarChart2 className="h-4 w-4 text-cyan-400" />
-                        </div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Section Health Check</h4>
-                        <span className="ml-auto text-[10px] text-muted-foreground font-bold">7 sections analyzed</span>
-                      </div>
-                      <div className="space-y-3">
-                        {Object.entries(result.sectionScores).map(([key, val]) => {
-                          const meta = SECTION_META[key];
-                          const col  = sectionColor(val.score);
-                          const Icon = meta?.icon ?? BookOpen;
-                          return (
-                            <div key={key} className="space-y-1.5">
-                              <div className="flex items-center gap-2">
-                                <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                <span className="text-[11px] font-black text-foreground flex-1">{meta?.label ?? key}</span>
-                                <span className={`text-[11px] font-black tabular-nums ${col.text}`}>{val.score}%</span>
-                              </div>
-                              <div className="h-1.5 rounded-full bg-border/40 overflow-hidden">
-                                <motion.div className={`h-full rounded-full ${col.bar}`}
-                                  initial={{ width: 0 }} animate={{ width: `${val.score}%` }}
-                                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} />
-                              </div>
-                              <p className="text-[10px] text-muted-foreground font-semibold leading-relaxed pl-5">{val.feedback}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
                   )}
+                </motion.div>
+              )}
 
-                  {/* ── 3. KEYWORD DENSITY HEATMAP ── */}
-                  {result.keywordDensity && result.keywordDensity.length > 0 && (
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                      className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-xl bg-brand-500/10 flex items-center justify-center">
-                          <Key className="h-4 w-4 text-brand-400" />
-                        </div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Keyword Density Heatmap</h4>
-                        <div className="ml-auto flex gap-2 text-[9px] font-black">
-                          <span className="text-emerald-400">● Good</span>
-                          <span className="text-amber-400">● Low</span>
-                          <span className="text-rose-400">● Missing</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        {result.keywordDensity.map((kw, idx) => {
-                          const col    = kwColor(kw.status);
-                          const pct    = kw.inJd > 0 ? Math.min(100, Math.round((kw.inResume / kw.inJd) * 100)) : 0;
-                          return (
-                            <motion.div key={idx}
-                              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: idx * 0.05 }}
-                              className={`flex items-center gap-3 p-3 rounded-xl border ${col.bg} ${col.border}`}>
-                              <div className={`h-2 w-2 rounded-full shrink-0 ${col.dot}`} />
-                              <span className={`text-[11px] font-black flex-1 ${col.text}`}>{kw.keyword}</span>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <div className="w-20 h-1.5 rounded-full bg-black/20 overflow-hidden">
-                                  <motion.div className={`h-full rounded-full ${col.dot}`}
-                                    initial={{ width: 0 }} animate={{ width: `${pct}%` }}
-                                    transition={{ duration: 0.6, ease: "easeOut", delay: idx * 0.05 + 0.2 }} />
-                                </div>
-                                <span className={`text-[10px] font-black tabular-nums w-12 text-right ${col.text}`}>
-                                  {kw.inResume}/{kw.inJd}×
-                                </span>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground font-semibold pt-1">
-                        Shows keyword occurrences in your resume vs. the JD. Aim for at least 50% density on every key term.
+              {/* TAB 2: KEYWORD HEATMAP */}
+              {activeTab === "keywords" && (
+                <motion.div
+                  key="tab-keywords"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6 text-left"
+                >
+                  {/* Missing Keywords Warning */}
+                  {result.missingKeywords.length > 0 && (
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-3xl p-6 space-y-3">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span>Critical Missing Keywords ({result.missingKeywords.length})</span>
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                        These keywords appear prominently in the Job Description but are missing from your resume. Incorporate them naturally:
                       </p>
-                    </motion.div>
-                  )}
-
-                  {/* ── 4. ACTION VERB SCORE ── */}
-                  {result.actionVerbScore !== undefined && (
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                      className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                          <Gauge className="h-4 w-4 text-purple-400" />
-                        </div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Action Verb Strength</h4>
-                        <span className={`ml-auto text-sm font-black ${verbColor(result.actionVerbScore).cls}`}>
-                          {result.actionVerbScore}/100 · {verbColor(result.actionVerbScore).label}
-                        </span>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {result.missingKeywords.map((kw) => (
+                          <span key={kw} className="px-3 py-1 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold">
+                            + {kw}
+                          </span>
+                        ))}
                       </div>
-                      <div className="h-3 rounded-full bg-border/40 overflow-hidden">
-                        <motion.div className={`h-full rounded-full ${verbColor(result.actionVerbScore).bar}`}
-                          initial={{ width: 0 }} animate={{ width: `${result.actionVerbScore}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }} />
-                      </div>
-                      {result.weakVerbs && result.weakVerbs.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Weak Phrases to Replace</p>
-                          {result.weakVerbs.map((v, i) => (
-                            <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/20 border border-border/40">
-                              <span className="text-xs text-rose-400 font-bold line-through shrink-0">"{v.found}"</span>
-                              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                              <span className="text-xs text-emerald-400 font-black">"{v.suggested}"</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-
-                  {/* ── 5. QUANTIFICATION SCORE ── */}
-                  {result.quantificationScore !== undefined && (
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                      className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                          <BarChart2 className="h-4 w-4 text-amber-400" />
-                        </div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Quantification Audit</h4>
-                        <span className={`ml-auto text-sm font-black ${quantColor(result.quantificationScore).cls}`}>
-                          {result.quantificationScore}% · {quantColor(result.quantificationScore).label}
-                        </span>
-                      </div>
-                      <div className="h-3 rounded-full bg-border/40 overflow-hidden">
-                        <motion.div className={`h-full rounded-full ${result.quantificationScore >= 60 ? "bg-emerald-500" : result.quantificationScore >= 35 ? "bg-amber-500" : "bg-rose-500"}`}
-                          initial={{ width: 0 }} animate={{ width: `${result.quantificationScore}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }} />
-                      </div>
-                      <p className="text-[10px] text-muted-foreground font-semibold leading-relaxed">
-                        Percentage of bullet points that include numbers, percentages, or measurable outcomes. <span className="font-black text-foreground">Target: 60%+</span>
-                      </p>
-                      {result.unquantifiedBullets && result.unquantifiedBullets.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Bullets Needing Metrics</p>
-                          {result.unquantifiedBullets.map((b, i) => (
-                            <div key={i} className="flex items-start gap-2 p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/15">
-                              <AlertTriangle className="h-3.5 w-3.5 text-amber-400 mt-0.5 shrink-0" />
-                              <p className="text-[10px] text-muted-foreground font-semibold italic">"{b}"</p>
-                            </div>
-                          ))}
-                          <p className="text-[10px] text-muted-foreground font-semibold">
-                            💡 Add numbers: "Developed API" → "Developed API serving <span className="font-black text-foreground">1,200+ req/min</span> with <span className="font-black text-foreground">99.9% uptime</span>"
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-
-                  {/* ── 6. TAILORED SUMMARY ── */}
-                  {result.tailoredSummary && (
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                      className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                          <User className="h-4 w-4 text-emerald-400" />
-                        </div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-foreground">AI Tailored Summary</h4>
-                        <button type="button" onClick={copySummary}
-                          className="ml-auto h-7 w-7 rounded-lg border border-border/50 bg-background flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
-                          {summarycopied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                        </button>
-                      </div>
-                      <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
-                        <p className="text-sm font-semibold text-foreground leading-relaxed">"{result.tailoredSummary}"</p>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1.5">
-                        <Lightbulb className="h-3 w-3 text-amber-400" />
-                        Copy this and paste it at the top of your resume as your professional summary.
-                      </p>
-                    </motion.div>
-                  )}
-
-                  {/* ── 7. MISSING KEYWORDS ── */}
-                  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                    className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-xl bg-rose-500/10 flex items-center justify-center">
-                        <XCircle className="h-4 w-4 text-rose-400" />
-                      </div>
-                      <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Missing Keywords</h4>
-                      {result.missingKeywords.length > 0 && (
-                        <span className="ml-auto px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[10px] font-black text-rose-400">
-                          {result.missingKeywords.length} gaps
-                        </span>
-                      )}
                     </div>
-                    {result.missingKeywords.length > 0 ? (
-                      <>
-                        <div className="flex flex-wrap gap-2">
-                          {result.missingKeywords.map((word, idx) => (
-                            <motion.span key={idx} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.04 }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-rose-500/8 text-rose-400 border border-rose-500/20 rounded-lg">
-                              <XCircle className="h-3 w-3 shrink-0" /> {word}
-                            </motion.span>
-                          ))}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground font-semibold leading-relaxed border-t border-border/40 pt-3">
-                          💡 <span className="font-black text-foreground">Pro tip:</span> Naturally weave these into your skills section and bullet points to improve ATS ranking.
-                        </p>
-                      </>
-                    ) : (
-                      <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold">
-                        <CheckCircle2 className="h-4 w-4" /> No major keyword gaps found — excellent coverage!
-                      </div>
-                    )}
-                  </motion.div>
+                  )}
 
-                  {/* ── 8. BULLET IMPROVEMENTS ── */}
-                  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                    className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-xl bg-brand-500/10 flex items-center justify-center">
-                        <Sparkles className="h-4 w-4 text-brand-400" />
-                      </div>
-                      <h4 className="text-xs font-black uppercase tracking-widest text-foreground">AI Bullet Rewrites</h4>
-                      <span className="ml-auto px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-[10px] font-black text-brand-400">
-                        {result.bulletImprovements.length} improved
-                      </span>
-                    </div>
-                    <div className="space-y-3">
-                      {result.bulletImprovements.map((bullet, idx) => {
-                        const isOpen = openBullet === idx;
+                  {/* Keyword Density Grid */}
+                  <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-4">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                      Full Keyword Density Audit
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {result.keywordDensity.map((kd) => {
+                        const style = kwColor(kd.status);
                         return (
-                          <div key={idx} className="border border-border/50 rounded-2xl overflow-hidden">
-                            <button type="button" onClick={() => setOpenBullet(isOpen ? null : idx)}
-                              className="w-full flex items-center gap-3 p-4 text-left cursor-pointer hover:bg-muted/20 transition-colors">
-                              <div className="h-5 w-5 rounded-full bg-brand-500/15 border border-brand-500/25 flex items-center justify-center shrink-0">
-                                <span className="text-[9px] font-black text-brand-400">{idx + 1}</span>
-                              </div>
-                              <p className="text-xs font-semibold text-muted-foreground flex-1 truncate italic">"{bullet.original.slice(0, 80)}{bullet.original.length > 80 ? "..." : ""}"</p>
-                              <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                              </motion.div>
-                            </button>
-                            <AnimatePresence initial={false}>
-                              {isOpen && (
-                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-                                  <div className="p-4 pt-0 space-y-3">
-                                    <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-1">
-                                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Original</p>
-                                      <p className="text-xs text-muted-foreground font-semibold leading-relaxed italic">"{bullet.original}"</p>
-                                    </div>
-                                    <div className="p-3 rounded-xl bg-brand-500/5 border border-brand-500/15 space-y-1">
-                                      <div className="flex items-center justify-between">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-brand-400">AI Optimized</p>
-                                        <button type="button" onClick={() => copyBullet(bullet.improved, idx)}
-                                          className="h-6 w-6 rounded-lg border border-border/50 bg-background flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
-                                          {copiedIdx === idx ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
-                                        </button>
-                                      </div>
-                                      <p className="text-xs text-foreground font-bold leading-relaxed">"{bullet.improved}"</p>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold">
-                                      <ArrowRight className="h-3 w-3" /> Stronger verbs · quantified impact · keyword-rich
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                          <div key={kd.keyword} className={`p-3 rounded-2xl border flex items-center justify-between text-xs font-bold ${style.bg} ${style.border} ${style.text}`}>
+                            <span className="truncate max-w-[140px]">{kd.keyword}</span>
+                            <span className="text-[10px] font-black opacity-80">
+                              Resume: {kd.inResume} / JD: {kd.inJd}
+                            </span>
                           </div>
                         );
                       })}
                     </div>
-                  </motion.div>
-
-                  {/* ── 9. RECRUITER FEEDBACK ── */}
-                  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                    className="bg-card border border-border/70 rounded-3xl p-5 shadow-sm space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                        <TrendingUp className="h-4 w-4 text-amber-400" />
-                      </div>
-                      <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Recruiter Feedback</h4>
-                    </div>
-                    <p className="text-xs leading-relaxed font-semibold text-muted-foreground whitespace-pre-line">{result.overallFeedback}</p>
-                  </motion.div>
-
+                  </div>
                 </motion.div>
               )}
+
+              {/* TAB 3: SECTION HEALTH SCORES */}
+              {activeTab === "sections" && (
+                <motion.div
+                  key="tab-sections"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-5 text-left"
+                >
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                    7-Section Structure &amp; Content Health Audit
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Object.entries(result.sectionScores).map(([key, sec]) => {
+                      const meta = SECTION_META[key] ?? { label: key, icon: FileText };
+                      const Icon = meta.icon;
+                      const col = sectionColor(sec.score);
+                      return (
+                        <div key={key} className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4 text-slate-500 dark:text-zinc-400" />
+                              <span className="text-xs font-black text-slate-900 dark:text-zinc-100">{meta.label}</span>
+                            </div>
+                            <span className={`text-xs font-black ${col.text}`}>{sec.score}%</span>
+                          </div>
+
+                          <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-zinc-900 overflow-hidden">
+                            <div className={`h-full ${col.bar}`} style={{ width: `${sec.score}%` }} />
+                          </div>
+
+                          <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-normal font-medium">
+                            {sec.feedback}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* TAB 4: ACTION VERBS AUDIT */}
+              {activeTab === "verbs" && (
+                <motion.div
+                  key="tab-verbs"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-5 text-left"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                      Action Verb Strength &amp; Replacement Recommendations
+                    </h3>
+                    <span className={`text-xs font-black ${verbColor(result.actionVerbScore).cls}`}>
+                      Score: {result.actionVerbScore}% ({verbColor(result.actionVerbScore).label})
+                    </span>
+                  </div>
+
+                  {result.weakVerbs.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {result.weakVerbs.map((wv, idx) => (
+                        <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 flex items-center justify-between text-xs font-bold">
+                          <span className="text-rose-600 dark:text-rose-400 line-through">"{wv.found}"</span>
+                          <ChevronRight className="h-4 w-4 text-slate-400" />
+                          <span className="text-emerald-700 dark:text-emerald-400 font-black">"{wv.suggested}"</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                      ✓ Great job! High density of powerful action verbs detected throughout your resume.
+                    </p>
+                  )}
+                </motion.div>
+              )}
+
+              {/* TAB 5: QUANTIFICATION AUDIT */}
+              {activeTab === "quant" && (
+                <motion.div
+                  key="tab-quant"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-5 text-left"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                      Quantification &amp; Metrics Audit
+                    </h3>
+                    <span className={`text-xs font-black ${quantColor(result.quantificationScore).cls}`}>
+                      Score: {result.quantificationScore}%
+                    </span>
+                  </div>
+
+                  {result.unquantifiedBullets.length > 0 ? (
+                    <div className="space-y-2.5">
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                        Add metrics, percentages, or scale numbers to these bullet points:
+                      </p>
+                      {result.unquantifiedBullets.map((bullet, idx) => (
+                        <div key={idx} className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                          • {bullet}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                      ✓ Excellent metric coverage! Bullet points contain measurable outcomes and numbers.
+                    </p>
+                  )}
+                </motion.div>
+              )}
+
+              {/* TAB 6: TAILORED SUMMARY */}
+              {activeTab === "summary" && (
+                <motion.div
+                  key="tab-summary"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-4 text-left"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                      AI Generated Tailored Summary
+                    </h3>
+                    <button
+                      onClick={copySummary}
+                      className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      {summarycopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                      <span>{summarycopied ? "Copied" : "Copy Summary"}</span>
+                    </button>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-xs sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed font-medium">
+                    {result.tailoredSummary}
+                  </div>
+                </motion.div>
+              )}
+
             </AnimatePresence>
-          </div>
-        </div>
-      </div>
+          </motion.main>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
