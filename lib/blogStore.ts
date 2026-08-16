@@ -1,4 +1,5 @@
 import { blogPosts as staticPosts, type BlogPost } from "@/data/blogPosts";
+import { getBlogsFromMongo } from "@/lib/mongoClient";
 import fs from "fs";
 import path from "path";
 
@@ -96,15 +97,24 @@ export function saveLocalGeneratedBlog(rawBlog: any): void {
   }
 }
 
-// Helper to fetch all combined blogs (MongoDB + Local JSON + Static TypeScript catalog)
+// Helper to fetch all combined blogs (MongoDB Atlas + Express + Local JSON + Static TypeScript catalog)
 export async function getAllBlogs(): Promise<BlogPost[]> {
+  let mongoBlogs: BlogPost[] = [];
+  try {
+    const rawMongoDocs = await getBlogsFromMongo();
+    if (Array.isArray(rawMongoDocs) && rawMongoDocs.length > 0) {
+      mongoBlogs = rawMongoDocs.map(normalizePost);
+    }
+  } catch (err) {
+    console.warn("Could not fetch blogs directly from MongoDB Atlas:", err);
+  }
+
   let backendBlogs: BlogPost[] = [];
   try {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
 
-    // Use AbortController so a sleeping Render instance doesn't hang the page
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 second timeout
 
     const res = await fetch(`${backendUrl}/api/v1/blog`, {
       cache: "no-store",
@@ -115,20 +125,16 @@ export async function getAllBlogs(): Promise<BlogPost[]> {
     if (res.ok) {
       const data = await res.json();
       if (data.success && Array.isArray(data.blogs)) {
-        // Normalize each backend blog (handles content stored as array or string)
         backendBlogs = data.blogs.map(normalizePost);
       }
     }
   } catch (err: any) {
-    if (err?.name === "AbortError") {
-      console.warn("⚠️ Backend fetch timed out (Render may be cold-starting). Showing local/static blogs.");
-    }
-    // Express backend unreachable or sleeping — continue with local+static blogs
+    // Express backend unreachable or sleeping — continue with MongoDB + local/static blogs
   }
 
   const localBlogs = getLocalGeneratedBlogs();
 
-  // Deduplicate by slug (MongoDB > Local Generated > Static)
+  // Deduplicate by slug (MongoDB Atlas > Express Backend > Local Generated > Static)
   const slugMap = new Map<string, BlogPost>();
 
   // Add static posts first
@@ -137,8 +143,11 @@ export async function getAllBlogs(): Promise<BlogPost[]> {
   // Layer local generated posts on top
   localBlogs.forEach((post) => slugMap.set(post.slug, post));
 
-  // Layer backend MongoDB posts on top (highest priority)
+  // Layer Express backend posts on top
   backendBlogs.forEach((post) => slugMap.set(post.slug, post));
+
+  // Layer direct MongoDB Atlas posts on top (highest priority)
+  mongoBlogs.forEach((post) => slugMap.set(post.slug, post));
 
   // Sort by datePublished descending
   return Array.from(slugMap.values()).sort((a, b) => {

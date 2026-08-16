@@ -7,17 +7,17 @@ export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
+    const url = new URL(request.url);
+    const isManual = url.searchParams.get("manual") === "true";
 
-    // Verify Vercel Cron secret if configured
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Verify Vercel Cron secret if configured (unless manual admin trigger)
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}` && !isManual) {
       return NextResponse.json(
         { success: false, message: "Unauthorized cron request" },
         { status: 401 }
       );
     }
 
-    // Call our own Next.js generate-ai-blog route
-    // This uses Gemini AI + saves directly to MongoDB — works even when Render is sleeping
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -26,10 +26,10 @@ export async function GET(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Pass cron secret so the generate route can identify internal calls if needed
         ...(cronSecret ? { "x-cron-secret": cronSecret } : {}),
       },
       body: JSON.stringify({ topic: "auto" }),
+      cache: "no-store",
     });
 
     const data = await res.json();

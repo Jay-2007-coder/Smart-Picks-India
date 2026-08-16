@@ -52,4 +52,20 @@ export async function saveBlogToMongo(blog: Record<string, any>): Promise<void> 
   } catch (err) {
     console.error("❌ Failed to save blog to MongoDB:", err);
   }
+}
+
+/** Fetch all blog posts directly from MongoDB Atlas */
+export async function getBlogsFromMongo(): Promise<any[]> {
+  try {
+    const promise = getClientPromise();
+    if (!promise) return [];
+    const mongoClient = await promise;
+    const db = mongoClient.db();
+    const blogsCollection = db.collection("blogs");
+    const docs = await blogsCollection.find({}).sort({ datePublished: -1 }).toArray();
+    return docs.map(({ _id, ...rest }) => rest);
+  } catch (err) {
+    console.error("❌ Failed to fetch blogs from MongoDB:", err);
+    return [];
+  }
 }
