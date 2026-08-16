@@ -1184,20 +1184,33 @@ export default function SmartNotesOS() {
                     {currentSubjectQuiz[quizIdx].question}
                   </h3>
 
-                  <div className="space-y-2">
-                    {currentSubjectQuiz[quizIdx].options?.map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => { setSelectedQuizOption(opt); setIsAnswerChecked(false); playClick(); }}
-                        className={`w-full p-3.5 rounded-2xl border text-left text-xs font-bold transition-all cursor-pointer ${
-                          selectedQuizOption === opt
-                            ? "bg-purple-500/10 border-purple-500/40 text-purple-700 dark:text-purple-300"
-                            : "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300"
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
+                  <div className="space-y-3">
+                    {currentSubjectQuiz[quizIdx].options && currentSubjectQuiz[quizIdx].options.length > 0 ? (
+                      currentSubjectQuiz[quizIdx].options.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => { setSelectedQuizOption(opt); setIsAnswerChecked(false); playClick(); }}
+                          className={`w-full p-3.5 rounded-2xl border text-left text-xs font-bold transition-all cursor-pointer ${
+                            selectedQuizOption === opt
+                              ? "bg-purple-500/10 border-purple-500/40 text-purple-700 dark:text-purple-300"
+                              : "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500">Your Answer:</label>
+                        <input
+                          type="text"
+                          value={selectedQuizOption || ""}
+                          onChange={(e) => { setSelectedQuizOption(e.target.value); setIsAnswerChecked(false); }}
+                          placeholder="Type your answer here (e.g. Diamond, superkey)..."
+                          className="w-full h-11 px-4 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold outline-none focus:border-purple-500 text-slate-900 dark:text-zinc-100"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {!isAnswerChecked ? (
