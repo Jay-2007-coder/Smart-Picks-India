@@ -5,11 +5,11 @@ import Link from "next/link";
 import { 
   ArrowLeft, Calendar, Info, CheckCircle2, AlertCircle, Plus, Minus, 
   RotateCcw, Sparkles, BookOpen, Trash2, Award, Zap, HelpCircle, Trophy,
-  TrendingUp, Check, Save, Download, X, AlertTriangle, ShieldAlert
+  TrendingUp, Check, Save, ChevronDown, ChevronUp, AlertTriangle, ShieldAlert,
+  Sliders, ArrowUpRight, CheckSquare, Layers3, Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import StudentHubSidebar from "@/components/StudentHubSidebar";
 
 /* ─────────────── DATA MODELS ─────────────── */
 interface Subject {
@@ -66,22 +66,18 @@ export default function AttendanceCalculator() {
   const [newSubjectTarget, setNewSubjectTarget] = useState(75);
   const [isAddingSubject, setIsAddingSubject] = useState(false);
 
+  // What-If Simulator state (Simulated Bunks)
+  const [simulatedBunks, setSimulatedBunks] = useState<number>(1);
+
   // Exam Survival Mode states
   const [remainingClasses, setRemainingClasses] = useState<number>(12);
   const [showSurvivalMode, setShowSurvivalMode] = useState(false);
 
-  // Selected active subject for quick calendar logger
-  const [selectedLogSubjectId, setSelectedLogSubjectId] = useState<string>("1");
+  // Expanded Subject IDs
+  const [expandedSubjectIds, setExpandedSubjectIds] = useState<string[]>(["1"]);
 
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  // Interactive Calendar configurations
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 5)); // June 2026 default
-  const [attendanceLogs, setAttendanceLogs] = useState<Record<string, Record<string, "present" | "absent">>>({});
-  
-  // Client particles
-  const [clientParticles, setClientParticles] = useState<{ id: number; x: number; y: number; size: number; duration: number; delay: number }[]>([]);
-  
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
 
@@ -98,22 +94,17 @@ export default function AttendanceCalculator() {
     try {
       const savedSubjects = localStorage.getItem("smartpicks_attendance_subjects");
       const savedGlobalTarget = localStorage.getItem("smartpicks_attendance_global_target");
-      const savedLogs = localStorage.getItem("smartpicks_attendance_logs");
 
       if (savedSubjects) {
         const parsed = JSON.parse(savedSubjects);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setSubjects(parsed);
-          setSelectedLogSubjectId(parsed[0].id);
+          setExpandedSubjectIds([parsed[0].id]);
         }
       }
       if (savedGlobalTarget) {
         const parsedTarget = parseInt(savedGlobalTarget, 10);
         if (!isNaN(parsedTarget)) setTarget(parsedTarget);
-      }
-      if (savedLogs) {
-        const parsedLogs = JSON.parse(savedLogs);
-        if (parsedLogs) setAttendanceLogs(parsedLogs);
       }
     } catch (e) {
       console.error("Failed to parse saved attendance configuration:", e);
@@ -128,75 +119,10 @@ export default function AttendanceCalculator() {
     try {
       localStorage.setItem("smartpicks_attendance_subjects", JSON.stringify(subjects));
       localStorage.setItem("smartpicks_attendance_global_target", target.toString());
-      localStorage.setItem("smartpicks_attendance_logs", JSON.stringify(attendanceLogs));
     } catch (e) {
       console.error("Auto-save attendance failed:", e);
     }
-  }, [subjects, target, attendanceLogs, isLoading]);
-
-  // Initialize particles on mount to avoid hydration mismatch
-  useEffect(() => {
-    setClientParticles(
-      Array.from({ length: 15 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 4 + 2,
-        duration: Math.random() * 25 + 25,
-        delay: Math.random() * -25,
-      }))
-    );
-  }, []);
-
-  const setDayLog = (dateStr: string, subjectId: string, status: "present" | "absent" | null) => {
-    const currentStatus = attendanceLogs[dateStr]?.[subjectId] || null;
-    if (currentStatus === status) return;
-
-    const newLogs = { ...attendanceLogs };
-    if (!newLogs[dateStr]) newLogs[dateStr] = {};
-    
-    if (status === null) {
-      delete newLogs[dateStr][subjectId];
-      if (Object.keys(newLogs[dateStr]).length === 0) {
-        delete newLogs[dateStr];
-      }
-    } else {
-      newLogs[dateStr][subjectId] = status;
-    }
-    setAttendanceLogs(newLogs);
-
-    setSubjects(prevSubjects => prevSubjects.map(sub => {
-      if (sub.id !== subjectId) return sub;
-
-      let newAttended = sub.attended;
-      let newConducted = sub.conducted;
-      let newStreak = sub.streak;
-
-      if (currentStatus === "present") {
-        newAttended = Math.max(0, newAttended - 1);
-        newConducted = Math.max(0, newConducted - 1);
-        newStreak = Math.max(0, newStreak - 1);
-      } else if (currentStatus === "absent") {
-        newConducted = Math.max(0, newConducted - 1);
-      }
-
-      if (status === "present") {
-        newAttended += 1;
-        newConducted += 1;
-        newStreak += 1;
-      } else if (status === "absent") {
-        newConducted += 1;
-        newStreak = 0;
-      }
-
-      return {
-        ...sub,
-        attended: newAttended,
-        conducted: newConducted,
-        streak: newStreak
-      };
-    }));
-  };
+  }, [subjects, target, isLoading]);
 
   /* ─────────────── AGGREGATED CALCULATIONS ─────────────── */
   const globalConducted = subjects.reduce((sum, s) => sum + s.conducted, 0);
@@ -208,6 +134,13 @@ export default function AttendanceCalculator() {
     : 0;
 
   const maxStreak = subjects.length > 0 ? Math.max(...subjects.map(s => s.streak)) : 0;
+
+  // What-If Simulation Calculations
+  const simulatedConducted = globalConducted + simulatedBunks;
+  const simulatedPercentage = simulatedConducted > 0 ? (globalAttended / simulatedConducted) * 100 : 0;
+  const simulatedSafeBunks = simulatedConducted > 0
+    ? Math.max(0, Math.floor((globalAttended * 100 - target * simulatedConducted) / target))
+    : 0;
 
   // Confetti trigger loop
   const prevPercentageRef = useRef<number>(0);
@@ -259,7 +192,7 @@ export default function AttendanceCalculator() {
       streak: 0
     };
     setSubjects(prev => [...prev, newSub]);
-    if (!selectedLogSubjectId) setSelectedLogSubjectId(newId);
+    setExpandedSubjectIds(prev => [...prev, newId]);
     setNewSubjectName("");
     setIsAddingSubject(false);
     setNotification({ message: `✓ Added new subject "${newSub.name}"`, type: "success" });
@@ -267,43 +200,35 @@ export default function AttendanceCalculator() {
 
   const handleRemoveSubject = (id: string, name: string) => {
     setSubjects(prev => prev.filter(s => s.id !== id));
-    if (selectedLogSubjectId === id) {
-      const remaining = subjects.filter(s => s.id !== id);
-      if (remaining.length > 0) setSelectedLogSubjectId(remaining[0].id);
-    }
+    setExpandedSubjectIds(prev => prev.filter(x => x !== id));
     setNotification({ message: `Removed subject "${name}"`, type: "info" });
+  };
+
+  const toggleSubjectExpand = (id: string) => {
+    setExpandedSubjectIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
   const handleReset = () => {
     setSubjects(DEFAULT_SUBJECTS);
     setTarget(75);
-    setAttendanceLogs({});
-    setSelectedLogSubjectId("1");
+    setSimulatedBunks(1);
+    setExpandedSubjectIds(["1"]);
     localStorage.removeItem("smartpicks_attendance_subjects");
     localStorage.removeItem("smartpicks_attendance_global_target");
-    localStorage.removeItem("smartpicks_attendance_logs");
     setNotification({ message: "Reset to default subject data", type: "info" });
-  };
-
-  const handleQuickLog = (status: boolean) => {
-    const todayStr = new Date().toISOString().split("T")[0];
-    if (!selectedLogSubjectId) return;
-    setDayLog(todayStr, selectedLogSubjectId, status ? "present" : "absent");
-    const subName = subjects.find(s => s.id === selectedLogSubjectId)?.name || "Subject";
-    setNotification({
-      message: `Marked ${status ? "Present" : "Absent"} today for ${subName}`,
-      type: status ? "success" : "error"
-    });
   };
 
   /* ─────────────── RISK COMPUTATION ─────────────── */
   const getRiskColor = (pct: number, targetPct: number) => {
-    if (pct >= targetPct + 5) return { text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", stroke: "stroke-emerald-500" };
-    if (pct >= targetPct) return { text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", stroke: "stroke-amber-500" };
-    return { text: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", stroke: "stroke-rose-500" };
+    if (pct >= targetPct + 5) return { text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", stroke: "stroke-emerald-500", badgeBg: "bg-emerald-500", label: "Safe Zone" };
+    if (pct >= targetPct) return { text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", stroke: "stroke-amber-500", badgeBg: "bg-amber-500", label: "Warning Zone" };
+    return { text: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", stroke: "stroke-rose-500", badgeBg: "bg-rose-500", label: "Shortage Warning" };
   };
 
   const globalRisk = getRiskColor(globalPercentage, target);
+  const simulatedRisk = getRiskColor(simulatedPercentage, target);
 
   /* ─────────────── EXAM SURVIVAL CALCULATOR ─────────────── */
   const computeSurvivalMetrics = () => {
@@ -321,33 +246,6 @@ export default function AttendanceCalculator() {
   };
 
   const survivalMetrics = computeSurvivalMetrics();
-
-  /* ─────────────── SVG TREND GRAPH DATA ─────────────── */
-  const graphWidth = 320;
-  const graphHeight = 120;
-  const paddingX = 25;
-  const paddingY = 20;
-
-  const getGraphDataPoints = () => {
-    if (subjects.length === 0) return "";
-    const spacingFactor = subjects.length > 1 ? (subjects.length - 1) : 1;
-    return subjects.map((sub, idx) => {
-      const pct = sub.conducted > 0 ? (sub.attended / sub.conducted) * 100 : 0;
-      const x = paddingX + (idx / spacingFactor) * (graphWidth - 2 * paddingX);
-      const y = graphHeight - paddingY - (pct / 100) * (graphHeight - 2 * paddingY);
-      return `${x},${y}`;
-    }).join(" ");
-  };
-
-  const getGraphAreaPath = (pointsStr: string) => {
-    if (!pointsStr) return "";
-    const pts = pointsStr.split(" ");
-    if (pts.length === 0) return "";
-    const firstX = pts[0].split(",")[0];
-    const lastX = pts[pts.length - 1].split(",")[0];
-    const bottomY = graphHeight - paddingY;
-    return `M ${firstX},${bottomY} L ${pointsStr.replace(/ /g, " L ")} L ${lastX},${bottomY} Z`;
-  };
 
   /* ─────────────── GAMIFICATION BADGES ─────────────── */
   const getBadges = () => {
@@ -370,786 +268,560 @@ export default function AttendanceCalculator() {
   const activeBadges = getBadges();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-zinc-950 dark:text-zinc-100 relative overflow-hidden select-none pb-16 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 relative overflow-hidden select-none pb-24 transition-colors duration-300">
       
-      {/* Background gradients */}
+      {/* Ambient Mint / Emerald Background Gradients */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/5 dark:bg-emerald-950/15 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 dark:bg-indigo-950/15 blur-[120px]" />
-        
-        {/* Floating Particles */}
-        {clientParticles.map((p) => (
-          <motion.div
-            key={p.id}
-            className="absolute bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-[1.5px]"
-            style={{
-              width: p.size,
-              height: p.size,
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-            }}
-            animate={{
-              y: [0, -120, 0],
-              x: [0, 60, 0],
-              opacity: [0.1, 0.6, 0.1],
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Infinity,
-              ease: "linear",
-              delay: p.delay,
-            }}
-          />
-        ))}
+        <div className="absolute top-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-500/5 dark:bg-emerald-950/20 blur-[140px]" />
+        <div className="absolute top-[30%] right-[-10%] w-[40%] h-[40%] rounded-full bg-teal-500/5 dark:bg-teal-950/15 blur-[140px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[45%] h-[45%] rounded-full bg-cyan-500/5 dark:bg-cyan-950/15 blur-[140px]" />
       </div>
 
-      <div className="flex flex-col lg:flex-row items-start relative z-10 w-full min-h-screen">
-        
-        {/* Student Hub Navigation Sidebar */}
-        <StudentHubSidebar currentActiveId="attendance" />
-
-        {/* Main Content Desk */}
-        <div className="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-8">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="max-w-6xl mx-auto space-y-8"
+      {/* Top Header Navigation */}
+      <header className="relative z-20 border-b border-slate-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link
+            href="/student-hub"
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors group"
           >
-            {/* Title Header */}
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Student Hub</span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                localStorage.setItem("smartpicks_attendance_subjects", JSON.stringify(subjects));
+                localStorage.setItem("smartpicks_attendance_global_target", target.toString());
+                setNotification({ message: "💾 Attendance plan successfully saved!", type: "success" });
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white transition-all cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95"
+              title="Save Plan"
+            >
+              <Save className="h-3.5 w-3.5" /> Save Plan
+            </button>
+            <button
+              onClick={handleReset}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition-all cursor-pointer shadow-sm"
+              title="Reset Data"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Reset Default
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+        
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            1. HERO SECTION
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="text-center space-y-4 max-w-2xl mx-auto pt-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest"
+          >
+            <Calendar className="h-3.5 w-3.5" />
+            <span>Attendance Prediction Desk</span>
+          </motion.div>
+
+          <h1 className="text-4xl sm:text-6xl font-black text-slate-900 dark:text-zinc-50 tracking-tight leading-[1.08]">
+            Attendance{" "}
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
+              Planner &amp; Buffer
+            </span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-400 font-medium leading-relaxed">
+            Simulate class absences in real time, forecast cutoff risks, and know exactly how many bunks you can afford before exams.
+          </p>
+        </section>
+
+        {/* Notifications Banner */}
+        <AnimatePresence>
+          {notification && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="border-b border-slate-200 dark:border-zinc-800/80 pb-6 flex justify-between items-center flex-wrap gap-4"
+              exit={{ opacity: 0, y: -10 }}
+              className={`p-4 border rounded-2xl shadow-sm flex items-center gap-3 text-xs font-bold leading-normal text-left ${
+                notification.type === "success" 
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                  : notification.type === "error"
+                  ? "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400"
+                  : "bg-cyan-500/10 border-cyan-500/20 text-cyan-700 dark:text-cyan-400"
+              }`}
             >
-              <div className="space-y-1 text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10">
-                  <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Attendance Prediction Desk</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-zinc-50 tracking-tight pt-2">Attendance Planner &amp; Buffer</h1>
-                <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold">
-                  Simulate upcoming classes, forecast eligibility scores, and configure custom buffers before exams.
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    localStorage.setItem("smartpicks_attendance_subjects", JSON.stringify(subjects));
-                    localStorage.setItem("smartpicks_attendance_global_target", target.toString());
-                    setNotification({ message: "💾 Attendance plan successfully cached in localStorage!", type: "success" });
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white transition-all cursor-pointer shadow-md shadow-emerald-600/10 active:scale-95"
-                  title="Save Plan"
-                >
-                  <Save className="h-3.5 w-3.5" /> Save Plan
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 transition-all cursor-pointer shadow-sm"
-                  title="Reset Data"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" /> Reset Default
-                </button>
-              </div>
+              <Info className="h-5 w-5 shrink-0" />
+              <span className="flex-1">{notification.message}</span>
             </motion.div>
+          )}
+        </AnimatePresence>
 
-            {/* Notifications banner */}
-            <AnimatePresence>
-              {notification && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className={`p-4 border rounded-2xl shadow-sm flex items-center gap-3 text-xs font-bold leading-normal text-left ${
-                    notification.type === "success" 
-                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                      : notification.type === "error"
-                      ? "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400"
-                      : "bg-cyan-500/10 border-cyan-500/20 text-cyan-700 dark:text-cyan-400"
-                  }`}
-                >
-                  <Info className="h-5 w-5 shrink-0" />
-                  <span className="flex-1">{notification.message}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            2. UNIFIED ATTENDANCE SNAPSHOT (HERO CARD)
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-2xl shadow-xl space-y-6 text-left relative overflow-hidden"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-zinc-800">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                CURRENT ATTENDANCE OVERVIEW
+              </span>
+              <div className="flex items-baseline gap-3 mt-1">
+                <h2 className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+                  <AnimatedCounter value={globalPercentage} isPercent={true} />
+                </h2>
+                <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${globalRisk.bg} ${globalRisk.border} ${globalRisk.text}`}>
+                  {globalRisk.label}
+                </div>
+              </div>
+            </div>
 
-            {/* 2. HERO STATISTIC CARDS */}
-            <AnimatePresence mode="wait">
-              {isLoading ? (
-                <motion.div
-                  key="skeleton"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-8 text-left mb-8"
-                >
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {Array.from({ length: 4 }).map((_, idx) => (
-                      <div key={idx} className="h-36 rounded-3xl border border-slate-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/20 p-5 flex flex-col justify-between shadow-sm">
-                        <div className="space-y-2">
-                          <div className="h-2.5 w-20 bg-slate-200 dark:bg-zinc-800/60 rounded animate-pulse" />
-                          <div className="h-8 w-24 bg-slate-300 dark:bg-zinc-850 rounded animate-pulse" />
-                        </div>
-                        <div className="h-2 w-16 bg-slate-200 dark:bg-zinc-800/60 rounded animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
+            {/* Target Selector */}
+            <div className="bg-slate-50 dark:bg-zinc-950 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 space-y-1.5 shrink-0 w-full sm:w-auto">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
+                Required Cutoff Target
+              </span>
+              <div className="flex items-center gap-1.5">
+                {[75, 80, 85].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTarget(t)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                      target === t
+                        ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
+                        : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    {t}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-left pt-2">
+            <div>
+              <span className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Total Conducted</span>
+              <span className="text-lg font-black text-slate-900 dark:text-zinc-100">{globalAttended} / {globalConducted}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Safe Bunks Left</span>
+              <span className={`text-lg font-black ${maxGlobalBunks > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                {maxGlobalBunks} {maxGlobalBunks === 1 ? "Class" : "Classes"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Best Streak</span>
+              <span className="text-lg font-black text-cyan-600 dark:text-cyan-400">⚡ {maxStreak} Classes</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Tracked Courses</span>
+              <span className="text-lg font-black text-slate-900 dark:text-zinc-100">{subjects.length} Subjects</span>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            3. CORE INTERACTION: WHAT-IF SIMULATOR ("What happens if I miss classes?")
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-2xl shadow-xl space-y-6 text-left"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-wider">
+                <Sliders className="h-3.5 w-3.5" />
+                <span>Interactive What-If Simulator</span>
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+                What happens if I miss classes?
+              </h2>
+              <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                Simulate missing upcoming lectures and instantly see your updated score and cutoff risk.
+              </p>
+            </div>
+
+            {/* Stepper Counter (− 3 +) */}
+            <div className="flex items-center gap-3 bg-slate-100 dark:bg-zinc-950 p-2 rounded-2xl border border-slate-200 dark:border-zinc-800 shrink-0">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 pl-2">
+                Simulate Bunks:
+              </span>
+              <button
+                onClick={() => setSimulatedBunks((prev) => Math.max(0, prev - 1))}
+                className="h-10 w-10 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 font-black text-base flex items-center justify-center cursor-pointer shadow-sm active:scale-95 transition-all"
+                title="Decrease simulated bunks"
+              >
+                −
+              </button>
+              <span className="text-xl font-black text-slate-900 dark:text-zinc-100 min-w-8 text-center">
+                {simulatedBunks}
+              </span>
+              <button
+                onClick={() => setSimulatedBunks((prev) => Math.min(50, prev + 1))}
+                className="h-10 w-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base flex items-center justify-center cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+                title="Increase simulated bunks"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Simulation Impact Forecast Grid */}
+          <div className="grid sm:grid-cols-3 gap-4 pt-2">
+            
+            {/* Projected Attendance */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-850 space-y-1">
+              <span className="text-[10px] font-black uppercase text-slate-500 dark:text-zinc-400">Projected Attendance</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-slate-900 dark:text-zinc-100">
+                  {simulatedPercentage.toFixed(1)}%
+                </span>
+                <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 line-through">
+                  {globalPercentage.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Projected Safe Bunks */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-850 space-y-1">
+              <span className="text-[10px] font-black uppercase text-slate-500 dark:text-zinc-400">Projected Safe Bunks</span>
+              <div className="flex items-baseline gap-2">
+                <span className={`text-2xl font-black ${simulatedSafeBunks > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                  {simulatedSafeBunks} Left
+                </span>
+              </div>
+            </div>
+
+            {/* Projected Eligibility Status */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-850 space-y-1">
+              <span className="text-[10px] font-black uppercase text-slate-500 dark:text-zinc-400">Projected Status</span>
+              <div className="pt-0.5">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider border inline-block ${simulatedRisk.bg} ${simulatedRisk.border} ${simulatedRisk.text}`}>
+                  {simulatedRisk.label}
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Dynamic What-If Advice Banner */}
+          <div className={`p-4 rounded-2xl border text-xs font-semibold leading-relaxed flex items-start gap-3 ${simulatedRisk.bg} ${simulatedRisk.border} ${simulatedRisk.text}`}>
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div>
+              {simulatedPercentage >= target ? (
+                <p>
+                  <strong>Safe Scenario:</strong> Bunking <strong>{simulatedBunks}</strong> upcoming {simulatedBunks === 1 ? "class" : "classes"} keeps your attendance at <strong>{simulatedPercentage.toFixed(1)}%</strong>, which safely exceeds your {target}% target.
+                </p>
               ) : (
-                <motion.div
-                  key="dashboard-hero"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
+                <p>
+                  <strong>Shortage Warning:</strong> Bunking <strong>{simulatedBunks}</strong> upcoming {simulatedBunks === 1 ? "class" : "classes"} will drop your attendance to <strong>{simulatedPercentage.toFixed(1)}%</strong> (below target). Avoid bunking!
+                </p>
+              )}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            4. CLEAN EXPANDABLE SUBJECT LIST
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-4 text-left">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+                Subject Attendance Breakdowns
+              </h2>
+              <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                Click any course to expand attendance counters and custom targets.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsAddingSubject(!isAddingSubject)}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer shadow-md shadow-emerald-600/20 active:scale-95"
+            >
+              {isAddingSubject ? "Cancel" : "+ Add Subject"}
+            </button>
+          </div>
+
+          {/* Inline Add Subject Form */}
+          <AnimatePresence>
+            {isAddingSubject && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                className="p-5 bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-3xl text-left space-y-4 shadow-xl"
+              >
+                <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-zinc-300 block">
+                  Configure New Course
+                </span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase">Subject Label</label>
+                    <input 
+                      type="text" 
+                      value={newSubjectName}
+                      onChange={(e) => setNewSubjectName(e.target.value)}
+                      placeholder="e.g. Artificial Intelligence"
+                      className="h-10 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 text-xs font-bold text-slate-900 dark:text-zinc-100 outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase">Target Minimum %</label>
+                    <select 
+                      value={newSubjectTarget}
+                      onChange={(e) => setNewSubjectTarget(parseInt(e.target.value))}
+                      className="h-10 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 text-xs font-black text-slate-900 dark:text-zinc-100 outline-none"
+                    >
+                      <option value={75}>75% (Standard University)</option>
+                      <option value={80}>80% (High Standard)</option>
+                      <option value={85}>85% (Scholar Requirement)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleAddSubject}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors cursor-pointer shadow-md shadow-emerald-600/20"
                 >
-                  <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Current Attendance percentage */}
-                    <div className="rounded-3xl border border-slate-200/90 dark:border-zinc-850 bg-white dark:bg-zinc-900/20 hover:bg-slate-50 dark:hover:bg-zinc-900/30 p-5 flex flex-col justify-between h-36 hover:border-emerald-500/40 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative group overflow-hidden text-left shadow-sm">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400">Current Attendance</h4>
-                          <p className="text-3xl font-black text-slate-900 dark:text-zinc-100 mt-1">
-                            <AnimatedCounter value={globalPercentage} isPercent={true} />
-                          </p>
+                  Confirm &amp; Add Course
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Expandable Accordion List */}
+          <div className="space-y-3">
+            {subjects.map((sub) => {
+              const subPercentage = sub.conducted > 0 ? (sub.attended / sub.conducted) * 100 : 0;
+              const colors = getRiskColor(subPercentage, sub.target);
+              const isExpanded = expandedSubjectIds.includes(sub.id);
+              
+              const localBunks = sub.conducted > 0 
+                ? Math.max(0, Math.floor((sub.attended * 100 - sub.target * sub.conducted) / sub.target))
+                : 0;
+
+              const localClassesNeeded = subPercentage < sub.target
+                ? Math.ceil((sub.target * sub.conducted - 100 * sub.attended) / (100 - sub.target))
+                : 0;
+
+              return (
+                <div 
+                  key={sub.id} 
+                  className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-2xl backdrop-blur-xl transition-all shadow-sm overflow-hidden"
+                >
+                  {/* Summary Bar */}
+                  <div
+                    onClick={() => toggleSubjectExpand(sub.id)}
+                    className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-zinc-850/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className={`h-3 w-3 rounded-full ${colors.badgeBg} shrink-0`} />
+                      <div className="min-w-0">
+                        <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-zinc-100 truncate">
+                          {sub.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                          <span>{sub.attended} / {sub.conducted} Conducted</span>
+                          <span>•</span>
+                          <span>Target: {sub.target}%</span>
                         </div>
-                        <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                      </div>
-                      <div className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 flex items-center gap-1">
-                        <span className="text-emerald-600 dark:text-emerald-400 font-black">Status:</span> {globalPercentage >= target ? "Eligible" : "Shortage Warning"}
                       </div>
                     </div>
 
-                    {/* Target Attendance */}
-                    <div className="rounded-3xl border border-slate-200/90 dark:border-zinc-850 bg-white dark:bg-zinc-900/20 hover:bg-slate-50 dark:hover:bg-zinc-900/30 p-5 flex flex-col justify-between h-36 hover:border-indigo-500/40 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative group overflow-hidden text-left shadow-sm">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none" />
-                      <div className="flex justify-between items-start">
-                        <div className="w-full">
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400">Required Target</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <p className="text-3xl font-black text-slate-900 dark:text-zinc-100">
-                              <AnimatedCounter value={target} />%
-                            </p>
-                            <div className="flex flex-col gap-0.5 z-20">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setTarget(p => Math.min(100, p + 5)); }}
-                                className="p-0.5 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-850 border border-slate-200 dark:border-zinc-800 rounded text-[8px] hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer text-slate-700 dark:text-zinc-300"
-                              >
-                                ▲
-                              </button>
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setTarget(p => Math.max(0, p - 5)); }}
-                                className="p-0.5 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-850 border border-slate-200 dark:border-zinc-800 rounded text-[8px] hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer text-slate-700 dark:text-zinc-300"
-                              >
-                                ▼
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-                          <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                      </div>
-                      <div className="text-[10px] font-semibold text-slate-600 dark:text-zinc-400">
-                        Adjustable criteria settings
-                      </div>
-                    </div>
-
-                    {/* Safe Bunks remaining */}
-                    <div className="rounded-3xl border border-slate-200/90 dark:border-zinc-850 bg-white dark:bg-zinc-900/20 hover:bg-slate-50 dark:hover:bg-zinc-900/30 p-5 flex flex-col justify-between h-36 hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative group overflow-hidden text-left shadow-sm">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none" />
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400">Safe Bunks Left</h4>
-                          <p className="text-3xl font-black text-slate-900 dark:text-zinc-100 mt-1">
-                            <AnimatedCounter value={maxGlobalBunks} /> Classes
-                          </p>
-                        </div>
-                        <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        </div>
-                      </div>
-                      <div className={`text-[10px] font-black uppercase tracking-wider ${
-                        maxGlobalBunks > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
-                      }`}>
-                        {maxGlobalBunks > 0 ? "✓ Buffer available" : "No safety buffer left"}
-                      </div>
-                    </div>
-
-                    {/* Attendance Streak */}
-                    <div className="rounded-3xl border border-slate-200/90 dark:border-zinc-850 bg-white dark:bg-zinc-900/20 hover:bg-slate-50 dark:hover:bg-zinc-900/30 p-5 flex flex-col justify-between h-36 hover:border-cyan-500/40 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative group overflow-hidden text-left shadow-sm">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-xl pointer-events-none" />
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400">Best Streak</h4>
-                          <p className="text-3xl font-black text-slate-900 dark:text-zinc-100 mt-1">
-                            <AnimatedCounter value={maxStreak} /> Classes
-                          </p>
-                        </div>
-                        <div className="p-2 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
-                          <Zap className="h-4 w-4 text-cyan-600 dark:text-cyan-400 animate-pulse" />
-                        </div>
-                      </div>
-                      <div className="text-[10px] font-semibold text-slate-600 dark:text-zinc-400">
-                        Consecutive classes present
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* MAIN BODY GRID */}
-                  <div className="grid lg:grid-cols-12 gap-8 items-start mt-8">
-                    
-                    {/* COLUMN 1: SUBJECT WISE TRACKING CARDS (Left 7 cols) */}
-                    <div className="lg:col-span-7 space-y-6">
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400">
-                          Subject-Wise Analytics ({subjects.length})
-                        </span>
-                        <button
-                          onClick={() => setIsAddingSubject(!isAddingSubject)}
-                          className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
-                        >
-                          {isAddingSubject ? "Cancel" : "+ Add Subject"}
-                        </button>
-                      </div>
-
-                      {/* Inline add subject form */}
-                      <AnimatePresence>
-                        {isAddingSubject && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.98, y: -10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.98, y: -10 }}
-                            className="p-5 bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 rounded-3xl text-left space-y-3 shadow-sm"
-                          >
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Configure New Subject</span>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <label className="text-[9px] font-black text-slate-500 dark:text-zinc-400 uppercase">Subject Label</label>
-                                <input 
-                                  type="text" 
-                                  value={newSubjectName}
-                                  onChange={(e) => setNewSubjectName(e.target.value)}
-                                  placeholder="e.g. Database Management"
-                                  className="h-9 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 text-xs font-bold text-slate-900 dark:text-zinc-100 outline-none focus:border-emerald-500/40 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[9px] font-black text-slate-500 dark:text-zinc-400 uppercase">Target Minimum %</label>
-                                <select 
-                                  value={newSubjectTarget}
-                                  onChange={(e) => setNewSubjectTarget(parseInt(e.target.value))}
-                                  className="h-9 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 text-xs font-black text-slate-900 dark:text-zinc-100 outline-none"
-                                >
-                                  <option value={75}>75% (Standard University)</option>
-                                  <option value={80}>80% (High Standard)</option>
-                                  <option value={85}>85% (Scholar Requirement)</option>
-                                  <option value={90}>90% (Strict Policy)</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <button
-                              onClick={handleAddSubject}
-                              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors cursor-pointer shadow-sm"
-                            >
-                              Add Subject
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Subject cards stack */}
-                      <div className="space-y-4">
-                        {subjects.map((sub) => {
-                          const subPercentage = sub.conducted > 0 ? (sub.attended / sub.conducted) * 100 : 0;
-                          const colors = getRiskColor(subPercentage, sub.target);
-                          
-                          const localBunks = sub.conducted > 0 
-                            ? Math.max(0, Math.floor((sub.attended * 100 - sub.target * sub.conducted) / sub.target))
-                            : 0;
-
-                          const localClassesNeeded = subPercentage < sub.target
-                            ? Math.ceil((sub.target * sub.conducted - 100 * sub.attended) / (100 - sub.target))
-                            : 0;
-
-                          return (
-                            <div 
-                              key={sub.id} 
-                              className="bg-white dark:bg-zinc-900/30 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-5 backdrop-blur-xl relative overflow-hidden group text-left shadow-sm"
-                            >
-                              {/* Glowing status strip */}
-                              <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${colors.stroke}`} />
-
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                
-                                {/* Left: Metadata */}
-                                <div className="space-y-1.5 flex-1">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border ${colors.bg} ${colors.border} ${colors.text}`}>
-                                      {subPercentage.toFixed(1)}%
-                                    </span>
-                                    <span className="text-[9px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest">
-                                      Target: {sub.target}%
-                                    </span>
-                                    {sub.streak > 0 && (
-                                      <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 text-[8px] font-black uppercase tracking-wider flex items-center gap-0.5">
-                                        ⚡ {sub.streak} streak
-                                      </span>
-                                    )}
-                                  </div>
-                                  <h3 className="text-base font-black text-slate-900 dark:text-zinc-100">{sub.name}</h3>
-                                  
-                                  <p className="text-[11px] text-slate-600 dark:text-zinc-400 font-semibold leading-relaxed">
-                                    {subPercentage >= sub.target 
-                                      ? `✓ Safe zone. You can bunk ${localBunks} class${localBunks === 1 ? "" : "es"} in a row.`
-                                      : `⚠️ Warning: Shortage. Attend the next ${localClassesNeeded} class${localClassesNeeded === 1 ? "" : "es"} in a row to recover.`}
-                                  </p>
-                                </div>
-
-                                {/* Right: Counter Actions */}
-                                <div className="flex items-center gap-4 shrink-0 justify-between sm:justify-end">
-                                  <div className="text-right">
-                                    <span className="text-[8px] font-black uppercase text-slate-400 dark:text-zinc-500 block">Conducted</span>
-                                    <span className="text-xs font-black text-slate-700 dark:text-zinc-300">{sub.attended} / {sub.conducted}</span>
-                                  </div>
-
-                                  {/* Interactive Present/Absent Click Counters */}
-                                  <div className="flex gap-2.5 items-center">
-                                    {/* Present clicker */}
-                                    <div className="flex flex-col items-center gap-1">
-                                      <span className="text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-400">Present</span>
-                                      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 p-1.5 rounded-xl">
-                                        <button 
-                                          onClick={() => decrementAttended(sub.id)}
-                                          className="h-6 w-6 rounded bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 flex items-center justify-center hover:text-rose-600 cursor-pointer text-xs"
-                                          title="-1 Present Class"
-                                        >
-                                          -
-                                        </button>
-                                        <button 
-                                          onClick={() => incrementAttended(sub.id)}
-                                          className="h-6 w-6 rounded bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center cursor-pointer text-xs font-black shadow-sm"
-                                          title="+1 Present Class"
-                                        >
-                                          +
-                                        </button>
-                                      </div>
-                                    </div>
-
-                                    {/* Bunk/Absent clicker */}
-                                    <div className="flex flex-col items-center gap-1">
-                                      <span className="text-[8px] font-black uppercase text-rose-600 dark:text-rose-400">Bunked</span>
-                                      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 p-1.5 rounded-xl">
-                                        <button 
-                                          onClick={() => decrementConductedOnly(sub.id)}
-                                          className="h-6 w-6 rounded bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 flex items-center justify-center hover:text-rose-600 cursor-pointer text-xs"
-                                          title="-1 Bunked Class"
-                                        >
-                                          -
-                                        </button>
-                                        <button 
-                                          onClick={() => incrementConductedOnly(sub.id)}
-                                          className="h-6 w-6 rounded bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center cursor-pointer text-xs font-black shadow-sm"
-                                          title="+1 Bunked Class"
-                                        >
-                                          +
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Remove subject button */}
-                                  <button
-                                    onClick={() => handleRemoveSubject(sub.id, sub.name)}
-                                    className="p-2 border border-slate-200 dark:border-zinc-850 bg-slate-100 dark:bg-zinc-950 text-slate-400 dark:text-zinc-500 hover:text-rose-600 hover:border-rose-300 rounded-xl transition-all cursor-pointer hidden group-hover:block"
-                                    title="Delete Subject"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      
-                    </div>
-
-                    {/* COLUMN 2: ANALYTICS & AI PREDICTIONS (Right 5 cols) */}
-                    <div className="lg:col-span-5 space-y-6">
-                      
-                      {/* RADIAL PROGRESS SCORE GAUGE */}
-                      <div className="bg-white dark:bg-zinc-900/30 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-5 text-center relative overflow-hidden">
-                        <span className="px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 rounded-lg border border-emerald-500/20 inline-block">
-                          Overall Rollup Attendance
-                        </span>
-
-                        {/* SVG Radial Gauge */}
-                        <div className="flex flex-col items-center justify-center pt-2 relative">
-                          
-                          <div className={`absolute h-36 w-36 rounded-full bg-opacity-5 filter blur-xl animate-pulse ${
-                            globalPercentage >= target + 5 ? "bg-emerald-500" : globalPercentage >= target ? "bg-amber-500" : "bg-rose-500"
-                          }`} />
-
-                          <div className="relative h-44 w-44 flex items-center justify-center">
-                            <svg className="h-full w-full -rotate-90">
-                              <circle
-                                cx="88"
-                                cy="88"
-                                r="70"
-                                className="stroke-slate-200 dark:stroke-zinc-900"
-                                strokeWidth="8"
-                                fill="transparent"
-                              />
-                              <motion.circle
-                                cx="88"
-                                cy="88"
-                                r="70"
-                                className={globalRisk.stroke}
-                                strokeWidth="8"
-                                fill="transparent"
-                                strokeDasharray={2 * Math.PI * 70}
-                                initial={{ strokeDashoffset: 2 * Math.PI * 70 }}
-                                animate={{ strokeDashoffset: 2 * Math.PI * 70 - (Math.min(100, globalPercentage) / 100) * (2 * Math.PI * 70) }}
-                                transition={{ duration: 0.8, ease: "easeOut" }}
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                            <div className="absolute flex flex-col items-center justify-center">
-                              <span className="text-[8px] font-black text-slate-500 dark:text-zinc-400 uppercase tracking-widest">
-                                AGGREGATED SCORE
-                              </span>
-                              <h2 className="text-4xl font-black text-slate-900 dark:text-zinc-100 mt-0.5 tracking-tight">
-                                {globalConducted > 0 ? `${globalPercentage.toFixed(1)}%` : "0.0%"}
-                              </h2>
-                              <span className="text-[8px] font-bold text-slate-500 dark:text-zinc-400 mt-0.5">
-                                conducted: {globalConducted} classes
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Status zone badge */}
-                          <div className={`mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${globalRisk.bg} ${globalRisk.border} ${globalRisk.text}`}>
-                            <ShieldAlert className="h-3.5 w-3.5" />
-                            <span>{globalPercentage >= target + 5 ? "Safe Zone" : globalPercentage >= target ? "Warning Zone" : "Danger Zone"}</span>
-                          </div>
-                        </div>
-
-                        {/* Adjust global target */}
-                        <div className="flex items-center justify-between border-t border-slate-200 dark:border-zinc-800/80 pt-4 text-left">
-                          <span className="text-[10px] font-black text-slate-600 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                            <TrendingUp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Global Policy Target
-                          </span>
-                          <div className="flex items-center gap-1">
-                            {[75, 80, 85].map(t => (
-                              <button 
-                                key={t}
-                                onClick={() => setTarget(t)}
-                                className={`px-2 py-1 rounded-lg text-[9px] font-black border transition-all cursor-pointer ${
-                                  target === t 
-                                    ? "bg-emerald-600 border-emerald-600 text-white" 
-                                    : "bg-slate-100 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
-                                }`}
-                              >
-                                {t}%
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* INTERACTIVE MONTHLY CALENDAR LOGGER */}
-                      <div className="bg-white dark:bg-zinc-900/30 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-5 backdrop-blur-xl shadow-sm space-y-4 text-left relative overflow-hidden">
-                        
-                        <div className="flex justify-between items-center">
-                          <h4 className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Interactive Monthly Logger
-                          </h4>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
-                              className="p-1.5 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-slate-600 dark:text-zinc-400 rounded-lg text-xs cursor-pointer transition-colors"
-                            >
-                              ◀
-                            </button>
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-zinc-300 min-w-24 text-center">
-                              {currentDate.toLocaleString("default", { month: "long", year: "numeric" })}
-                            </span>
-                            <button
-                              onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
-                              className="p-1.5 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-slate-600 dark:text-zinc-400 rounded-lg text-xs cursor-pointer transition-colors"
-                            >
-                              ▶
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl space-y-4">
-                          
-                          {/* Select active logger subject */}
-                          <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 dark:text-zinc-500 uppercase">Active Logging Subject</label>
-                            <select
-                              value={selectedLogSubjectId}
-                              onChange={(e) => setSelectedLogSubjectId(e.target.value)}
-                              className="h-8.5 w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-855 rounded-xl px-2.5 text-xs font-bold text-slate-900 dark:text-zinc-200 outline-none"
-                            >
-                              {subjects.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Calendar Grid */}
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-7 gap-1 text-center text-[8px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-wider">
-                              <span>Sun</span>
-                              <span>Mon</span>
-                              <span>Tue</span>
-                              <span>Wed</span>
-                              <span>Thu</span>
-                              <span>Fri</span>
-                              <span>Sat</span>
-                            </div>
-
-                            <div className="grid grid-cols-7 gap-1.5">
-                              {(() => {
-                                const year = currentDate.getFullYear();
-                                const month = currentDate.getMonth();
-                                const firstDay = new Date(year, month, 1);
-                                const startDay = firstDay.getDay();
-                                const totalDays = new Date(year, month + 1, 0).getDate();
-                                
-                                const days = [];
-                                for (let i = 0; i < startDay; i++) {
-                                  days.push(null);
-                                }
-                                for (let d = 1; d <= totalDays; d++) {
-                                  days.push(d);
-                                }
-
-                                return days.map((d, index) => {
-                                  if (d === null) {
-                                    return <div key={`empty-${index}`} className="aspect-square" />;
-                                  }
-
-                                  const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-                                  const status = attendanceLogs[dateStr]?.[selectedLogSubjectId] || null;
-
-                                  let borderClass = "border-slate-200 dark:border-zinc-900 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900/10 text-slate-700 dark:text-zinc-300";
-                                  let dotColor = "bg-transparent";
-
-                                  if (status === "present") {
-                                    borderClass = "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold";
-                                    dotColor = "bg-emerald-500";
-                                  } else if (status === "absent") {
-                                    borderClass = "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-bold";
-                                    dotColor = "bg-rose-500";
-                                  }
-
-                                  return (
-                                    <button
-                                      key={dateStr}
-                                      onClick={() => {
-                                        const nextStatus = status === null ? "present" : status === "present" ? "absent" : null;
-                                        setDayLog(dateStr, selectedLogSubjectId, nextStatus);
-                                      }}
-                                      className={`aspect-square flex flex-col items-center justify-between p-1 rounded-xl border text-[10px] font-black transition-all cursor-pointer hover:scale-105 active:scale-95 ${borderClass}`}
-                                      title={`Click to toggle attendance for ${dateStr}`}
-                                    >
-                                      <span className="self-start text-[8px] opacity-60 leading-none">{d}</span>
-                                      <div className={`h-1.5 w-1.5 rounded-full ${dotColor} mb-0.5`} />
-                                    </button>
-                                  );
-                                });
-                              })()}
-                            </div>
-                          </div>
-
-                          {/* Quick logging buttons */}
-                          <div className="border-t border-slate-200 dark:border-zinc-900/60 pt-3 space-y-2">
-                            <span className="text-[8px] font-black text-slate-400 dark:text-zinc-500 uppercase">Today's Quick Shortcuts</span>
-                            <div className="grid grid-cols-2 gap-2">
-                              <button
-                                onClick={() => handleQuickLog(true)}
-                                className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer shadow-sm"
-                              >
-                                ✓ Log Present Today
-                              </button>
-                              <button
-                                onClick={() => handleQuickLog(false)}
-                                className="py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer shadow-sm"
-                              >
-                                ✗ Log Absent Today
-                              </button>
-                            </div>
-                          </div>
-
-                        </div>
-                      </div>
-
-                      {/* PREDICTIVE AI INSIGHTS & RISK METER */}
-                      {globalConducted > 0 && (
-                        <div className="space-y-6">
-                          
-                          {/* BUNK RISK METER */}
-                          {(() => {
-                            const bunkRiskVal = (() => {
-                              if (globalPercentage < target) return 100;
-                              if (globalPercentage === 100) return 0;
-                              const diff = globalPercentage - target;
-                              if (diff >= 12) return 10;
-                              return Math.max(10, Math.min(95, 90 - (diff / 12) * 80));
-                            })();
-
-                            const getRiskLabel = (val: number) => {
-                              if (val >= 80) return { label: "CRITICAL DANGER", color: "text-rose-600 dark:text-rose-400" };
-                              if (val >= 50) return { label: "MODERATE WARNING", color: "text-amber-600 dark:text-amber-400" };
-                              return { label: "SAFE OPERATION", color: "text-emerald-600 dark:text-emerald-400" };
-                            };
-
-                            const riskMeta = getRiskLabel(bunkRiskVal);
-
-                            return (
-                              <div className="bg-white dark:bg-zinc-900/30 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-5 backdrop-blur-xl shadow-sm space-y-4 text-left relative overflow-hidden">
-                                <h4 className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
-                                  <ShieldAlert className="h-4 w-4 text-rose-500" /> Bunk Risk Meter
-                                </h4>
-                                
-                                <div className="space-y-3 pt-1">
-                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
-                                    <span className="text-slate-500 dark:text-zinc-400">Risk Assessment Status</span>
-                                    <span className={riskMeta.color}>{riskMeta.label}</span>
-                                  </div>
-
-                                  <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900 overflow-hidden relative">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 opacity-80" />
-                                    <motion.div
-                                      className="absolute top-0 bottom-0 w-1.5 bg-white border border-slate-900 dark:border-zinc-950 rounded shadow-md"
-                                      style={{ left: `${bunkRiskVal}%` }}
-                                      animate={{ left: `${bunkRiskVal}%` }}
-                                      transition={{ type: "spring", stiffness: 80, damping: 15 }}
-                                    />
-                                  </div>
-
-                                  <div className="flex justify-between text-[8px] font-black uppercase text-slate-400 dark:text-zinc-550 tracking-wider">
-                                    <span>Low Risk</span>
-                                    <span>Moderate</span>
-                                    <span>Critical Danger</span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })()}
-
-                          {/* FUTURE SCENARIO MATRIX */}
-                          <div className="bg-white dark:bg-zinc-900/30 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-5 backdrop-blur-xl shadow-sm space-y-4 text-left">
-                            <h4 className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
-                              <HelpCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Future Scenario Projections
-                            </h4>
-                            
-                            <div className="space-y-2 text-xs font-semibold text-slate-700 dark:text-zinc-400">
-                              <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl">
-                                <span>Bunk next class</span>
-                                <span className={`font-black ${getRiskColor(((globalAttended) / (globalConducted + 1)) * 100, target).text}`}>
-                                  {(((globalAttended) / (globalConducted + 1)) * 100).toFixed(1)}%
-                                </span>
-                              </div>
-
-                              <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl">
-                                <span>Bunk next 3 classes</span>
-                                <span className={`font-black ${getRiskColor(((globalAttended) / (globalConducted + 3)) * 100, target).text}`}>
-                                  {(((globalAttended) / (globalConducted + 3)) * 100).toFixed(1)}%
-                                </span>
-                              </div>
-
-                              <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl">
-                                <span>Attend next 5 classes (Streak)</span>
-                                <span className={`font-black ${getRiskColor(((globalAttended + 5) / (globalConducted + 5)) * 100, target).text}`}>
-                                  {(((globalAttended + 5) / (globalConducted + 5)) * 100).toFixed(1)}%
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                        </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className={`px-2.5 py-1 rounded-xl text-xs font-black uppercase border ${colors.bg} ${colors.border} ${colors.text}`}>
+                        {subPercentage.toFixed(1)}%
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
                       )}
+                    </div>
+                  </div>
 
-                      {/* EXAM SURVIVAL MODE */}
-                      <div className="bg-white dark:bg-zinc-900/30 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-5 backdrop-blur-xl shadow-sm space-y-4 text-left">
-                        <div className="flex justify-between items-center">
-                          <h4 className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
-                            <AlertTriangle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Exam Survival Mode
-                          </h4>
+                  {/* Expanded Detail Actions */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-4 sm:px-5 pb-5 pt-2 border-t border-slate-200 dark:border-zinc-850 space-y-4"
+                      >
+                        <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                          {subPercentage >= sub.target 
+                            ? `✓ Safe status. You can bunk ${localBunks} upcoming class${localBunks === 1 ? "" : "es"} in a row.`
+                            : `⚠️ Shortage warning: Attend the next ${localClassesNeeded} class${localClassesNeeded === 1 ? "" : "es"} in a row to hit target.`}
+                        </p>
+
+                        <div className="flex items-center justify-between flex-wrap gap-4 pt-2 border-t border-slate-100 dark:border-zinc-900">
+                          {/* Present/Absent Click Counters */}
+                          <div className="flex items-center gap-4">
+                            {/* Present Counter */}
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-xl border border-slate-200 dark:border-zinc-800">
+                              <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 px-1">
+                                Present
+                              </span>
+                              <button 
+                                onClick={() => decrementAttended(sub.id)}
+                                className="h-7 w-7 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 font-bold hover:text-rose-600 text-xs"
+                              >
+                                -
+                              </button>
+                              <button 
+                                onClick={() => incrementAttended(sub.id)}
+                                className="h-7 w-7 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-sm"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            {/* Bunked Counter */}
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-xl border border-slate-200 dark:border-zinc-800">
+                              <span className="text-[10px] font-black uppercase text-rose-600 dark:text-rose-400 px-1">
+                                Bunked
+                              </span>
+                              <button 
+                                onClick={() => decrementConductedOnly(sub.id)}
+                                className="h-7 w-7 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 font-bold hover:text-rose-600 text-xs"
+                              >
+                                -
+                              </button>
+                              <button 
+                                onClick={() => incrementConductedOnly(sub.id)}
+                                className="h-7 w-7 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-sm"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Delete Subject Button */}
                           <button
-                            onClick={() => setShowSurvivalMode(!showSurvivalMode)}
-                            className="px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-950 hover:bg-slate-200 dark:hover:bg-zinc-900 border border-slate-200 dark:border-zinc-850 text-[8px] font-black text-slate-700 dark:text-zinc-400 cursor-pointer uppercase transition-colors"
+                            onClick={() => handleRemoveSubject(sub.id, sub.name)}
+                            className="p-2 border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 text-slate-400 hover:text-rose-600 rounded-xl transition-all cursor-pointer"
+                            title="Delete Subject"
                           >
-                            {showSurvivalMode ? "Hide Details" : "Activate"}
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
-                        {showSurvivalMode && (
-                          <div className="space-y-3.5 animate-fadeIn">
-                            <div className="p-4 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl space-y-3">
-                              <div className="space-y-1">
-                                <label className="text-[8px] font-black text-slate-500 dark:text-zinc-400 uppercase">Classes Left Before Exams</label>
-                                <input
-                                  type="number"
-                                  min={1}
-                                  max={100}
-                                  value={remainingClasses}
-                                  onChange={(e) => setRemainingClasses(parseInt(e.target.value) || 1)}
-                                  className="h-8.5 w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 text-xs font-bold text-slate-900 dark:text-zinc-200 outline-none focus:border-emerald-500"
-                                />
-                              </div>
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            5. ATTENDANCE INSIGHTS & EXAM SURVIVAL MODE
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <section className="space-y-6 text-left">
+          <h2 className="text-xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+            AI Attendance Insights &amp; Exam Survival
+          </h2>
 
-                              <div className="border-t border-slate-200 dark:border-zinc-900/60 pt-3 space-y-2.5">
-                                {survivalMetrics.isUnreachable ? (
-                                  <div className="flex gap-2.5 items-start text-rose-600 dark:text-rose-400 leading-normal">
-                                    <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5 text-rose-500" />
-                                    <div className="space-y-0.5">
-                                      <span className="text-[10px] font-black uppercase tracking-wider">Shortage Inevitable</span>
-                                      <p className="text-[11px] text-slate-600 dark:text-zinc-400 font-semibold">
-                                        Even if you attend all remaining {remainingClasses} classes, you will not meet your {target}% target. Request a medical waiver or contact your professor.
-                                      </p>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="flex gap-2.5 items-start text-emerald-600 dark:text-emerald-400 leading-normal">
-                                    <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-emerald-500" />
-                                    <div className="space-y-0.5">
-                                      <span className="text-[10px] font-black uppercase tracking-wider">Survival Path Computed</span>
-                                      <p className="text-[11px] text-slate-600 dark:text-zinc-400 font-semibold">
-                                        You must attend at least <strong className="text-emerald-600 dark:text-emerald-400">{survivalMetrics.minClassesNeeded}</strong> of the remaining {remainingClasses} classes. You can only afford to bunk <strong className="text-amber-600 dark:text-amber-400">{survivalMetrics.maxBunksAllowed}</strong> class{survivalMetrics.maxBunksAllowed === 1 ? "" : "es"}.
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            
+            {/* Future Scenario Projections */}
+            <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-4">
+              <h3 className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider flex items-center gap-2">
+                <HelpCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Future Scenario Matrix</span>
+              </h3>
 
-                    </div>
+              <div className="space-y-2.5 text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl">
+                  <span>Bunk next class</span>
+                  <span className={`font-black ${getRiskColor(((globalAttended) / (globalConducted + 1)) * 100, target).text}`}>
+                    {(((globalAttended) / (globalConducted + 1)) * 100).toFixed(1)}%
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl">
+                  <span>Bunk next 3 classes</span>
+                  <span className={`font-black ${getRiskColor(((globalAttended) / (globalConducted + 3)) * 100, target).text}`}>
+                    {(((globalAttended) / (globalConducted + 3)) * 100).toFixed(1)}%
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl">
+                  <span>Attend next 5 classes (Streak)</span>
+                  <span className={`font-black ${getRiskColor(((globalAttended + 5) / (globalConducted + 5)) * 100, target).text}`}>
+                    {(((globalAttended + 5) / (globalConducted + 5)) * 100).toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Exam Survival Mode */}
+            <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 backdrop-blur-xl shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase text-slate-600 dark:text-zinc-400 tracking-wider flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>Exam Survival Mode</span>
+                </h3>
+                <button
+                  onClick={() => setShowSurvivalMode(!showSurvivalMode)}
+                  className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-[10px] font-black text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 uppercase transition-colors cursor-pointer"
+                >
+                  {showSurvivalMode ? "Hide" : "Activate"}
+                </button>
+              </div>
+
+              {showSurvivalMode ? (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-500 dark:text-zinc-400 uppercase">Remaining Classes Before Exam</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={remainingClasses}
+                      onChange={(e) => setRemainingClasses(parseInt(e.target.value) || 1)}
+                      className="h-9 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 text-xs font-bold text-slate-900 dark:text-zinc-100 outline-none"
+                    />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
-          </motion.div>
-        </div>
-      </div>
+                  <div className="p-3.5 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-900 rounded-2xl text-xs font-medium leading-relaxed">
+                    {survivalMetrics.isUnreachable ? (
+                      <p className="text-rose-600 dark:text-rose-400 font-bold">
+                        ⚠️ Shortage Inevitable: Even attending all remaining {remainingClasses} classes will not reach your {target}% target. Contact your faculty.
+                      </p>
+                    ) : (
+                      <p className="text-emerald-700 dark:text-emerald-400 font-semibold">
+                        ✓ Survival Path: Attend at least <strong className="font-black text-emerald-600 dark:text-emerald-300">{survivalMetrics.minClassesNeeded}</strong> of the remaining {remainingClasses} classes. Max bunks allowed: <strong className="font-black text-amber-600 dark:text-amber-400">{survivalMetrics.maxBunksAllowed}</strong>.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed font-medium">
+                  Activate Exam Survival Mode to compute mandatory attendance cutoffs for your end-semester final exams.
+                </p>
+              )}
+            </div>
+
+          </div>
+        </section>
+
+      </main>
     </div>
   );
 }
