@@ -38,7 +38,12 @@ export async function saveBlogToMongo(blog: Record<string, any>): Promise<void> 
       console.warn("⚠️ Skipping MongoDB save — MONGODB_URI not configured");
       return;
     }
-    const mongoClient = await promise;
+    const mongoClient = await promise.catch((e) => {
+      console.warn("⚠️ MongoDB connection failed:", e?.message || e);
+      return null;
+    });
+    if (!mongoClient) return;
+
     const db = mongoClient.db();
     const blogs = db.collection("blogs");
 
@@ -49,8 +54,8 @@ export async function saveBlogToMongo(blog: Record<string, any>): Promise<void> 
       { upsert: true }
     );
     console.log(`✅ Blog saved to MongoDB: "${blog.title}"`);
-  } catch (err) {
-    console.error("❌ Failed to save blog to MongoDB:", err);
+  } catch (err: any) {
+    console.error("❌ Failed to save blog to MongoDB:", err?.message || err);
   }
 }
 
@@ -59,13 +64,18 @@ export async function getBlogsFromMongo(): Promise<any[]> {
   try {
     const promise = getClientPromise();
     if (!promise) return [];
-    const mongoClient = await promise;
+    const mongoClient = await promise.catch((e) => {
+      console.warn("⚠️ MongoDB connection failed:", e?.message || e);
+      return null;
+    });
+    if (!mongoClient) return [];
+
     const db = mongoClient.db();
     const blogsCollection = db.collection("blogs");
     const docs = await blogsCollection.find({}).sort({ datePublished: -1 }).toArray();
     return docs.map(({ _id, ...rest }) => rest);
-  } catch (err) {
-    console.error("❌ Failed to fetch blogs from MongoDB:", err);
+  } catch (err: any) {
+    console.error("❌ Failed to fetch blogs from MongoDB:", err?.message || err);
     return [];
   }
 }
