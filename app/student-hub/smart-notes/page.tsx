@@ -10,7 +10,8 @@ import {
   Calendar, ChevronRight, Maximize2, Minimize2, ChevronDown, ChevronUp, 
   ShieldAlert, ListTodo, BrainCircuit, Download, BarChart2, Check, X, RefreshCw, 
   FileCode, Layers, UserCheck, Settings, Database, ArrowRight, Lightbulb,
-  Cpu, Send, Paperclip, Zap, Eye, RotateCcw, Target, Sliders, LayoutDashboard
+  Cpu, Send, Paperclip, Zap, Eye, RotateCcw, Target, Sliders, LayoutDashboard,
+  AlertTriangle, FileType2, File
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import ReactMarkdown from "react-markdown";
@@ -26,8 +27,6 @@ interface StudyFile {
   subject: string;
   dateUploaded: string;
   extractedText?: string;
-  diagramsCount: number;
-  equationsCount: number;
 }
 
 interface GeneratedNote {
@@ -46,7 +45,7 @@ interface Flashcard {
   front: string;
   back: string;
   difficulty: "Easy" | "Medium" | "Hard";
-  bookmarked: boolean;
+  bookmarked?: boolean;
   subject: string;
 }
 
@@ -71,154 +70,117 @@ interface MindMapNode {
 type WorkspaceTool = "home" | "notes" | "chat" | "flashcards" | "quiz" | "mindmap" | "examprep" | "files";
 
 /* ─────────────── SEED DATA ─────────────── */
-const SAMPLE_FILES: StudyFile[] = [
+const DEFAULT_FILES: StudyFile[] = [
   {
     id: "file-1",
-    name: "Lecture_3_Operating_Systems_Deadlocks.pdf",
+    name: "Java_OOP_Inheritance_Guide.pdf",
+    size: "2.4 MB",
+    type: "application/pdf",
+    category: "Lecture Slides",
+    subject: "Java",
+    dateUploaded: "2026-08-10",
+    extractedText: "Inheritance in Java allows a subclass to inherit fields and methods from a superclass using the 'extends' keyword. Java supports single, multilevel, and hierarchical inheritance, but NOT multiple inheritance with classes to avoid the Diamond Problem. Interfaces are used to achieve 100% abstraction and multiple inheritance."
+  },
+  {
+    id: "file-2",
+    name: "Operating_Systems_Deadlocks.pdf",
     size: "4.2 MB",
     type: "application/pdf",
     category: "Lecture Slides",
     subject: "Operating Systems",
-    dateUploaded: "2026-06-18",
-    extractedText: "Deadlock conditions: 1. Mutual Exclusion: only one process can hold a resource. 2. Hold and Wait: processes hold resources while waiting. 3. No Preemption: resources cannot be forcibly taken. 4. Circular Wait: processes form a circular dependency chain.",
-    diagramsCount: 2,
-    equationsCount: 0
-  },
-  {
-    id: "file-2",
-    name: "Lecture_7_Database_Normalization.docx",
-    size: "1.8 MB",
-    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    category: "Textbook",
-    subject: "DBMS",
-    dateUploaded: "2026-06-17",
-    extractedText: "Normalization levels: 1NF requires atomic values. 2NF requires removing partial dependencies. 3NF requires removing transitive dependencies. BCNF requires that every determinant is a candidate key.",
-    diagramsCount: 0,
-    equationsCount: 3
-  },
-  {
-    id: "file-3",
-    name: "Lecture_Recordings_Computer_Networks.mp3",
-    size: "18.5 MB",
-    type: "audio/mpeg",
-    category: "Lecture Audio",
-    subject: "Computer Networks",
-    dateUploaded: "2026-06-15",
-    extractedText: "Today we discussed TCP vs UDP. TCP is connection-oriented, reliable, and does flow control. UDP is connectionless, fast, and does no flow control. Ideal for DNS, gaming, and real-time streams.",
-    diagramsCount: 0,
-    equationsCount: 1
+    dateUploaded: "2026-08-12",
+    extractedText: "Deadlock conditions: 1. Mutual Exclusion: only one process can hold a resource. 2. Hold and Wait: processes hold resources while waiting. 3. No Preemption: resources cannot be forcibly taken. 4. Circular Wait: processes form a circular dependency chain. Banker's Algorithm is used for deadlock avoidance."
   }
 ];
 
-const SAMPLE_NOTES: GeneratedNote[] = [
+const DEFAULT_NOTES: GeneratedNote[] = [
   {
     id: "note-1",
-    title: "Operating Systems - Deadlock Conditions & Prevention",
+    title: "Java - OOP Principles & Inheritance",
     style: "One-Night Revision Notes",
     mode: "University Exam Mode",
-    subject: "Operating Systems",
-    content: `## Deadlock Core Principles
-A **Deadlock** occurs when a set of processes are blocked because each process is holding a resource and waiting for another resource held by another process in the set.
+    subject: "Java",
+    content: `## Object-Oriented Programming in Java
 
-### The 4 Necessary Conditions
-1. **Mutual Exclusion**: Only one process can use a resource at a time.
-2. **Hold and Wait**: A process holding resources can request additional resources without releasing current ones.
-3. **No Preemption**: Resources cannot be forcibly taken from a process.
-4. **Circular Wait**: A closed chain of processes exists, such that each process holds at least one resource needed by the next.
+Inheritance is a fundamental mechanism where a new class derives properties and behaviors from an existing class using the \`extends\` keyword.
 
-\`\`\`txt
-[Process P1] ---> (Resource R1) ---> [Process P2] ---> (Resource R2) ---> [Process P1]
+### Key Concepts
+1. **Superclass (Parent)**: The class being inherited.
+2. **Subclass (Child)**: The class that inherits from the superclass.
+3. **Method Overriding**: Declaring a method in a subclass that already exists in the superclass with the same signature (\`@Override\` annotation).
+
+\`\`\`java
+// Code Example
+class Animal {
+    void makeSound() {
+        System.out.println("Generic Animal Sound");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    void makeSound() {
+        System.out.println("Woof! Woof!");
+    }
+}
 \`\`\`
 
-### Banker's Safety Algorithm
-Used for **Deadlock Avoidance**. Given:
-- \`Available[m]\`: Available instances of each resource type.
-- \`Max[n][m]\`: Maximum demand of each process.
-- \`Allocation[n][m]\`: Currently allocated resources.
-- \`Need[n][m] = Max[n][m] - Allocation[n][m]\`.`,
+### Why Multiple Inheritance is Not Allowed with Classes
+To prevent the **Diamond Problem**, Java avoids multiple class inheritance. However, multiple inheritance is fully supported via **Interfaces**.`,
     keyTakeaways: [
-      "Deadlock requires 4 simultaneous conditions.",
-      "Mutual exclusion: Resources cannot be shared.",
-      "Circular wait: Interdependent wait chain exists.",
-      "Banker's Algorithm tests safety before granting requests."
+      "Inheritance promotes code reusability using 'extends'.",
+      "Java uses Interfaces to achieve multiple inheritance.",
+      "@Override annotation verifies correct method signatures.",
+      "Constructor chaining uses super() to call parent constructors."
     ],
     formulas: [
-      "Need[i][j] = Max[i][j] - Allocation[i][j]",
-      "Total resources = Allocated + Available"
-    ]
-  },
-  {
-    id: "note-2",
-    title: "Database Management - Normalization (3NF vs BCNF)",
-    style: "Short Notes",
-    mode: "Competitive Exam Mode",
-    subject: "DBMS",
-    content: `## Database Normalization
-Normalization organizes data to reduce redundancy and improve data integrity.
-
-### Key Normal Forms
-- **1NF**: Atomic values only.
-- **2NF**: 1NF + No partial functional dependencies.
-- **3NF**: 2NF + No transitive functional dependencies.
-- **BCNF**: Strict 3NF where every determinant (X in X → Y) must be a superkey.`,
-    keyTakeaways: [
-      "3NF eliminates transitive functional dependencies.",
-      "BCNF requires every determinant to be a superkey.",
-      "All BCNF relations are in 3NF, but not vice-versa."
+      "Subclass IS-A Superclass",
+      "super() must be the first statement in a subclass constructor"
     ]
   }
 ];
 
-const SAMPLE_FLASHCARDS: Flashcard[] = [
-  { id: "flash-1", subject: "Operating Systems", front: "What are the 4 Coffman conditions for Deadlock?", back: "1. Mutual Exclusion\n2. Hold & Wait\n3. No Preemption\n4. Circular Wait", difficulty: "Hard", bookmarked: true },
-  { id: "flash-2", subject: "Operating Systems", front: "Formula for Banker's Algorithm Need Matrix?", back: "Need[i][j] = Max[i][j] - Allocation[i][j]", difficulty: "Medium", bookmarked: false },
-  { id: "flash-3", subject: "DBMS", front: "What is BCNF?", back: "A relation is in BCNF if for every functional dependency X -> Y, X is a superkey.", difficulty: "Hard", bookmarked: false },
-  { id: "flash-4", subject: "Computer Networks", front: "Which protocol is connectionless: TCP or UDP?", back: "UDP (User Datagram Protocol)", difficulty: "Easy", bookmarked: true }
+const DEFAULT_FLASHCARDS: Flashcard[] = [
+  { id: "flash-1", subject: "Java", front: "Why does Java not support multiple inheritance with classes?", back: "To prevent ambiguity caused by the Diamond Problem. Java uses Interfaces instead.", difficulty: "Hard" },
+  { id: "flash-2", subject: "Java", front: "What is the difference between overload and override?", back: "Overloading happens in the same class (same method name, different parameters). Overriding happens in subclasses (same signature).", difficulty: "Medium" },
+  { id: "flash-3", subject: "Operating Systems", front: "What are the 4 Coffman conditions for Deadlock?", back: "1. Mutual Exclusion\n2. Hold & Wait\n3. No Preemption\n4. Circular Wait", difficulty: "Hard" }
 ];
 
-const SAMPLE_QUIZ: QuizQuestion[] = [
+const DEFAULT_QUIZ: QuizQuestion[] = [
   {
     id: "q-1",
-    subject: "Operating Systems",
+    subject: "Java",
     type: "MCQ",
-    question: "Which deadlock handling algorithm tests system state before granting resources?",
-    options: ["Banker's Algorithm", "Ostrich Algorithm", "Round Robin", "SJF"],
-    answer: "Banker's Algorithm",
-    explanation: "Banker's Algorithm is a deadlock avoidance technique that ensures the system remains in a safe state."
+    question: "Which keyword is used by a Java class to inherit properties from a superclass?",
+    options: ["implements", "extends", "inherits", "super"],
+    answer: "extends",
+    explanation: "The 'extends' keyword is used to establish an inheritance relationship between two classes in Java."
   },
   {
     id: "q-2",
-    subject: "Operating Systems",
+    subject: "Java",
     type: "TrueFalse",
-    question: "A cycle in a resource allocation graph with single-instance resources guarantees a deadlock.",
+    question: "A constructor in Java can be marked as static or final.",
     options: ["True", "False"],
-    answer: "True",
-    explanation: "For single-instance resource systems, a cycle in the resource allocation graph is a necessary and sufficient condition for deadlock."
-  },
-  {
-    id: "q-3",
-    subject: "DBMS",
-    type: "FillBlank",
-    question: "In BCNF, for every non-trivial functional dependency X -> Y, X must be a ________.",
-    answer: "superkey",
-    explanation: "For a relation to be in BCNF, every determinant X must be a candidate key or superkey."
+    answer: "False",
+    explanation: "Constructors cannot be static, final, or abstract because they belong to instances during object creation."
   }
 ];
 
-const INITIAL_MIND_MAP: MindMapNode = {
+const DEFAULT_MIND_MAP: MindMapNode = {
   id: "root",
-  label: "Operating Systems",
+  label: "Java Programming",
   color: "#a855f7",
   expanded: true,
   children: [
     {
-      id: "proc",
-      label: "Process Management",
+      id: "oop",
+      label: "Object Oriented Programming",
       color: "#ea580c",
       expanded: true,
       children: [
-        { id: "sched", label: "CPU Scheduling Algorithms" },
-        { id: "sync", label: "Semaphores & Mutex" }
+        { id: "inh", label: "Inheritance & Polymorphism" },
+        { id: "enc", label: "Encapsulation & Abstraction" }
       ]
     },
     {
@@ -227,29 +189,19 @@ const INITIAL_MIND_MAP: MindMapNode = {
       color: "#3b82f6",
       expanded: false,
       children: [
-        { id: "pag", label: "Paging & Virtual Memory" },
-        { id: "seg", label: "Segmentation" }
-      ]
-    },
-    {
-      id: "dead",
-      label: "Deadlocks Engine",
-      color: "#10b981",
-      expanded: false,
-      children: [
-        { id: "cond", label: "4 Coffman Conditions" },
-        { id: "bank", label: "Banker's Safety Algorithm" }
+        { id: "heap", label: "Heap vs Stack Memory" },
+        { id: "gc", label: "Garbage Collector" }
       ]
     }
   ]
 };
 
 const DEFAULT_SUBJECT_OPTIONS = [
+  "Java",
   "Operating Systems",
   "Computer Networks",
   "DBMS",
   "DSA",
-  "Java",
   "Mathematics",
   "AI / ML"
 ];
@@ -259,7 +211,7 @@ export default function SmartNotesOS() {
 
   /* ─────────────── ACTIVE CONTEXT & NAVIGATION ─────────────── */
   const [activeTool, setActiveTool] = useState<WorkspaceTool>("home");
-  const [selectedSubject, setSelectedSubject] = useState<string>("Operating Systems");
+  const [selectedSubject, setSelectedSubject] = useState<string>("Java");
   const [subjectList, setSubjectList] = useState<string[]>(DEFAULT_SUBJECT_OPTIONS);
   const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
   const [newSubjectInput, setNewSubjectInput] = useState("");
@@ -269,43 +221,47 @@ export default function SmartNotesOS() {
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Data States
-  const [files, setFiles] = useState<StudyFile[]>(SAMPLE_FILES);
-  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>(SAMPLE_NOTES);
+  const [files, setFiles] = useState<StudyFile[]>(DEFAULT_FILES);
+  const [generatedNotes, setGeneratedNotes] = useState<GeneratedNote[]>(DEFAULT_NOTES);
   const [activeNoteIdx, setActiveNoteIdx] = useState(0);
-  const [flashcards, setFlashcards] = useState<Flashcard[]>(SAMPLE_FLASHCARDS);
+  
+  const [flashcards, setFlashcards] = useState<Flashcard[]>(DEFAULT_FLASHCARDS);
   const [flashcardIdx, setFlashcardIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState(false);
 
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(SAMPLE_QUIZ);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(DEFAULT_QUIZ);
   const [quizIdx, setQuizIdx] = useState(0);
   const [selectedQuizOption, setSelectedQuizOption] = useState<string | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
-  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
 
-  const [mindMapData, setMindMapData] = useState<MindMapNode>(INITIAL_MIND_MAP);
+  const [mindMapData, setMindMapData] = useState<MindMapNode>(DEFAULT_MIND_MAP);
+  const [mindMapTopic, setMindMapTopic] = useState("");
+  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
 
   // Exams & Revision
   const [revisionCountdowns, setRevisionCountdowns] = useState([
-    { subject: "Operating Systems", days: 3, progress: 65, date: "2026-08-20" },
-    { subject: "DBMS", days: 7, progress: 45, date: "2026-08-24" },
-    { subject: "Computer Networks", days: 12, progress: 20, date: "2026-08-29" }
+    { subject: "Java", days: 4, progress: 70, date: "2026-08-20" },
+    { subject: "Operating Systems", days: 8, progress: 45, date: "2026-08-24" },
+    { subject: "DBMS", days: 14, progress: 20, date: "2026-08-30" }
   ]);
   const [isAddingExam, setIsAddingExam] = useState(false);
   const [newExamSubject, setNewExamSubject] = useState("");
   const [newExamDays, setNewExamDays] = useState(5);
-  const [newExamProgress, setNewExamProgress] = useState(40);
 
   // AI Tutor Chat States
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([
     {
       sender: "ai",
-      text: "👋 Hello! I'm your **AI Study Companion**. Ask me anything about **Operating Systems**, Deadlocks, CPU Scheduling, or request step-by-step explanations.",
+      text: "👋 Hello! I am your **AI Academic Tutor**. Ask me any question about **Java**, inheritance, memory management, or your uploaded files.",
       time: "10:30 AM"
     }
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatIsTyping, setChatIsTyping] = useState(false);
+  const [chatError, setChatError] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Notes Generator inputs
@@ -314,12 +270,42 @@ export default function SmartNotesOS() {
   const [topicInput, setTopicInput] = useState("");
   const [syllabusInput, setSyllabusInput] = useState("");
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
+  const [notesError, setNotesError] = useState("");
 
   // File Upload states
   const [uploadFileMsg, setUploadFileMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sound Synth Trigger
+  // Persistence Load
+  useEffect(() => {
+    try {
+      const savedNotes = localStorage.getItem("smartnotes_notes");
+      const savedFiles = localStorage.getItem("smartnotes_files");
+      const savedFlashcards = localStorage.getItem("smartnotes_flashcards");
+      const savedSubject = localStorage.getItem("smartnotes_selected_subject");
+
+      if (savedNotes) { const p = JSON.parse(savedNotes); if (Array.isArray(p) && p.length > 0) setGeneratedNotes(p); }
+      if (savedFiles) { const p = JSON.parse(savedFiles); if (Array.isArray(p) && p.length > 0) setFiles(p); }
+      if (savedFlashcards) { const p = JSON.parse(savedFlashcards); if (Array.isArray(p) && p.length > 0) setFlashcards(p); }
+      if (savedSubject) setSelectedSubject(savedSubject);
+    } catch (e) {
+      console.error("Local storage load error:", e);
+    }
+  }, []);
+
+  // Sync to LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("smartnotes_notes", JSON.stringify(generatedNotes));
+      localStorage.setItem("smartnotes_files", JSON.stringify(files));
+      localStorage.setItem("smartnotes_flashcards", JSON.stringify(flashcards));
+      localStorage.setItem("smartnotes_selected_subject", selectedSubject);
+    } catch (e) {
+      console.error("Local storage save error:", e);
+    }
+  }, [generatedNotes, files, flashcards, selectedSubject]);
+
+  // Audio Synth Trigger
   const playSound = (freq: number, type: "sine" | "triangle" | "sawtooth", duration: number) => {
     if (!soundEnabled) return;
     try {
@@ -343,6 +329,14 @@ export default function SmartNotesOS() {
 
   const playClick = () => playSound(600, "sine", 0.08);
   const playSuccess = () => { playSound(523.25, "triangle", 0.1); setTimeout(() => playSound(659.25, "triangle", 0.15), 100); };
+
+  // Contextual File Text Extraction for Active Subject
+  const filesContext = useMemo(() => {
+    return files
+      .filter((f) => selectedSubject === "All" || f.subject.toLowerCase() === selectedSubject.toLowerCase())
+      .map((f) => `--- File: ${f.name} (${f.subject}) ---\n${f.extractedText || ""}`)
+      .join("\n\n");
+  }, [files, selectedSubject]);
 
   // Filtered Subject Data
   const currentSubjectFiles = useMemo(() => {
@@ -375,147 +369,238 @@ export default function SmartNotesOS() {
     playSuccess();
   };
 
-  // AI Chat Send Handler
-  const handleSendChat = (presetMsg?: string) => {
+  /* ─────────────── REAL API 1: AI TUTOR CHAT ─────────────── */
+  const handleSendChat = async (presetMsg?: string) => {
     const text = presetMsg || chatInput;
     if (!text.trim()) return;
 
     playClick();
+    setChatError("");
     const userMsg = { sender: "user" as const, text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-    setChatMessages(prev => [...prev, userMsg]);
+    const newHistory = [...chatMessages, userMsg];
+    setChatMessages(newHistory);
     setChatInput("");
     setChatIsTyping(true);
 
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
 
-    setTimeout(() => {
-      let aiResponse = "";
-      const q = text.toLowerCase();
+    try {
+      const res = await fetch("/api/v1/student-hub/smart-notes/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history: newHistory.slice(-6),
+          filesContext,
+          subject: selectedSubject
+        }),
+      });
 
-      if (q.includes("deadlock") || q.includes("coffman")) {
-        aiResponse = `### Deadlock Coffman Conditions
-For a deadlock to occur in **${selectedSubject}**, 4 conditions must hold simultaneously:
-
-1. **Mutual Exclusion**: Non-sharable resources.
-2. **Hold and Wait**: Process holding allocated resources while waiting for others.
-3. **No Preemption**: Resources cannot be forcibly revoked.
-4. **Circular Wait**: Interdependent wait loop among processes.
-
-> 💡 **Exam Tip**: Banker's Safety Algorithm prevents deadlocks by testing safe sequences before allocating!`;
-      } else if (q.includes("example") || q.includes("simply")) {
-        aiResponse = `### Simplified Explanation (${selectedSubject})
-Think of this like a busy restaurant:
-- **Processes** are customers.
-- **Resources** (CPU/Memory/DB Connections) are dining tables.
-- **Deadlock** happens when Customer A has the fork, Customer B has the knife, and neither will eat or let go until they get both!`;
-      } else if (q.includes("quiz") || q.includes("test")) {
-        aiResponse = `### Quick Practice Question
-**Q**: Which deadlock strategy guarantees zero deadlocks by inspecting safe states before resource allocation?
-- A) Deadlock Recovery
-- B) Banker's Algorithm (Avoidance)
-- C) Ostrich Algorithm
-
-*Answer: B) Banker's Algorithm!*`;
+      const data = await res.json();
+      if (res.ok && data.success && data.reply) {
+        setChatMessages((prev) => [
+          ...prev,
+          { sender: "ai", text: data.reply, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+        ]);
+        playSuccess();
       } else {
-        aiResponse = `### AI Tutor Response (${selectedSubject})
-Regarding your question on **"${text}"**:
-
-In **${selectedSubject}**, this concept is critical for exam preparation and system design. 
-
-#### Key Principles:
-1. **Core Mechanism**: Leverages allocated memory/system resources efficiently.
-2. **Implementation Strategy**: Always verify bounds and boundary constraints.
-3. **Performance Optimization**: Minimizes overhead during peak workloads.`;
+        setChatError(data.message || "Failed to get AI response.");
       }
-
-      setChatMessages(prev => [
-        ...prev,
-        { sender: "ai", text: aiResponse, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-      ]);
+    } catch (err: any) {
+      setChatError("Network connection error. Please retry.");
+    } finally {
       setChatIsTyping(false);
-      playSuccess();
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-    }, 1000);
+    }
   };
 
-  // Notes Generation Handler
-  const handleGenerateNotes = () => {
+  /* ─────────────── REAL API 2: NOTES GENERATOR ─────────────── */
+  const handleGenerateNotes = async () => {
     setIsGeneratingNotes(true);
+    setNotesError("");
     playClick();
 
-    setTimeout(() => {
-      const newNote: GeneratedNote = {
-        id: `note-${Date.now()}`,
-        title: topicInput.trim() ? `${selectedSubject} - ${topicInput}` : `${selectedSubject} Revision Brief`,
-        style: noteStyle,
-        mode: noteMode,
-        subject: selectedSubject,
-        content: `## ${selectedSubject} - ${topicInput || "Comprehensive Study Summary"}
+    try {
+      const res = await fetch("/api/v1/student-hub/smart-notes/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: selectedSubject,
+          topic: topicInput,
+          style: noteStyle,
+          mode: noteMode,
+          filesContext,
+          customSyllabusText: syllabusInput
+        }),
+      });
 
-### 1. Executive Concept Overview
-This study module covers core architectural fundamentals of **${selectedSubject}**.
+      const data = await res.json();
+      if (res.ok && data.success && data.note) {
+        const newNote: GeneratedNote = {
+          id: `note-${Date.now()}`,
+          title: data.note.title || `${selectedSubject} Study Note`,
+          style: noteStyle,
+          mode: noteMode,
+          subject: selectedSubject,
+          content: data.note.content || "No content generated.",
+          keyTakeaways: data.note.keyTakeaways || [],
+          formulas: data.note.formulas || []
+        };
 
-### 2. Primary Engineering Specifications
-- **Optimization Ratio**: 94.2% throughput efficiency.
-- **State Complexity**: O(N log N) average scaling.
-- **Fault Tolerance**: Redundant state tracking and dynamic fallback recovery.
-
-\`\`\`typescript
-// Implementation Example for ${selectedSubject}
-function executeWorkflow(input: string): boolean {
-  console.log("Processing study payload for: " + input);
-  return true;
-}
-\`\`\`
-
-### 3. Exam Formula Checklist
-- $$\\text{Speedup} = \\frac{\\text{Execution Time (Old)}}{\\text{Execution Time (New)}}$$
-- $$\\text{Throughput} = \\frac{\\text{Total Tasks}}{\\text{Elapsed Time}}$$`,
-        keyTakeaways: [
-          `Key concept 1 for ${selectedSubject}.`,
-          "Always verify edge cases before implementation.",
-          "High exam probability for 10-mark questions."
-        ],
-        formulas: ["Speedup = Time(old) / Time(new)"]
-      };
-
-      setGeneratedNotes(prev => [newNote, ...prev]);
-      setActiveNoteIdx(0);
+        setGeneratedNotes((prev) => [newNote, ...prev]);
+        setActiveNoteIdx(0);
+        playSuccess();
+      } else {
+        setNotesError(data.message || "Note generation failed.");
+      }
+    } catch {
+      setNotesError("Network connection error. Please try again.");
+    } finally {
       setIsGeneratingNotes(false);
-      playSuccess();
-    }, 1200);
+    }
+  };
+
+  /* ─────────────── REAL API 3: FLASHCARDS GENERATOR ─────────────── */
+  const handleGenerateFlashcards = async () => {
+    setIsGeneratingFlashcards(true);
+    playClick();
+
+    try {
+      const res = await fetch("/api/v1/student-hub/smart-notes/flashcards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: selectedSubject, filesContext }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.flashcards)) {
+        const formatted: Flashcard[] = data.flashcards.map((fc: any, i: number) => ({
+          id: `flash-${Date.now()}-${i}`,
+          front: fc.front,
+          back: fc.back,
+          difficulty: fc.difficulty || "Medium",
+          subject: selectedSubject
+        }));
+        setFlashcards((prev) => [...formatted, ...prev]);
+        setFlashcardIdx(0);
+        playSuccess();
+      }
+    } catch (e) {
+      console.error("Flashcards API error:", e);
+    } finally {
+      setIsGeneratingFlashcards(false);
+    }
+  };
+
+  /* ─────────────── REAL API 4: QUIZ GENERATOR ─────────────── */
+  const handleGenerateQuiz = async () => {
+    setIsGeneratingQuiz(true);
+    playClick();
+
+    try {
+      const res = await fetch("/api/v1/student-hub/smart-notes/quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: selectedSubject, filesContext }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.quiz)) {
+        const formatted: QuizQuestion[] = data.quiz.map((q: any, i: number) => ({
+          id: `q-${Date.now()}-${i}`,
+          type: q.type || "MCQ",
+          question: q.question,
+          options: q.options || [],
+          answer: q.answer,
+          explanation: q.explanation || "",
+          subject: selectedSubject
+        }));
+        setQuizQuestions(formatted);
+        setQuizIdx(0);
+        setSelectedQuizOption(null);
+        setIsAnswerChecked(false);
+        playSuccess();
+      }
+    } catch (e) {
+      console.error("Quiz API error:", e);
+    } finally {
+      setIsGeneratingQuiz(false);
+    }
+  };
+
+  /* ─────────────── REAL API 5: MIND MAP GENERATOR ─────────────── */
+  const handleGenerateMindMap = async () => {
+    setIsGeneratingMindMap(true);
+    playClick();
+
+    try {
+      const res = await fetch("/api/v1/student-hub/smart-notes/mindmap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: selectedSubject, topic: mindMapTopic, filesContext }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.mindmap) {
+        setMindMapData(data.mindmap);
+        playSuccess();
+      }
+    } catch (e) {
+      console.error("Mindmap API error:", e);
+    } finally {
+      setIsGeneratingMindMap(false);
+    }
   };
 
   // File Upload Handler
   const handleFileUpload = (file: File) => {
-    setUploadFileMsg("Processing study file...");
-    setTimeout(() => {
-      const newFile: StudyFile = {
-        id: `file-${Date.now()}`,
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        type: file.type || "application/pdf",
-        category: "Uploaded Material",
-        subject: selectedSubject,
-        dateUploaded: new Date().toISOString().split("T")[0],
-        extractedText: `Extracted content from ${file.name} for ${selectedSubject}.`,
-        diagramsCount: 1,
-        equationsCount: 2
-      };
-      setFiles(prev => [newFile, ...prev]);
-      setUploadFileMsg(`✓ Successfully indexed ${file.name}`);
-      playSuccess();
-      setTimeout(() => setUploadFileMsg(""), 3000);
-    }, 1000);
+    setUploadFileMsg("Parsing file content...");
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+    if (ext === "txt") {
+      file.text().then((text) => {
+        const newFile: StudyFile = {
+          id: `file-${Date.now()}`,
+          name: file.name,
+          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+          type: file.type || "text/plain",
+          category: "Uploaded Material",
+          subject: selectedSubject,
+          dateUploaded: new Date().toISOString().split("T")[0],
+          extractedText: text
+        };
+        setFiles((prev) => [newFile, ...prev]);
+        setUploadFileMsg(`✓ Successfully indexed ${file.name}`);
+        playSuccess();
+        setTimeout(() => setUploadFileMsg(""), 3000);
+      });
+    } else {
+      setTimeout(() => {
+        const newFile: StudyFile = {
+          id: `file-${Date.now()}`,
+          name: file.name,
+          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+          type: file.type || "application/pdf",
+          category: "Uploaded Material",
+          subject: selectedSubject,
+          dateUploaded: new Date().toISOString().split("T")[0],
+          extractedText: `Extracted content from ${file.name} for subject ${selectedSubject}.`
+        };
+        setFiles((prev) => [newFile, ...prev]);
+        setUploadFileMsg(`✓ Successfully indexed ${file.name}`);
+        playSuccess();
+        setTimeout(() => setUploadFileMsg(""), 3000);
+      }, 800);
+    }
   };
 
   // Exam Addition
   const handleAddExam = () => {
     if (!newExamSubject.trim()) return;
     playSuccess();
-    setRevisionCountdowns(prev => [
+    setRevisionCountdowns((prev) => [
       ...prev,
-      { subject: newExamSubject, days: newExamDays, progress: newExamProgress, date: "2026-08-25" }
+      { subject: newExamSubject, days: newExamDays, progress: 40, date: "2026-08-25" }
     ]);
     setNewExamSubject("");
     setIsAddingExam(false);
@@ -701,7 +786,6 @@ function executeWorkflow(input: string): boolean {
               transition={{ duration: 0.35 }}
               className="space-y-8 max-w-5xl mx-auto text-left"
             >
-              {/* Greeting */}
               <div className="space-y-1">
                 <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
                   STUDY WORKSPACE ACTIVE
@@ -794,7 +878,7 @@ function executeWorkflow(input: string): boolean {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.35 }}
-              className="space-y-6 text-left"
+              className="space-y-6 text-left max-w-5xl mx-auto"
             >
               {/* Workspace Title & Config Form */}
               <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-xl space-y-6">
@@ -839,19 +923,26 @@ function executeWorkflow(input: string): boolean {
                       type="text"
                       value={topicInput}
                       onChange={(e) => setTopicInput(e.target.value)}
-                      placeholder="e.g. Deadlock Prevention & Recovery"
+                      placeholder={`e.g. ${selectedSubject === "Java" ? "Functions & Overloading" : "Core Concepts"}`}
                       className="h-10 w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 text-xs font-bold outline-none"
                     />
                   </div>
                 </div>
 
+                {notesError && (
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-xs font-bold flex items-center justify-between">
+                    <span>{notesError}</span>
+                    <button onClick={handleGenerateNotes} className="underline text-[10px] uppercase font-black">Retry</button>
+                  </div>
+                )}
+
                 <button
                   onClick={handleGenerateNotes}
                   disabled={isGeneratingNotes}
-                  className="w-full h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+                  className="w-full h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 disabled:opacity-60"
                 >
-                  <Sparkles className="h-4 w-4" />
-                  <span>{isGeneratingNotes ? "Synthesizing Notes..." : `Generate Notes for ${selectedSubject}`}</span>
+                  {isGeneratingNotes ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  <span>{isGeneratingNotes ? "Generating Notes..." : `Generate Notes for ${selectedSubject}`}</span>
                 </button>
               </div>
 
@@ -862,14 +953,12 @@ function executeWorkflow(input: string): boolean {
                     <h3 className="text-xl font-black text-slate-900 dark:text-zinc-100">
                       {currentSubjectNotes[activeNoteIdx]?.title || "Generated Study Document"}
                     </h3>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => window.print()}
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-300"
-                      >
-                        Print PDF
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => window.print()}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-300"
+                    >
+                      Print PDF
+                    </button>
                   </div>
 
                   <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed space-y-4">
@@ -907,7 +996,7 @@ function executeWorkflow(input: string): boolean {
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  {["Explain simply", "Give an example", "Quiz me"].map(chip => (
+                  {[`Explain ${selectedSubject} core concepts`, "Give code/logic example", "Quiz me on this"].map(chip => (
                     <button
                       key={chip}
                       onClick={() => handleSendChat(chip)}
@@ -916,6 +1005,13 @@ function executeWorkflow(input: string): boolean {
                       {chip}
                     </button>
                   ))}
+                  <button
+                    onClick={() => setChatMessages([{ sender: "ai", text: `Chat cleared for **${selectedSubject}**. Ask your question!`, time: "Now" }])}
+                    className="p-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-rose-500"
+                    title="Clear Conversation"
+                  >
+                    Clear
+                  </button>
                 </div>
               </div>
 
@@ -927,10 +1023,10 @@ function executeWorkflow(input: string): boolean {
                     className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] sm:max-w-[75%] p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                      className={`max-w-[90%] sm:max-w-[80%] p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                         msg.sender === "user"
-                          ? "bg-purple-600 text-white font-medium"
-                          : "bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-slate-900 dark:text-zinc-100"
+                          ? "bg-purple-600 text-white font-medium shadow-sm"
+                          : "bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 text-slate-900 dark:text-zinc-100 shadow-sm"
                       }`}
                     >
                       {msg.sender === "user" ? (
@@ -949,7 +1045,13 @@ function executeWorkflow(input: string): boolean {
                 {chatIsTyping && (
                   <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400 p-2">
                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    <span>AI Tutor is thinking...</span>
+                    <span>AI Tutor is formulating a custom response...</span>
+                  </div>
+                )}
+                {chatError && (
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-bold text-rose-600 flex items-center justify-between">
+                    <span>{chatError}</span>
+                    <button onClick={() => handleSendChat()} className="underline uppercase text-[10px]">Retry</button>
                   </div>
                 )}
                 <div ref={chatEndRef} />
@@ -967,7 +1069,8 @@ function executeWorkflow(input: string): boolean {
                 />
                 <button
                   onClick={() => handleSendChat()}
-                  className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black transition-colors cursor-pointer shadow-md"
+                  disabled={chatIsTyping}
+                  className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black transition-colors cursor-pointer shadow-md disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" />
                 </button>
@@ -985,13 +1088,24 @@ function executeWorkflow(input: string): boolean {
               transition={{ duration: 0.35 }}
               className="max-w-xl mx-auto space-y-6 text-center"
             >
-              <div className="space-y-1">
-                <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                  FLASHCARD REVISION • {selectedSubject}
-                </span>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100">
-                  Card {currentSubjectFlashcards.length > 0 ? flashcardIdx + 1 : 0} of {currentSubjectFlashcards.length}
-                </h2>
+              <div className="flex items-center justify-between">
+                <div className="text-left space-y-1">
+                  <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                    FLASHCARDS • {selectedSubject}
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-zinc-100">
+                    Card {currentSubjectFlashcards.length > 0 ? flashcardIdx + 1 : 0} of {currentSubjectFlashcards.length}
+                  </h2>
+                </div>
+
+                <button
+                  onClick={handleGenerateFlashcards}
+                  disabled={isGeneratingFlashcards}
+                  className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {isGeneratingFlashcards ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  <span>Generate New Cards</span>
+                </button>
               </div>
 
               {currentSubjectFlashcards.length > 0 ? (
@@ -1003,7 +1117,7 @@ function executeWorkflow(input: string): boolean {
                     {isFlipped ? "Answer Side" : "Question Side (Click to Flip)"}
                   </span>
 
-                  <p className="text-base sm:text-lg font-black text-slate-900 dark:text-zinc-100 leading-relaxed">
+                  <p className="text-base sm:text-lg font-black text-slate-900 dark:text-zinc-100 leading-relaxed whitespace-pre-line">
                     {isFlipped
                       ? currentSubjectFlashcards[flashcardIdx]?.back
                       : currentSubjectFlashcards[flashcardIdx]?.front}
@@ -1011,22 +1125,21 @@ function executeWorkflow(input: string): boolean {
                 </div>
               ) : (
                 <div className="p-8 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl text-xs font-bold text-slate-500">
-                  No flashcards found for {selectedSubject}. Switch subject or generate new cards!
+                  No flashcards found for {selectedSubject}. Click Generate New Cards!
                 </div>
               )}
 
-              {/* Flashcard Navigation */}
               {currentSubjectFlashcards.length > 0 && (
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => { setFlashcardIdx((prev) => (prev > 0 ? prev - 1 : currentSubjectFlashcards.length - 1)); setIsFlipped(false); playClick(); }}
-                    className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold"
+                    className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold cursor-pointer"
                   >
                     ← Previous
                   </button>
                   <button
                     onClick={() => { setFlashcardIdx((prev) => (prev < currentSubjectFlashcards.length - 1 ? prev + 1 : 0)); setIsFlipped(false); playClick(); }}
-                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md"
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-md cursor-pointer"
                   >
                     Next Card →
                   </button>
@@ -1045,13 +1158,24 @@ function executeWorkflow(input: string): boolean {
               transition={{ duration: 0.35 }}
               className="max-w-2xl mx-auto space-y-6 text-left"
             >
-              <div className="space-y-1">
-                <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                  INTERACTIVE QUIZ • {selectedSubject}
-                </span>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100">
-                  Question {currentSubjectQuiz.length > 0 ? quizIdx + 1 : 0} of {currentSubjectQuiz.length}
-                </h2>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                    INTERACTIVE QUIZ • {selectedSubject}
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-zinc-100">
+                    Question {currentSubjectQuiz.length > 0 ? quizIdx + 1 : 0} of {currentSubjectQuiz.length}
+                  </h2>
+                </div>
+
+                <button
+                  onClick={handleGenerateQuiz}
+                  disabled={isGeneratingQuiz}
+                  className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {isGeneratingQuiz ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  <span>Generate New Quiz</span>
+                </button>
               </div>
 
               {currentSubjectQuiz.length > 0 && currentSubjectQuiz[quizIdx] && (
@@ -1080,14 +1204,28 @@ function executeWorkflow(input: string): boolean {
                     <button
                       onClick={() => { setIsAnswerChecked(true); playSuccess(); }}
                       disabled={!selectedQuizOption}
-                      className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase shadow-lg shadow-purple-600/20 disabled:opacity-50"
+                      className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-xs font-black uppercase shadow-lg shadow-purple-600/20 disabled:opacity-50 cursor-pointer"
                     >
                       Check Answer
                     </button>
                   ) : (
-                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-bold space-y-1">
-                      <div>Correct Answer: {currentSubjectQuiz[quizIdx].answer}</div>
-                      <p className="text-[11px] font-medium opacity-90">{currentSubjectQuiz[quizIdx].explanation}</p>
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 font-bold space-y-1">
+                        <div>Correct Answer: {currentSubjectQuiz[quizIdx].answer}</div>
+                        <p className="text-[11px] font-medium opacity-90">{currentSubjectQuiz[quizIdx].explanation}</p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setQuizIdx((prev) => (prev < currentSubjectQuiz.length - 1 ? prev + 1 : 0));
+                          setSelectedQuizOption(null);
+                          setIsAnswerChecked(false);
+                          playClick();
+                        }}
+                        className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-zinc-950 rounded-2xl text-xs font-black uppercase shadow-md cursor-pointer"
+                      >
+                        Next Question →
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1105,7 +1243,7 @@ function executeWorkflow(input: string): boolean {
               transition={{ duration: 0.35 }}
               className="max-w-4xl mx-auto space-y-6 text-left"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
                     VISUAL CONCEPT MAP • {selectedSubject}
@@ -1114,18 +1252,45 @@ function executeWorkflow(input: string): boolean {
                     Interactive Mind Map
                   </h2>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={mindMapTopic}
+                    onChange={(e) => setMindMapTopic(e.target.value)}
+                    placeholder="Specific Topic (Optional)..."
+                    className="h-9 px-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                  />
+                  <button
+                    onClick={handleGenerateMindMap}
+                    disabled={isGeneratingMindMap}
+                    className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isGeneratingMindMap ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    <span>Generate Mind Map</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Mind Map Canvas Card */}
-              <div className="h-96 w-full bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl relative overflow-hidden flex flex-col items-center justify-center">
-                <div className="p-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg mb-6">
-                  {selectedSubject} Architecture
+              {/* Dynamic Mind Map Hierarchy Canvas */}
+              <div className="w-full bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl space-y-6">
+                <div className="p-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg text-center max-w-sm mx-auto">
+                  {mindMapData.label}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {["Core Concepts", "Algorithms & Models", "System Tradeoffs"].map((node) => (
-                    <div key={node} className="p-3 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-800 dark:text-zinc-200 text-center">
-                      {node}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+                  {mindMapData.children?.map((child) => (
+                    <div key={child.id} className="p-5 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 space-y-3">
+                      <div className="text-xs font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider border-b border-slate-200 dark:border-zinc-800 pb-2">
+                        {child.label}
+                      </div>
+                      <div className="space-y-1.5">
+                        {child.children?.map((sub) => (
+                          <div key={sub.id} className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-800 dark:text-zinc-200">
+                            • {sub.label}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1155,14 +1320,14 @@ function executeWorkflow(input: string): boolean {
 
                 <button
                   onClick={() => setIsAddingExam(!isAddingExam)}
-                  className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase"
+                  className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase cursor-pointer"
                 >
                   {isAddingExam ? "Cancel" : "+ Add Exam"}
                 </button>
               </div>
 
               {isAddingExam && (
-                <div className="p-5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl space-y-3">
+                <div className="p-5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl space-y-3 shadow-xl">
                   <input
                     type="text"
                     value={newExamSubject}
@@ -1172,7 +1337,7 @@ function executeWorkflow(input: string): boolean {
                   />
                   <button
                     onClick={handleAddExam}
-                    className="w-full py-2.5 bg-purple-600 text-white rounded-xl text-xs font-black uppercase"
+                    className="w-full py-2.5 bg-purple-600 text-white rounded-xl text-xs font-black uppercase cursor-pointer"
                   >
                     Confirm &amp; Add Exam
                   </button>
@@ -1222,6 +1387,7 @@ function executeWorkflow(input: string): boolean {
                   <input
                     ref={fileInputRef}
                     type="file"
+                    accept=".pdf,.docx,.txt"
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
@@ -1263,13 +1429,13 @@ function executeWorkflow(input: string): boolean {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => { setActiveTool("notes"); playClick(); }}
-                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-purple-600 dark:text-purple-400"
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-purple-600 dark:text-purple-400 cursor-pointer"
                       >
                         Generate Notes
                       </button>
                       <button
                         onClick={() => { setActiveTool("chat"); playClick(); }}
-                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-slate-700 dark:text-zinc-300"
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-[10px] font-bold text-slate-700 dark:text-zinc-300 cursor-pointer"
                       >
                         Ask AI
                       </button>

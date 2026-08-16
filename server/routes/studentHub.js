@@ -1145,4 +1145,98 @@ ${filesContext || "No files uploaded."}`;
   }
 });
 
+router.post("/smart-notes/mindmap", awardXp, async (req, res, next) => {
+  try {
+    const { subject, topic, filesContext } = req.body;
+
+    const systemPrompt = `You are a visual learning architect.
+Generate a dynamic, structured Mind Map hierarchy for the topic "${topic || "Core Architecture"}" in the subject "${subject || "General Study"}".
+Output MUST be a raw JSON object with NO markdown code fence blocks.
+JSON Schema:
+{
+  "id": "root",
+  "label": "${subject || "General"} - ${topic || "Core Principles"}",
+  "color": "#a855f7",
+  "expanded": true,
+  "children": [
+    {
+      "id": "branch-1",
+      "label": "Fundamentals & Definitions",
+      "color": "#ea580c",
+      "expanded": true,
+      "children": [
+        { "id": "sub-1", "label": "Core Mechanism" },
+        { "id": "sub-2", "label": "Primary Rules" }
+      ]
+    },
+    {
+      "id": "branch-2",
+      "label": "Architectural Components",
+      "color": "#3b82f6",
+      "expanded": false,
+      "children": [
+        { "id": "sub-3", "label": "Data Flow & Execution" },
+        { "id": "sub-4", "label": "State Management" }
+      ]
+    },
+    {
+      "id": "branch-3",
+      "label": "Exam & Application Scenarios",
+      "color": "#10b981",
+      "expanded": false,
+      "children": [
+        { "id": "sub-5", "label": "Common Mistakes" },
+        { "id": "sub-6", "label": "Performance Optimization" }
+      ]
+    }
+  ]
+}`;
+
+    const userPrompt = `Subject: ${subject}\nTopic: ${topic || "Core Concepts"}\nContext:\n${filesContext || "No files uploaded."}`;
+
+    let aiOutput = null;
+    try {
+      aiOutput = await callGemini(systemPrompt, userPrompt, true);
+    } catch (aiErr) {
+      console.error("Gemini mindmap generator error:", aiErr.message);
+    }
+
+    if (!aiOutput) {
+      const fallbackMindMap = {
+        id: "root",
+        label: `${subject || "General"} - ${topic || "Overview"}`,
+        color: "#a855f7",
+        expanded: true,
+        children: [
+          {
+            id: "b1",
+            label: "Core Principles",
+            color: "#ea580c",
+            expanded: true,
+            children: [{ id: "s1", label: "Fundamental Concepts" }, { id: "s2", label: "Key Rules" }]
+          },
+          {
+            id: "b2",
+            label: "Practical Applications",
+            color: "#3b82f6",
+            expanded: false,
+            children: [{ id: "s3", label: "Code & Logic Examples" }]
+          }
+        ]
+      };
+      return res.status(200).json({ success: true, mindmap: fallbackMindMap, isFallback: true });
+    }
+
+    try {
+      const mindmap = cleanGeminiJson(aiOutput);
+      res.status(200).json({ success: true, mindmap });
+    } catch (parseErr) {
+      console.error("Failed to parse mindmap json:", parseErr.message);
+      res.status(500).json({ success: false, message: "AI mindmap parsing failed. Try again." });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
