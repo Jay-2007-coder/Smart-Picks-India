@@ -65,6 +65,10 @@ export function getLocalGeneratedBlogs(): BlogPost[] {
 // Helper to save dynamic blogs locally
 export function saveLocalGeneratedBlog(rawBlog: any): void {
   try {
+    if (process.env.VERCEL) {
+      // Vercel serverless functions have a read-only filesystem — skip writing local JSON
+      return;
+    }
     // Strip MongoDB-specific fields and normalize content
     const blog: BlogPost = normalizePost({
       slug: rawBlog.slug,
@@ -92,8 +96,8 @@ export function saveLocalGeneratedBlog(rawBlog: any): void {
     }
     fs.writeFileSync(DYNAMIC_BLOGS_FILE, JSON.stringify(filtered, null, 2), "utf-8");
     console.log(`✅ Blog saved locally: "${blog.title}" (${blog.slug})`);
-  } catch (err) {
-    console.warn("Could not save local generated blog:", err);
+  } catch (err: any) {
+    console.warn("Could not save local generated blog (read-only filesystem on Vercel):", err.message);
   }
 }
 

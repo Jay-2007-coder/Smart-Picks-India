@@ -601,15 +601,17 @@ The clearest advice for developers in 2026: ship products fast, use AI as a coll
       toc: blogObj.toc || [],
     };
 
-    // Save to local JSON (works in dev, silent fail on Vercel)
-    saveLocalGeneratedBlog(newBlog);
+    try {
+      saveLocalGeneratedBlog(newBlog);
+    } catch (e) {}
 
     // Save directly to MongoDB Atlas (works on Vercel too!)
     await saveBlogToMongo(newBlog);
 
-    // Bust Next.js cache so /blog and the new post page show immediately
-    revalidatePath("/blog");
-    revalidatePath(`/blog/${slug}`);
+    try {
+      revalidatePath("/blog");
+      revalidatePath(`/blog/${slug}`);
+    } catch (e) {}
 
     return NextResponse.json({
       success: true,
