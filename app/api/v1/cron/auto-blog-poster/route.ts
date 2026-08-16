@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { POST as generateAiBlogPost } from "@/app/api/v1/blog/generate-ai-blog/route";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Allow up to 60s for AI generation
@@ -18,25 +19,14 @@ export async function GET(request: Request) {
       );
     }
 
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
-    const res = await fetch(`${siteUrl}/api/v1/blog/generate-ai-blog`, {
+    // Call internal POST handler directly — zero loopback network issues on Vercel
+    const req = new Request("http://localhost/api/v1/blog/generate-ai-blog", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(cronSecret ? { "x-cron-secret": cronSecret } : {}),
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topic: "auto" }),
-      cache: "no-store",
     });
 
-    const data = await res.json();
-    console.log(
-      `✅ Daily cron blog posted: "${data?.blog?.title || "unknown"}" — ${new Date().toISOString()}`
-    );
-    return NextResponse.json(data, { status: res.status });
+    return await generateAiBlogPost(req);
   } catch (err: any) {
     console.error("Vercel Cron auto-blog-poster failed:", err.message);
     return NextResponse.json(
