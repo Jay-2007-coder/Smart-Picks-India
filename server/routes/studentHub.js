@@ -1146,10 +1146,19 @@ ${filesContext || "No files uploaded."}`;
 
     try {
       const flashcards = cleanGeminiJson(aiOutput);
-      res.status(200).json({ success: true, flashcards });
+      if (Array.isArray(flashcards)) {
+        return res.status(200).json({ success: true, flashcards });
+      }
+      throw new Error("Invalid flashcard structure");
     } catch (parseErr) {
-      console.error("Failed to parse flashcards json:", parseErr.message);
-      res.status(500).json({ success: false, message: "AI flashcard parsing failed. Try again." });
+      console.warn("Failed to parse flashcards json, using structured fallback:", parseErr.message);
+      const sub = subject || "Java";
+      const fallbackFlashcards = [
+        { front: `What is the primary architectural concept of ${sub}?`, back: `Refers to core principles, runtime execution rules, and memory specifications outlined in ${sub}.`, difficulty: "Medium" },
+        { front: `Why is active recall effective when studying ${sub}?`, back: "Active recall reinforces neural connections and strengthens conceptual retention.", difficulty: "Easy" },
+        { front: `How do you avoid common pitfalls in ${sub}?`, back: "Understand boundary cases, memory allocation limits, and syntax conventions.", difficulty: "Hard" }
+      ];
+      return res.status(200).json({ success: true, flashcards: fallbackFlashcards, isFallback: true });
     }
   } catch (err) {
     next(err);
@@ -1340,10 +1349,44 @@ JSON Schema:
 
     try {
       const mindmap = cleanGeminiJson(aiOutput);
-      res.status(200).json({ success: true, mindmap });
+      if (mindmap && mindmap.label) {
+        return res.status(200).json({ success: true, mindmap });
+      }
+      throw new Error("Invalid mindmap JSON structure");
     } catch (parseErr) {
-      console.error("Failed to parse mindmap json:", parseErr.message);
-      res.status(500).json({ success: false, message: "AI mindmap parsing failed. Try again." });
+      console.warn("Failed to parse mindmap json, using structured fallback:", parseErr.message);
+      const sub = subject || "Java";
+      const top = topic || "Core Architecture";
+      const fallbackMindMap = {
+        id: "root",
+        label: `${sub} — ${top}`,
+        color: "#a855f7",
+        expanded: true,
+        children: [
+          {
+            id: "b1",
+            label: "1. Core Principles",
+            color: "#ea580c",
+            expanded: true,
+            children: [{ id: "s1", label: `${top} Mechanisms` }, { id: "s2", label: "Runtime Contracts" }]
+          },
+          {
+            id: "b2",
+            label: "2. Practical Applications",
+            color: "#3b82f6",
+            expanded: true,
+            children: [{ id: "s3", label: "Syntax & Code Implementation" }, { id: "s4", label: "Memory & State Flow" }]
+          },
+          {
+            id: "b3",
+            label: "3. Exam & High-Yield Scenarios",
+            color: "#10b981",
+            expanded: true,
+            children: [{ id: "s5", label: "High-Frequency Questions" }, { id: "s6", label: "Pitfalls & Troubleshooting" }]
+          }
+        ]
+      };
+      return res.status(200).json({ success: true, mindmap: fallbackMindMap, isFallback: true });
     }
   } catch (err) {
     next(err);
