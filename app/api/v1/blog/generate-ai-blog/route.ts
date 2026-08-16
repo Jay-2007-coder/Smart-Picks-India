@@ -121,31 +121,29 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const topicType = body.topic || "auto";
 
-    // 1. Try Express backend first if available
-    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:5000";
-    try {
-      const ctrl = new AbortController();
-      const to = setTimeout(() => ctrl.abort(), 8000);
-      const backendRes = await fetch(`${backendUrl}/api/v1/blog/generate-ai-blog`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: topicType }),
-        signal: ctrl.signal,
-      });
-      clearTimeout(to);
-      if (backendRes.ok) {
-        const backendData = await backendRes.json();
-        if (backendData.success && backendData.blog) {
-          // Also persist to local JSON so the Next.js pages pick it up immediately
-          saveLocalGeneratedBlog(backendData.blog);
-          revalidatePath("/blog");
-          revalidatePath(`/blog/${backendData.blog.slug}`);
-          return NextResponse.json(backendData, { status: 200 });
+    // 1. Try Express backend first if an external BACKEND_API_URL is explicitly configured
+    if (process.env.BACKEND_API_URL && process.env.BACKEND_API_URL.startsWith("http")) {
+      try {
+        const ctrl = new AbortController();
+        const to = setTimeout(() => ctrl.abort(), 5000);
+        const backendRes = await fetch(`${process.env.BACKEND_API_URL}/api/v1/blog/generate-ai-blog`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic: topicType }),
+          signal: ctrl.signal,
+        }).catch(() => null);
+        clearTimeout(to);
+        if (backendRes && backendRes.ok) {
+          const backendData = await backendRes.json().catch(() => null);
+          if (backendData && backendData.success && backendData.blog) {
+            try { saveLocalGeneratedBlog(backendData.blog); } catch (e) {}
+            try { revalidatePath("/blog"); } catch (e) {}
+            return NextResponse.json(backendData, { status: 200 });
+          }
         }
+      } catch (err) {
+        console.log("ℹ️ Express backend unreachable, generating AI blog via Next.js handler...");
       }
-    } catch (err) {
-      // Backend not running locally or unreachable — proceed to local Next.js AI generation fallback
-      console.log("ℹ️ Express backend unreachable, generating AI blog via Next.js handler...");
     }
 
     // 2. Local Next.js AI Generation
