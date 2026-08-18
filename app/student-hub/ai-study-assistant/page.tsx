@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Sparkles, Send, RefreshCw, User, Bot, AlertTriangle,
   Lock, Check, Copy, Settings, Laptop, Zap, Brain, Code2, Database,
-  Network, ChevronRight, X, Cpu, BookOpen, Lightbulb, GraduationCap
+  Network, ChevronRight, X, Cpu, BookOpen, Lightbulb, GraduationCap,
+  Plus, Search, MoreVertical, Edit3, Trash2, MessageSquare, PanelLeftClose,
+  PanelLeft, ChevronDown, CheckCircle2, Terminal, Layers
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import ReactMarkdown from "react-markdown";
@@ -14,10 +16,20 @@ import remarkGfm from "remark-gfm";
 import { tokenize, THEME_STYLES, Token } from "@/lib/highlighter";
 import { motion, AnimatePresence } from "framer-motion";
 
+/* ─────────────── DATA MODELS ─────────────── */
 interface Message {
   role: "user" | "assistant";
   content: string;
-  timestamp?: Date;
+  timestamp?: Date | string;
+}
+
+interface ChatSession {
+  id: string;
+  title: string;
+  subject: string;
+  messages: Message[];
+  createdAt: string; // ISO date string
+  updatedAt: string;
 }
 
 interface CodeBlockProps {
@@ -80,7 +92,6 @@ function CodeBlock({ language, value, themeKey, fontSize, fontFamily }: CodeBloc
       {/* Top Header Bar */}
       <div className={`flex items-center justify-between px-4 py-2.5 border-b ${activeTheme.border} ${activeTheme.headerBg}`}>
         <div className="flex items-center gap-2.5">
-          {/* Traffic light dots */}
           <div className="flex gap-1.5">
             <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />
             <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
@@ -157,23 +168,50 @@ function CodeBlock({ language, value, themeKey, fontSize, fontFamily }: CodeBloc
   );
 }
 
-const PRESETS = [
-  { text: "Explain Quicksort time complexity step-by-step", icon: Cpu, color: "from-violet-500/10 to-purple-500/10 border-violet-500/20 text-violet-400" },
-  { text: "How do Closures work in JavaScript?", icon: Code2, color: "from-amber-500/10 to-orange-500/10 border-amber-500/20 text-amber-400" },
-  { text: "What are the ACID properties in databases?", icon: Database, color: "from-cyan-500/10 to-teal-500/10 border-cyan-500/20 text-cyan-400" },
-  { text: "Explain the difference between TCP and UDP", icon: Network, color: "from-emerald-500/10 to-green-500/10 border-emerald-500/20 text-emerald-400" },
-  { text: "Explain Big O notation with examples", icon: Brain, color: "from-rose-500/10 to-red-500/10 border-rose-500/20 text-rose-400" },
-  { text: "What is the difference between Stack and Queue?", icon: BookOpen, color: "from-blue-500/10 to-indigo-500/10 border-blue-500/20 text-blue-400" },
+const SUGGESTIONS = [
+  {
+    title: "Explain a Concept",
+    prompt: "Explain Quicksort time complexity step-by-step with average and worst-case scenarios",
+    icon: Cpu,
+    color: "border-purple-500/20 bg-purple-500/5 text-purple-400"
+  },
+  {
+    title: "Solve a DSA Problem",
+    prompt: "How to detect a cycle in a linked list using Floyd's Tortoise and Hare algorithm?",
+    icon: Code2,
+    color: "border-cyan-500/20 bg-cyan-500/5 text-cyan-400"
+  },
+  {
+    title: "Give an Example",
+    prompt: "Show a practical code example of polymorphism and method overriding in Java",
+    icon: Lightbulb,
+    color: "border-amber-500/20 bg-amber-500/5 text-amber-400"
+  },
+  {
+    title: "Quiz Me",
+    prompt: "Quiz me on Operating Systems Deadlocks with 3 multiple-choice questions",
+    icon: Brain,
+    color: "border-rose-500/20 bg-rose-500/5 text-rose-400"
+  }
 ];
 
-// Typing indicator dots
+const SUBJECT_OPTIONS = [
+  "Java",
+  "Operating Systems",
+  "DBMS",
+  "DSA",
+  "Computer Networks",
+  "AI / ML",
+  "General CS"
+];
+
 function TypingDots() {
   return (
     <div className="flex items-center gap-1 py-1">
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="h-2 w-2 rounded-full bg-brand-400"
+          className="h-2 w-2 rounded-full bg-purple-400"
           animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
         />
@@ -182,23 +220,53 @@ function TypingDots() {
   );
 }
 
-function formatTime(date?: Date) {
-  if (!date) return "";
-  return date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+function formatTime(dateVal?: Date | string) {
+  if (!dateVal) return "";
+  const d = typeof dateVal === "string" ? new Date(dateVal) : dateVal;
+  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Auto Title Generator Helper
+function generateTitleFromMessage(userMsg: string): string {
+  const clean = userMsg.trim().replace(/^[^\w]+/, "");
+  if (!clean) return "New Conversation";
+  
+  // Truncate to first 35 chars nicely
+  const words = clean.split(" ");
+  if (words.length <= 4) {
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+  const shortTitle = words.slice(0, 4).join(" ");
+  return shortTitle.charAt(0).toUpperCase() + shortTitle.slice(1);
 }
 
 export default function AIStudyAssistant() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth() as any;
+  const router = useRouter();
+
+  /* ─────────────── CHAT SESSIONS & SIDEBAR STATE ─────────────── */
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarSearch, setSidebarSearch] = useState("");
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitleInput, setEditingTitleInput] = useState("");
+  const [openMenuSessionId, setOpenMenuSessionId] = useState<string | null>(null);
+
+  /* ─────────────── CURRENT ACTIVE SESSION STATE ─────────────── */
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content: "Hello! I am your AI Study Buddy. Ask me anything about programming, database structures, operating systems, or general college subjects, and I'll explain it clearly!",
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     },
   ]);
+  const [selectedSubject, setSelectedSubject] = useState("Java");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  /* ─────────────── IDE SETTINGS STATE ─────────────── */
   const [themeKey, setThemeKey] = useState("dracula");
   const [fontSize, setFontSize] = useState("12px");
   const [fontFamily, setFontFamily] = useState("Fira Code, monospace");
@@ -206,6 +274,58 @@ export default function AIStudyAssistant() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const storageKey = useMemo(() => {
+    return `aistudybuddy_chat_sessions_${user?._id || user?.email || "guest"}`;
+  }, [user]);
+
+  // Load Sessions from LocalStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed: ChatSession[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSessions(parsed);
+          setActiveSessionId(parsed[0].id);
+          setMessages(parsed[0].messages);
+          if (parsed[0].subject) setSelectedSubject(parsed[0].subject);
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // Default Initial Session
+    const initialSession: ChatSession = {
+      id: `session-${Date.now()}`,
+      title: "New Conversation",
+      subject: "Java",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [
+        {
+          role: "assistant",
+          content: "Hello! I am your AI Study Buddy. Ask me anything about programming, database structures, operating systems, or general college subjects, and I'll explain it clearly!",
+          timestamp: new Date().toISOString(),
+        },
+      ]
+    };
+    setSessions([initialSession]);
+    setActiveSessionId(initialSession.id);
+    setMessages(initialSession.messages);
+  }, [storageKey]);
+
+  // Save Sessions to LocalStorage
+  const saveSessionsToStorage = (updatedSessions: ChatSession[]) => {
+    setSessions(updatedSessions);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(updatedSessions));
+    } catch {
+      // ignore
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -228,27 +348,104 @@ export default function AIStudyAssistant() {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 140)}px`;
     }
   }, [input]);
 
-  const handleSavePref = (key: string, val: string, storageName: string) => {
-    if (key === "theme") setThemeKey(val);
-    else if (key === "size") setFontSize(val);
-    else if (key === "font") setFontFamily(val);
-    try { localStorage.setItem(storageName, val); } catch { }
+  /* ─────────────── NEW CHAT HANDLER ─────────────── */
+  const handleNewChat = () => {
+    const newSession: ChatSession = {
+      id: `session-${Date.now()}`,
+      title: "New Conversation",
+      subject: selectedSubject,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [
+        {
+          role: "assistant",
+          content: `Hello! I am your AI Study Buddy for **${selectedSubject}**. What are you learning today?`,
+          timestamp: new Date().toISOString(),
+        },
+      ]
+    };
+
+    const updated = [newSession, ...sessions];
+    saveSessionsToStorage(updated);
+    setActiveSessionId(newSession.id);
+    setMessages(newSession.messages);
+    setInput("");
+    setError("");
   };
 
+  /* ─────────────── SWITCH SESSION HANDLER ─────────────── */
+  const handleSelectSession = (session: ChatSession) => {
+    setActiveSessionId(session.id);
+    setMessages(session.messages);
+    if (session.subject) setSelectedSubject(session.subject);
+    setError("");
+    setOpenMenuSessionId(null);
+  };
+
+  /* ─────────────── RENAME SESSION HANDLER ─────────────── */
+  const handleSaveRename = (sessionId: string) => {
+    if (!editingTitleInput.trim()) return;
+    const updated = sessions.map((s) => s.id === sessionId ? { ...s, title: editingTitleInput.trim() } : s);
+    saveSessionsToStorage(updated);
+    setEditingSessionId(null);
+    setEditingTitleInput("");
+  };
+
+  /* ─────────────── DELETE SESSION HANDLER ─────────────── */
+  const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = sessions.filter((s) => s.id !== sessionId);
+    saveSessionsToStorage(updated);
+    setOpenMenuSessionId(null);
+
+    if (activeSessionId === sessionId) {
+      if (updated.length > 0) {
+        setActiveSessionId(updated[0].id);
+        setMessages(updated[0].messages);
+      } else {
+        handleNewChat();
+      }
+    }
+  };
+
+  /* ─────────────── SEND MESSAGE & AI RESPONSE HANDLER ─────────────── */
   const handleSend = async (textToSend?: string) => {
     const messageText = textToSend || input;
     if (!messageText.trim()) return;
     if (!textToSend) setInput("");
 
-    const newMessage: Message = { role: "user", content: messageText, timestamp: new Date() };
+    const nowIso = new Date().toISOString();
+    const newMessage: Message = { role: "user", content: messageText, timestamp: nowIso };
     const newMessages = [...messages, newMessage];
     setMessages(newMessages);
     setLoading(true);
     setError("");
+
+    // Auto-update Session Title if it's the first user message
+    let currentSession = sessions.find((s) => s.id === activeSessionId);
+    let sessionTitle = currentSession?.title || "New Conversation";
+
+    if (sessionTitle === "New Conversation" || messages.length <= 1) {
+      sessionTitle = generateTitleFromMessage(messageText);
+    }
+
+    // Immediately update active session in storage
+    const updatedSessions = sessions.map((s) => {
+      if (s.id === activeSessionId) {
+        return {
+          ...s,
+          title: sessionTitle,
+          messages: newMessages,
+          updatedAt: nowIso,
+        };
+      }
+      return s;
+    });
+    saveSessionsToStorage(updatedSessions);
 
     try {
       const history = newMessages.slice(1, -1).map((m) => ({
@@ -256,14 +453,26 @@ export default function AIStudyAssistant() {
         content: m.content,
       }));
 
+      // Preserving exact existing API integration
       const response = await fetch("/api/v1/student-hub/study-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText, history }),
+        body: JSON.stringify({ message: messageText, history, subject: selectedSubject }),
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply, timestamp: new Date() }]);
+        const assistantMsg: Message = { role: "assistant", content: data.reply, timestamp: new Date().toISOString() };
+        const finalMessages = [...newMessages, assistantMsg];
+        setMessages(finalMessages);
+
+        // Update stored session with AI reply
+        const finalSessions = updatedSessions.map((s) => {
+          if (s.id === activeSessionId) {
+            return { ...s, messages: finalMessages, updatedAt: new Date().toISOString() };
+          }
+          return s;
+        });
+        saveSessionsToStorage(finalSessions);
       } else {
         setError(data.message || "Failed to connect to Study Buddy. Please try again.");
       }
@@ -281,316 +490,414 @@ export default function AIStudyAssistant() {
     }
   };
 
-  // ─── Auth Loading ────────────────────────────────────────────────────────────
+  const handleSavePref = (key: string, val: string, storageName: string) => {
+    if (key === "theme") setThemeKey(val);
+    else if (key === "size") setFontSize(val);
+    else if (key === "font") setFontFamily(val);
+    try { localStorage.setItem(storageName, val); } catch { }
+  };
+
+  /* ─────────────── GROUPED HISTORY COMPUTATION ─────────────── */
+  const groupedSessions = useMemo(() => {
+    const searchLower = sidebarSearch.toLowerCase().trim();
+    const filtered = sessions.filter(s => s.title.toLowerCase().includes(searchLower));
+
+    const today: ChatSession[] = [];
+    const yesterday: ChatSession[] = [];
+    const prev7Days: ChatSession[] = [];
+    const older: ChatSession[] = [];
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const yesterdayStart = todayStart - 86400000;
+    const sevenDaysAgo = todayStart - 7 * 86400000;
+
+    filtered.forEach((s) => {
+      const time = new Date(s.updatedAt || s.createdAt).getTime();
+      if (time >= todayStart) {
+        today.push(s);
+      } else if (time >= yesterdayStart) {
+        yesterday.push(s);
+      } else if (time >= sevenDaysAgo) {
+        prev7Days.push(s);
+      } else {
+        older.push(s);
+      }
+    });
+
+    return { today, yesterday, prev7Days, older };
+  }, [sessions, sidebarSearch]);
+
+  // Auth Loading Screen
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-200 transition-colors duration-200 flex items-center justify-center">
+      <div className="min-h-screen bg-[#080d1a] text-slate-200 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-brand-600 to-violet-600 flex items-center justify-center shadow-2xl shadow-brand-500/30">
-              <Brain className="h-8 w-8 text-white" />
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-2xl shadow-purple-500/30">
+              <Brain className="h-7 w-7 text-white" />
             </div>
-            <div className="absolute inset-0 rounded-2xl bg-brand-500/20 animate-ping" />
+            <div className="absolute inset-0 rounded-2xl bg-purple-500/20 animate-ping" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-bold text-white">Initializing Study Buddy</p>
-            <p className="text-xs text-slate-500 mt-1">Checking your access credentials...</p>
+            <p className="text-sm font-bold text-white">Initializing AI Study Buddy</p>
+            <p className="text-xs text-slate-500 mt-1">Loading conversation workspace...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // ─── Access Gate ─────────────────────────────────────────────────────────────
+  // Access Restricted Gate
   if (!user) {
     return (
       <div className="min-h-screen bg-[#080d1a] flex items-center justify-center py-12 px-4 relative overflow-hidden">
-        {/* Background glows */}
-        <div className="absolute top-1/4 left-1/4 h-96 w-96 bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 h-80 w-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="max-w-md w-full bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-2xl space-y-6"
-        >
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500/20 to-rose-600/10 border border-rose-500/20 shadow-lg">
+        <div className="max-w-md w-full bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-2xl space-y-6">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/10 border border-rose-500/20 shadow-lg">
             <Lock className="h-7 w-7 text-rose-400" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-extrabold tracking-tight text-white">Access Restricted</h2>
+            <h2 className="text-xl font-black text-white">Access Restricted</h2>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Please sign in to your SmartPicks account to access the AI Academic Tutor and other placement tools.
+              Please sign in to your SmartPicks account to access the AI Academic Tutor.
             </p>
           </div>
           <Link
             href={`/login?redirect=/student-hub/ai-study-assistant`}
-            className="flex h-12 w-full items-center justify-center bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-brand-500/20 transition-all active:scale-95 cursor-pointer"
+            className="flex h-12 w-full items-center justify-center bg-purple-600 hover:bg-purple-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-purple-500/20 transition-all cursor-pointer"
           >
             Sign In to Continue
           </Link>
-          <Link href="/student-hub" className="block text-[11px] font-bold text-slate-500 hover:text-slate-300 transition-colors">
+          <Link href="/student-hub" className="block text-[11px] font-bold text-slate-500 hover:text-slate-300">
             ← Back to Student Hub
           </Link>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
-  // ─── Main Page ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#080d1a] relative overflow-hidden">
-      {/* Ambient background glows */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] right-[-5%] h-[600px] w-[600px] bg-brand-600/8 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] h-[500px] w-[500px] bg-violet-600/8 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] bg-cyan-600/5 rounded-full blur-[80px]" />
-        {/* Dot grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
+    <div className="min-h-screen bg-[#080d1a] text-slate-100 flex flex-col h-screen overflow-hidden select-none">
+      
+      {/* Background Ambient Glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] h-[500px] w-[500px] bg-purple-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] h-[400px] w-[400px] bg-indigo-600/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 container-custom max-w-5xl py-6 flex flex-col h-screen">
-
-        {/* ── Top Navigation Bar ── */}
-        <div className="flex items-center justify-between mb-5 shrink-0">
-          <Link
-            href="/student-hub"
-            className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors group"
-          >
-            <div className="flex items-center justify-center h-7 w-7 rounded-xl bg-white/5 border border-white/10 group-hover:bg-white/10 group-hover:border-white/20 transition-all">
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </div>
-            Back to Hub
-          </Link>
-
-          <div className="flex items-center gap-2">
-            {/* Settings popover */}
-            <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowSettings(!showSettings)}
-                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              >
-                <Settings className="h-3.5 w-3.5" /> IDE Settings
-              </motion.button>
-
-              <AnimatePresence>
-                {showSettings && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 p-5 z-50 space-y-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">IDE Settings</h4>
-                        <button onClick={() => setShowSettings(false)} className="text-slate-600 hover:text-slate-300 cursor-pointer transition-colors">
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                      {[
-                        {
-                          label: "Color Theme", key: "theme", storageName: "study_buddy_theme", value: themeKey,
-                          options: [
-                            { value: "dracula", label: "🦇 Dracula" },
-                            { value: "vscode", label: "💙 VS Code Dark" },
-                            { value: "onedark", label: "🌑 One Dark" },
-                            { value: "monokai", label: "🔥 Monokai" },
-                            { value: "github", label: "🐙 GitHub Theme" },
-                          ]
-                        },
-                        {
-                          label: "Font Size", key: "size", storageName: "study_buddy_font_size", value: fontSize,
-                          options: [
-                            { value: "11px", label: "11px — Compact" },
-                            { value: "12px", label: "12px — Default" },
-                            { value: "13px", label: "13px — Comfortable" },
-                            { value: "14px", label: "14px — Large" },
-                          ]
-                        },
-                        {
-                          label: "Font Family", key: "font", storageName: "study_buddy_font_family", value: fontFamily,
-                          options: [
-                            { value: "Fira Code, monospace", label: "Fira Code" },
-                            { value: "JetBrains Mono, monospace", label: "JetBrains Mono" },
-                            { value: "Source Code Pro, monospace", label: "Source Code Pro" },
-                            { value: "Courier New, monospace", label: "Courier New" },
-                          ]
-                        }
-                      ].map((field) => (
-                        <div key={field.key} className="space-y-1.5">
-                          <label className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{field.label}</label>
-                          <select
-                            value={field.value}
-                            onChange={(e) => handleSavePref(field.key, e.target.value, field.storageName)}
-                            className="h-9 w-full bg-white/5 border border-white/10 rounded-xl px-3 text-xs font-bold text-slate-200 focus-visible:outline-none focus-visible:border-brand-500/50 cursor-pointer transition-all"
-                          >
-                            {field.options.map((o) => (
-                              <option key={o.value} value={o.value}>{o.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Hero Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-5 shrink-0"
-        >
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900/80 to-slate-800/40 border border-white/10 p-6 backdrop-blur-sm shadow-2xl">
-            {/* Inner glow */}
-            <div className="absolute top-0 right-0 h-40 w-40 bg-brand-500/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 h-32 w-32 bg-violet-500/10 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="relative z-10 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* AI Icon */}
-                <div className="relative shrink-0">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-brand-500 to-rose-600 flex items-center justify-center shadow-xl shadow-brand-500/30">
-                    <Brain className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-[#080d1a] flex items-center justify-center">
-                    <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <h1 className="text-2xl font-black tracking-tight text-white">AI Study Buddy</h1>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-[10px] font-black text-emerald-400 uppercase tracking-wider">
-                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Live
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Your personal AI academic mentor for CS, DSA, databases & more
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats pills */}
-              <div className="hidden sm:flex items-center gap-2">
-                {[
-                  { icon: GraduationCap, label: "CS Expert", color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
-                  { icon: Lightbulb, label: "24/7 Active", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
-                ].map((stat) => (
-                  <div key={stat.label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border ${stat.color} text-[11px] font-bold`}>
-                    <stat.icon className="h-3.5 w-3.5" />
-                    {stat.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ── Suggested Queries ── */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          CHATGPT-STYLE WORKSPACE (SIDEBAR + CONVERSATION AREA)
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="relative z-10 flex flex-1 h-full overflow-hidden">
+        
+        {/* ── 1. COLLAPSIBLE CHAT HISTORY SIDEBAR ── */}
         <AnimatePresence>
-          {messages.length === 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="mb-4 shrink-0"
+          {sidebarOpen && (
+            <motion.aside
+              initial={{ x: -280, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -280, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="w-72 bg-slate-900/90 border-r border-white/10 flex flex-col h-full z-30 shrink-0 backdrop-blur-xl absolute md:relative"
             >
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <Sparkles className="h-3 w-3 text-brand-500" />
-                Suggested Questions
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {PRESETS.map((preset, i) => (
-                  <motion.button
-                    key={preset.text}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => handleSend(preset.text)}
-                    className={`p-3 text-left text-[11px] font-semibold rounded-2xl bg-gradient-to-br border transition-all cursor-pointer group ${preset.color}`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <preset.icon className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${preset.color.split(" ").pop()}`} />
-                      <span className="text-slate-300 group-hover:text-white transition-colors leading-snug line-clamp-2">
-                        {preset.text}
-                      </span>
+              {/* Sidebar Header */}
+              <div className="p-4 border-b border-white/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-xl bg-purple-600 flex items-center justify-center text-white font-black text-xs">
+                      🤖
                     </div>
-                  </motion.button>
-                ))}
+                    <span className="text-sm font-black tracking-tight text-white">AI Study Buddy</span>
+                  </div>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white md:hidden cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* + New Chat Button */}
+                <button
+                  onClick={handleNewChat}
+                  className="w-full py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>New Chat</span>
+                </button>
+
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
+                  <input
+                    type="text"
+                    value={sidebarSearch}
+                    onChange={(e) => setSidebarSearch(e.target.value)}
+                    placeholder="Search conversations..."
+                    className="w-full h-8 pl-8 pr-3 bg-white/5 border border-white/10 rounded-lg text-[11px] font-medium outline-none focus:border-purple-500 text-slate-200"
+                  />
+                </div>
               </div>
-            </motion.div>
+
+              {/* Grouped History List */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-4 text-left">
+                {[
+                  { label: "Today", list: groupedSessions.today },
+                  { label: "Yesterday", list: groupedSessions.yesterday },
+                  { label: "Previous 7 Days", list: groupedSessions.prev7Days },
+                  { label: "Older", list: groupedSessions.older },
+                ].map((group) => {
+                  if (group.list.length === 0) return null;
+                  return (
+                    <div key={group.label} className="space-y-1">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 px-2 block">
+                        {group.label}
+                      </span>
+
+                      {group.list.map((sess) => {
+                        const isActive = sess.id === activeSessionId;
+                        const isEditing = editingSessionId === sess.id;
+
+                        return (
+                          <div
+                            key={sess.id}
+                            onClick={() => handleSelectSession(sess)}
+                            className={`group relative flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isActive
+                                ? "bg-purple-600/20 text-white border border-purple-500/30"
+                                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <MessageSquare className="h-3.5 w-3.5 shrink-0 text-purple-400" />
+                              
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={editingTitleInput}
+                                  onChange={(e) => setEditingTitleInput(e.target.value)}
+                                  onKeyDown={(e) => e.key === "Enter" && handleSaveRename(sess.id)}
+                                  onBlur={() => handleSaveRename(sess.id)}
+                                  autoFocus
+                                  className="w-full bg-slate-800 border border-purple-500 rounded px-1.5 py-0.5 text-xs text-white outline-none"
+                                />
+                              ) : (
+                                <span className="truncate">{sess.title}</span>
+                              )}
+                            </div>
+
+                            {/* Session ⋯ Action Menu */}
+                            {!isEditing && (
+                              <div className="relative shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuSessionId(openMenuSessionId === sess.id ? null : sess.id);
+                                  }}
+                                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 text-slate-400 hover:text-white"
+                                >
+                                  <MoreVertical className="h-3.5 w-3.5" />
+                                </button>
+
+                                {openMenuSessionId === sess.id && (
+                                  <div className="absolute right-0 top-6 z-50 w-28 bg-slate-900 border border-white/10 rounded-xl shadow-xl p-1 space-y-0.5">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingSessionId(sess.id);
+                                        setEditingTitleInput(sess.title);
+                                        setOpenMenuSessionId(null);
+                                      }}
+                                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-300 hover:bg-white/10 flex items-center gap-1.5"
+                                    >
+                                      <Edit3 className="h-3 w-3" /> Rename
+                                    </button>
+                                    <button
+                                      onClick={(e) => handleDeleteSession(sess.id, e)}
+                                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5"
+                                    >
+                                      <Trash2 className="h-3 w-3" /> Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Sidebar Footer */}
+              <div className="p-3 border-t border-white/5 flex items-center justify-between">
+                <Link href="/student-hub" className="text-[10px] font-bold text-slate-500 hover:text-slate-300 flex items-center gap-1">
+                  <ArrowLeft className="h-3 w-3" /> Back to Student Hub
+                </Link>
+              </div>
+            </motion.aside>
           )}
         </AnimatePresence>
 
-        {/* ── Chat Container ── */}
-        <div className="flex-1 min-h-0 flex flex-col bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-          {/* Chat header strip */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 bg-white/2 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-brand-600 to-rose-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-[11px] font-black text-white">Study Buddy AI</p>
-                <p className="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Online
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[9px] font-bold text-slate-600">{messages.length - 1} messages</span>
-            </div>
-          </div>
+        {/* ── 2. MAIN CONVERSATION WORKSPACE ── */}
+        <div className="flex-1 flex flex-col h-full min-w-0 bg-[#080d1a] relative">
+          
+          {/* Top Header Bar */}
+          <header className="h-14 border-b border-white/5 bg-slate-900/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
+                title="Toggle Conversation History"
+              >
+                {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+              </button>
 
-          {/* Scrollable messages area */}
-          <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5 scroll-smooth">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <h2 className="text-xs sm:text-sm font-black text-white truncate max-w-[160px] sm:max-w-xs">
+                  {sessions.find(s => s.id === activeSessionId)?.title || "AI Study Buddy"}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Subject Selector */}
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="h-8 px-2.5 bg-white/5 border border-white/10 rounded-xl text-[11px] font-bold text-purple-300 outline-none cursor-pointer"
+              >
+                {SUBJECT_OPTIONS.map(sub => (
+                  <option key={sub} value={sub} className="bg-slate-900 text-white">{sub}</option>
+                ))}
+              </select>
+
+              {/* IDE Settings button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
+                  title="IDE Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+
+                <AnimatePresence>
+                  {showSettings && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                        className="absolute right-0 mt-2 w-60 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl p-4 z-50 space-y-3 text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-slate-400">Code Syntax Theme</span>
+                          <button onClick={() => setShowSettings(false)} className="text-slate-500 hover:text-white"><X className="h-3.5 w-3.5" /></button>
+                        </div>
+                        <select
+                          value={themeKey}
+                          onChange={(e) => handleSavePref("theme", e.target.value, "study_buddy_theme")}
+                          className="w-full h-8 bg-white/5 border border-white/10 rounded-lg px-2 text-xs font-bold text-slate-200 outline-none"
+                        >
+                          <option value="dracula" className="bg-slate-900">Dracula</option>
+                          <option value="vscode" className="bg-slate-900">VS Code Dark</option>
+                          <option value="onedark" className="bg-slate-900">One Dark</option>
+                          <option value="monokai" className="bg-slate-900">Monokai</option>
+                        </select>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Header + New Chat */}
+              <button
+                onClick={handleNewChat}
+                className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">New Chat</span>
+              </button>
+            </div>
+          </header>
+
+          {/* Messages Scroll Area */}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 scroll-smooth">
+            
+            {/* HERO EMPTY STATE (When 1 message initial state) */}
+            {messages.length <= 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-2xl mx-auto py-8 text-center space-y-6"
+              >
+                <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center mx-auto shadow-2xl shadow-purple-500/20">
+                  <Brain className="h-8 w-8 text-white" />
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    What are you learning today?
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400 font-medium">
+                    Ask anything about programming, academics, or your current subjects.
+                  </p>
+                </div>
+
+                {/* Suggestion Chips */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left pt-4">
+                  {SUGGESTIONS.map((chip, idx) => (
+                    <motion.div
+                      key={chip.title}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onClick={() => handleSend(chip.prompt)}
+                      className={`p-4 rounded-2xl border ${chip.color} hover:border-purple-500/40 transition-all cursor-pointer group space-y-1.5`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <chip.icon className="h-4 w-4" />
+                        <span className="text-xs font-black text-white">{chip.title}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed group-hover:text-slate-200 transition-colors line-clamp-2">
+                        "{chip.prompt}"
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Conversation Messages */}
             <AnimatePresence initial={false}>
               {messages.map((m, idx) => {
                 const isAssistant = m.role === "assistant";
                 return (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className={`flex gap-3 ${isAssistant ? "mr-6" : "ml-6 flex-row-reverse"}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex gap-3 max-w-4xl mx-auto ${isAssistant ? "mr-auto" : "ml-auto flex-row-reverse"}`}
                   >
                     {/* Avatar */}
-                    <div className={`h-8 w-8 shrink-0 rounded-xl flex items-center justify-center shadow-lg ${
+                    <div className={`h-8 w-8 shrink-0 rounded-xl flex items-center justify-center shadow-md ${
                       isAssistant
-                        ? "bg-gradient-to-br from-brand-600 to-rose-600 shadow-brand-500/20"
-                        : "bg-gradient-to-br from-slate-700 to-slate-600 shadow-black/20"
+                        ? "bg-purple-600 text-white shadow-purple-600/20"
+                        : "bg-slate-700 text-slate-300"
                     }`}>
-                      {isAssistant
-                        ? <Bot className="h-4 w-4 text-white" />
-                        : <User className="h-4 w-4 text-slate-300" />
-                      }
+                      {isAssistant ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
                     </div>
 
                     {/* Bubble */}
-                    <div className={`relative max-w-full rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-lg ${
+                    <div className={`relative max-w-[85%] rounded-2xl px-5 py-4 text-xs leading-relaxed shadow-lg ${
                       isAssistant
-                        ? "bg-slate-800/80 border border-white/8 text-slate-200 rounded-tl-sm"
-                        : "bg-gradient-to-br from-brand-600 to-rose-600 text-white rounded-tr-sm shadow-brand-500/20"
+                        ? "bg-slate-900/90 border border-white/10 text-slate-200 rounded-tl-sm"
+                        : "bg-purple-600 text-white rounded-tr-sm shadow-purple-600/20 font-medium"
                     }`}>
                       {isAssistant ? (
                         <ReactMarkdown
@@ -605,7 +912,7 @@ export default function AIStudyAssistant() {
                             li: ({ children }) => <li className="leading-relaxed">{children}</li>,
                             strong: ({ children }) => <strong className="font-black text-white">{children}</strong>,
                             blockquote: ({ children }) => (
-                              <blockquote className="border-l-2 border-brand-500 pl-3 my-2 text-slate-400 italic">{children}</blockquote>
+                              <blockquote className="border-l-2 border-purple-500 pl-3 my-2 text-slate-400 italic">{children}</blockquote>
                             ),
                             code(props: any) {
                               const { children, className } = props;
@@ -613,7 +920,7 @@ export default function AIStudyAssistant() {
                               const isInline = !match;
                               if (isInline) {
                                 return (
-                                  <code className="bg-slate-700/60 border border-white/10 px-1.5 py-0.5 rounded-md text-[11px] font-mono font-bold text-brand-400">
+                                  <code className="bg-slate-800 border border-white/10 px-1.5 py-0.5 rounded-md text-[11px] font-mono text-purple-300 font-bold">
                                     {children}
                                   </code>
                                 );
@@ -633,12 +940,12 @@ export default function AIStudyAssistant() {
                           {m.content}
                         </ReactMarkdown>
                       ) : (
-                        <div className="whitespace-pre-line font-semibold">{m.content}</div>
+                        <div className="whitespace-pre-line leading-relaxed">{m.content}</div>
                       )}
 
                       {/* Timestamp */}
                       {m.timestamp && (
-                        <p className={`text-[9px] mt-2 font-bold ${isAssistant ? "text-slate-600" : "text-white/50"}`}>
+                        <p className={`text-[9px] mt-2 font-bold ${isAssistant ? "text-slate-500" : "text-white/60"}`}>
                           {formatTime(m.timestamp)}
                         </p>
                       )}
@@ -648,48 +955,36 @@ export default function AIStudyAssistant() {
               })}
             </AnimatePresence>
 
-            {/* Loading state */}
+            {/* Loading Indicator */}
             {loading && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex gap-3 mr-6"
+                className="flex gap-3 max-w-4xl mx-auto"
               >
-                <div className="h-8 w-8 shrink-0 rounded-xl bg-gradient-to-br from-brand-600 to-rose-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                  <Bot className="h-4 w-4 text-white" />
+                <div className="h-8 w-8 shrink-0 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md">
+                  <Bot className="h-4 w-4" />
                 </div>
-                <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-slate-800/80 border border-white/8 shadow-lg flex items-center gap-3">
+                <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-slate-900 border border-white/10 shadow-lg flex items-center gap-3">
                   <TypingDots />
-                  <span className="text-[11px] text-slate-500 font-bold">Study Buddy is thinking...</span>
+                  <span className="text-[11px] text-slate-400 font-bold">Study Buddy is formulating a response...</span>
                 </div>
               </motion.div>
             )}
 
-            {/* Error */}
+            {/* Error Message */}
             <AnimatePresence>
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="flex flex-col gap-3 p-4 bg-rose-500/8 border border-rose-500/20 text-xs text-rose-400 font-bold rounded-2xl max-w-md mx-auto backdrop-blur-sm"
+                  className="flex flex-col gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 font-bold rounded-2xl max-w-md mx-auto backdrop-blur-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
-                      <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
-                    </div>
-                    <span className="text-rose-300 font-semibold">{error}</span>
+                    <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                    <span>{error}</span>
                   </div>
-                  {error.includes("limit of 3 AI assistance runs") && (
-                    <Link
-                      href="/student-hub/upgrade"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-brand-500/20 self-start"
-                    >
-                      <Zap className="h-3 w-3 fill-current animate-pulse" />
-                      Upgrade to Pro
-                      <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -697,43 +992,38 @@ export default function AIStudyAssistant() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* ── Input Area ── */}
-          <div className="p-4 border-t border-white/8 bg-slate-900/60 backdrop-blur-sm shrink-0">
-            <div className="flex gap-3 items-end">
-              <div className="flex-1 relative">
+          {/* Message Composer Area */}
+          <div className="p-4 border-t border-white/5 bg-slate-900/80 backdrop-blur-xl shrink-0">
+            <div className="max-w-4xl mx-auto space-y-2">
+              <div className="flex gap-3 items-end relative">
                 <textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder="Ask a question about CS, algorithms, databases, OS..."
+                  placeholder={`Ask anything about ${selectedSubject}, programming, or exams...`}
                   rows={1}
-                  className="w-full bg-slate-800/80 border border-white/10 text-white placeholder:text-slate-600 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500/50 focus:shadow-[0_0_0_3px_rgba(212,63,54,0.1)] resize-none leading-relaxed transition-all duration-200 pr-12"
-                  style={{ maxHeight: "120px" }}
+                  className="w-full bg-slate-950 border border-white/10 text-white placeholder:text-slate-500 rounded-2xl px-4 py-3.5 text-xs font-bold outline-none focus:border-purple-500 transition-all resize-none leading-relaxed pr-12"
+                  style={{ maxHeight: "140px" }}
                 />
-                {/* Character count / Shift+Enter hint */}
-                <div className="absolute right-3 bottom-3 text-[9px] text-slate-700 font-bold pointer-events-none select-none">
-                  ↵
-                </div>
+                
+                <button
+                  onClick={() => handleSend()}
+                  disabled={loading || !input.trim()}
+                  className="h-11 w-11 shrink-0 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-purple-600/20 transition-all cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </button>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.92 }}
-                onClick={() => handleSend()}
-                disabled={loading || !input.trim()}
-                className="h-11 w-11 shrink-0 bg-gradient-to-br from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/20 disabled:shadow-none transition-all cursor-pointer disabled:cursor-not-allowed"
-              >
-                {loading
-                  ? <RefreshCw className="h-4 w-4 animate-spin" />
-                  : <Send className="h-4 w-4" />
-                }
-              </motion.button>
+
+              <p className="text-[9px] text-slate-500 font-bold text-center">
+                Press <kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10">Enter</kbd> to send · <kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10">Shift+Enter</kbd> for line break
+              </p>
             </div>
-            <p className="text-[9px] text-slate-700 mt-2 text-center font-bold">
-              Press <kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-[9px]">Enter</kbd> to send · <kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-[9px]">Shift+Enter</kbd> for new line
-            </p>
           </div>
+
         </div>
+
       </div>
     </div>
   );
