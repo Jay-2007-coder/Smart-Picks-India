@@ -137,6 +137,75 @@ router.get("/stats", async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
+// GET USERS LIST (ADMIN CONTROL)
+// ──────────────────────────────────────────────────────────────────────────────
+router.get("/users", async (req, res, next) => {
+  try {
+    const users = await User.find({}).select("-password").sort({ createdAt: -1 });
+    res.status(200).json({ success: true, users });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PUT: TOGGLE USER ROLE (ADMIN CONTROL)
+// ──────────────────────────────────────────────────────────────────────────────
+router.put("/users/:id/role", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    const userItem = await User.findById(id);
+    if (!userItem) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+    userItem.role = role || (userItem.role === "admin" ? "user" : "admin");
+    await userItem.save();
+    res.status(200).json({ success: true, message: `User role updated to ${userItem.role}`, user: userItem });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// DELETE: DELETE USER (ADMIN CONTROL)
+// ──────────────────────────────────────────────────────────────────────────────
+router.delete("/users/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await User.findByIdAndDelete(id);
+    res.status(200).json({ success: true, message: "User deleted successfully." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// GET ALL PRODUCTS (ADMIN CONTROL)
+// ──────────────────────────────────────────────────────────────────────────────
+router.get("/products", async (req, res, next) => {
+  try {
+    const products = await Product.find({}).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, products });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// DELETE PRODUCT (ADMIN CONTROL)
+// ──────────────────────────────────────────────────────────────────────────────
+router.delete("/products/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await Product.findByIdAndDelete(id);
+    res.status(200).json({ success: true, message: "Product deleted successfully." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
 // TRIGGER MANUAL PRICE/PRODUCT SYNCHRONIZATION
 // ──────────────────────────────────────────────────────────────────────────────
 router.post("/sync", async (req, res, next) => {
