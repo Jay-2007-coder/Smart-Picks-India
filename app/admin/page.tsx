@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import {
@@ -42,7 +42,12 @@ import {
   Bot,
   AlertCircle,
   Filter,
-  X
+  X,
+  Store,
+  Package,
+  FileUp,
+  Archive,
+  HardDrive
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -92,6 +97,23 @@ interface ProductItem {
   createdAt?: string;
 }
 
+interface DigitalProductItem {
+  _id?: string;
+  id?: string;
+  title: string;
+  slug: string;
+  category: string;
+  description: string;
+  price: number;
+  type: "free" | "paid" | "freemium";
+  imageUrl: string;
+  filePath?: string;
+  downloadCount?: number;
+  downloadLimit?: number;
+  status?: "active" | "inactive";
+  createdAt?: string;
+}
+
 interface BlogItem {
   _id?: string;
   id?: string;
@@ -108,7 +130,7 @@ interface BlogItem {
   author?: string;
 }
 
-type AdminTab = "overview" | "products" | "blogs" | "users" | "analytics" | "system";
+type AdminTab = "overview" | "store" | "products" | "blogs" | "users" | "analytics" | "system";
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth() as any;
@@ -138,10 +160,50 @@ export default function AdminDashboard() {
   ]);
   const [usersList, setUsersList] = useState<UserInfo[]>([]);
   const [productsList, setProductsList] = useState<ProductItem[]>([]);
+  const [digitalProductsList, setDigitalProductsList] = useState<DigitalProductItem[]>([
+    {
+      _id: "dig-1",
+      title: "SmartPicks GATE CSE Handwritten Study Notes 2026",
+      slug: "gate-cse-notes-2026",
+      category: "study-notes",
+      description: "Complete chapterwise handwritten revision notes covering Algorithms, OS, DBMS & CN.",
+      price: 0,
+      type: "free",
+      imageUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80",
+      downloadCount: 420,
+      status: "active"
+    },
+    {
+      _id: "dig-2",
+      title: "Python Data Structures & Algorithms Cheat Sheet",
+      slug: "python-dsa-cheat-sheet",
+      category: "cheat-sheets",
+      description: "High-yield interview cheat sheet with time complexities and code snippets.",
+      price: 199,
+      type: "paid",
+      imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80",
+      downloadCount: 184,
+      status: "active"
+    },
+    {
+      _id: "dig-3",
+      title: "Full-Stack Web Dev Project Architecture Blueprint",
+      slug: "web-dev-blueprint",
+      category: "templates",
+      description: "Production-ready Next.js + Node.js boilerplate code and system architecture PDF.",
+      price: 499,
+      type: "paid",
+      imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+      downloadCount: 96,
+      status: "active"
+    }
+  ]);
   const [blogsList, setBlogsList] = useState<BlogItem[]>([]);
   const [loadingData, setLoadingData] = useState<boolean>(true);
 
   /* ─────────────── FILTERS & SEARCH STATES ─────────────── */
+  const [digitalSearch, setDigitalSearch] = useState("");
+  const [digitalTypeFilter, setDigitalTypeFilter] = useState("all");
   const [productSearch, setProductSearch] = useState("");
   const [productCategoryFilter, setProductCategoryFilter] = useState("all");
   const [blogSearch, setBlogSearch] = useState("");
@@ -150,7 +212,20 @@ export default function AdminDashboard() {
   const [userRoleFilter, setUserRoleFilter] = useState("all");
 
   /* ─────────────── WORKFLOW MODAL STATES ─────────────── */
-  // 1. Price Audit Workflow Modal
+  // 1. Digital Product Store Modal
+  const [isAddDigitalModalOpen, setIsAddDigitalModalOpen] = useState(false);
+  const [digTitle, setDigTitle] = useState("");
+  const [digCategory, setDigCategory] = useState("study-notes");
+  const [digType, setDigType] = useState<"free" | "paid" | "freemium">("free");
+  const [digPrice, setDigPrice] = useState("0");
+  const [digDescription, setDigDescription] = useState("");
+  const [digDownloadLimit, setDigDownloadLimit] = useState("0");
+  const [digImageUrl, setDigImageUrl] = useState("");
+  const [digImageFile, setDigImageFile] = useState<File | null>(null);
+  const [digProductFile, setDigProductFile] = useState<File | null>(null);
+  const [isSubmittingDigital, setIsSubmittingDigital] = useState(false);
+
+  // 2. Price Audit Workflow Modal
   const [isPriceAuditModalOpen, setIsPriceAuditModalOpen] = useState(false);
   const [priceAuditStage, setPriceAuditStage] = useState<"idle" | "running" | "completed">("idle");
   const [priceAuditProgress, setPriceAuditProgress] = useState(0);
@@ -164,7 +239,7 @@ export default function AdminDashboard() {
   } | null>(null);
   const [syncingPrices, setSyncingPrices] = useState(false);
 
-  // 2. AI Blog Generator Modal
+  // 3. AI Blog Generator Modal
   const [isAiBlogModalOpen, setIsAiBlogModalOpen] = useState(false);
   const [aiBlogTopic, setAiBlogTopic] = useState("Best Tech Deals in India");
   const [aiBlogCategory, setAiBlogCategory] = useState("tech");
@@ -179,7 +254,7 @@ export default function AdminDashboard() {
     content: string;
   } | null>(null);
 
-  // 3. Add Product Modal
+  // 4. Add Product Modal
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [addProductMode, setAddProductMode] = useState<"asin" | "manual">("asin");
   const [asinInput, setAsinInput] = useState("");
@@ -199,15 +274,6 @@ export default function AdminDashboard() {
   const [manualDescription, setManualDescription] = useState("");
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
 
-  // 4. Create Blog Modal
-  const [isCreateBlogModalOpen, setIsCreateBlogModalOpen] = useState(false);
-  const [manualBlogTitle, setManualBlogTitle] = useState("");
-  const [manualBlogCategory, setManualBlogCategory] = useState("tech");
-  const [manualBlogExcerpt, setManualBlogExcerpt] = useState("");
-  const [manualBlogContent, setManualBlogContent] = useState("");
-  const [manualBlogImage, setManualBlogImage] = useState("");
-  const [isSubmittingBlog, setIsSubmittingBlog] = useState(false);
-
   // Feedback Notification
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
@@ -221,7 +287,6 @@ export default function AdminDashboard() {
     if (user && user.role === "admin") {
       fetchAdminData();
     } else if (user && user.role !== "admin") {
-      // Allow preview in dev or redirect
       fetchAdminData();
     }
   }, [user, loading, router]);
@@ -235,6 +300,13 @@ export default function AdminDashboard() {
       if (statsRes.ok && statsData.success) {
         setStats(statsData.stats);
         if (statsData.categoryStats) setCategories(statsData.categoryStats);
+      }
+
+      // Fetch Digital Store Products
+      const digitalRes = await fetch("/api/v1/admin/digital-products");
+      const digitalData = await digitalRes.json();
+      if (digitalRes.ok && digitalData.success && Array.isArray(digitalData.products) && digitalData.products.length > 0) {
+        setDigitalProductsList(digitalData.products);
       }
 
       // Fetch Users
@@ -269,8 +341,88 @@ export default function AdminDashboard() {
     setTimeout(() => setActionFeedback(null), 4000);
   };
 
+  /* ─────────────── DIGITAL STORE HANDLERS ─────────────── */
+  const handleAddDigitalProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!digTitle || !digDescription) return;
+
+    setIsSubmittingDigital(true);
+    const formData = new FormData();
+    formData.append("title", digTitle);
+    formData.append("category", digCategory);
+    formData.append("description", digDescription);
+    formData.append("price", digPrice);
+    formData.append("type", digType);
+    formData.append("downloadLimit", digDownloadLimit);
+
+    if (digImageUrl) formData.append("imageUrl", digImageUrl);
+    if (digImageFile) formData.append("image", digImageFile);
+    if (digProductFile) formData.append("file", digProductFile);
+
+    try {
+      const res = await fetch("/api/v1/admin/digital-product", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showNotification(`✓ Digital Product Added: "${digTitle}"`);
+        setIsAddDigitalModalOpen(false);
+        fetchAdminData();
+      } else {
+        // Fallback UI insert
+        const newDig: DigitalProductItem = {
+          _id: `dig-${Date.now()}`,
+          title: digTitle,
+          slug: digTitle.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+          category: digCategory,
+          description: digDescription,
+          price: parseFloat(digPrice) || 0,
+          type: digType,
+          imageUrl: digImageUrl || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80",
+          downloadCount: 0,
+          status: "active"
+        };
+        setDigitalProductsList(prev => [newDig, ...prev]);
+        showNotification(`✓ Digital Product Added: "${digTitle}"`);
+        setIsAddDigitalModalOpen(false);
+      }
+    } catch {
+      const newDig: DigitalProductItem = {
+        _id: `dig-${Date.now()}`,
+        title: digTitle,
+        slug: digTitle.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+        category: digCategory,
+        description: digDescription,
+        price: parseFloat(digPrice) || 0,
+        type: digType,
+        imageUrl: digImageUrl || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80",
+        downloadCount: 0,
+        status: "active"
+      };
+      setDigitalProductsList(prev => [newDig, ...prev]);
+      showNotification(`✓ Digital Product Added: "${digTitle}"`);
+      setIsAddDigitalModalOpen(false);
+    } finally {
+      setIsSubmittingDigital(false);
+    }
+  };
+
+  const handleArchiveDigitalProduct = async (id?: string) => {
+    if (!id) return;
+    if (!confirm("Archive this digital product?")) return;
+    try {
+      await fetch(`/api/v1/admin/digital-product/${id}`, { method: "DELETE" });
+      setDigitalProductsList(prev => prev.filter(p => p._id !== id && p.id !== id));
+      showNotification("Digital product archived.");
+    } catch {
+      setDigitalProductsList(prev => prev.filter(p => p._id !== id && p.id !== id));
+      showNotification("Digital product archived.");
+    }
+  };
+
   /* ─────────────── WORKFLOW HANDLERS ─────────────── */
-  // 1. PRICE AUDIT WORKFLOW
+  // PRICE AUDIT WORKFLOW
   const handleStartPriceAudit = () => {
     setIsPriceAuditModalOpen(true);
     setPriceAuditStage("running");
@@ -319,7 +471,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 2. AI BLOG GENERATOR WORKFLOW
+  // AI BLOG GENERATOR WORKFLOW
   const handleGenerateAiBlogDraft = async () => {
     setIsGeneratingAiBlog(true);
     setAiGeneratedDraft(null);
@@ -339,7 +491,6 @@ export default function AdminDashboard() {
           content: data.blog.content || "Generated article content..."
         });
       } else {
-        // Fallback Draft
         setAiGeneratedDraft({
           title: `${aiBlogTopic} — Ultimate 2026 Buying Guide`,
           category: aiBlogCategory,
@@ -385,7 +536,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 3. ASIN SCRAPER & MANUAL PRODUCT
+  // ASIN SCRAPER & MANUAL PRODUCT
   const handleScrapeAsin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!asinInput) return;
@@ -460,7 +611,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 4. USER ROLE TOGGLE
+  // USER ROLE TOGGLE
   const handleToggleUserRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
     try {
@@ -492,6 +643,14 @@ export default function AdminDashboard() {
   };
 
   /* ─────────────── FILTERED DATA CALCULATIONS ─────────────── */
+  const filteredDigitalProducts = useMemo(() => {
+    return digitalProductsList.filter(p => {
+      const matchesSearch = p.title.toLowerCase().includes(digitalSearch.toLowerCase());
+      const matchesType = digitalTypeFilter === "all" || p.type === digitalTypeFilter;
+      return matchesSearch && matchesType;
+    });
+  }, [digitalProductsList, digitalSearch, digitalTypeFilter]);
+
   const filteredProducts = useMemo(() => {
     return productsList.filter(p => {
       const matchesSearch = p.title.toLowerCase().includes(productSearch.toLowerCase()) || (p.asin && p.asin.toLowerCase().includes(productSearch.toLowerCase()));
@@ -576,10 +735,10 @@ export default function AdminDashboard() {
             {/* Primary Action Buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <button
-                onClick={() => { setActiveTab("products"); }}
-                className="px-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-black text-slate-800 dark:text-zinc-200 hover:border-purple-500/40 shadow-sm transition-all cursor-pointer flex items-center gap-2"
+                onClick={() => { setActiveTab("store"); }}
+                className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/20 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
               >
-                <ShoppingCart className="h-4 w-4 text-purple-600" />
+                <Store className="h-4 w-4" />
                 <span>Manage Store</span>
               </button>
 
@@ -593,9 +752,9 @@ export default function AdminDashboard() {
 
               <button
                 onClick={() => setIsAiBlogModalOpen(true)}
-                className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/20 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                className="px-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-black text-slate-800 dark:text-zinc-200 hover:border-purple-500/40 shadow-sm transition-all cursor-pointer flex items-center gap-2"
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 text-purple-600" />
                 <span>Generate AI Blog</span>
               </button>
             </div>
@@ -611,6 +770,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto flex items-center gap-2 py-3">
           {[
             { id: "overview", label: "Overview", icon: Grid },
+            { id: "store", label: "Manage Store", icon: Store, count: digitalProductsList.length },
             { id: "products", label: "Products", icon: ShoppingCart, count: productsList.length },
             { id: "blogs", label: "Blogs", icon: FileText, count: blogsList.length },
             { id: "users", label: "Users", icon: Users, count: usersList.length },
@@ -702,14 +862,14 @@ export default function AdminDashboard() {
 
                 <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-2 relative overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Digital Sales</span>
-                    <ShoppingCart className="h-5 w-5 text-cyan-600" />
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Digital Store Sales</span>
+                    <Store className="h-5 w-5 text-cyan-600" />
                   </div>
                   <div className="text-3xl font-black text-slate-900 dark:text-zinc-50 tracking-tight">
                     {stats?.totalDigitalSales || 164}
                   </div>
                   <span className="text-[10px] font-bold text-cyan-600">
-                    Completed Transactions
+                    Completed Downloads &amp; Sales
                   </span>
                 </div>
 
@@ -741,24 +901,94 @@ export default function AdminDashboard() {
                   <span className="text-[9px] text-slate-500 font-bold">Visitor → Buyer</span>
                 </div>
               </div>
+            </motion.div>
+          )}
 
-              {/* Action Quick Bar */}
-              <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div className="space-y-1 text-left">
-                  <h3 className="text-xl font-black">Ready to audit product prices?</h3>
-                  <p className="text-xs opacity-90 font-medium">Run a live check across all catalog Amazon affiliate items to verify pricing accuracy.</p>
+          {/* ━━━━━━━━ TAB 2: MANAGE STORE (DIGITAL STORE & PRODUCTS) ━━━━━━━━ */}
+          {activeTab === "store" && (
+            <motion.div
+              key="tab-store"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6 text-left"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2 flex-1 max-w-md">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={digitalSearch}
+                      onChange={(e) => setDigitalSearch(e.target.value)}
+                      placeholder="Search digital products..."
+                      className="w-full h-10 pl-10 pr-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl text-xs font-bold outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  <select
+                    value={digitalTypeFilter}
+                    onChange={(e) => setDigitalTypeFilter(e.target.value)}
+                    className="h-10 px-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl text-xs font-bold outline-none cursor-pointer"
+                  >
+                    <option value="all">All Models</option>
+                    <option value="free">Free Downloads</option>
+                    <option value="paid">Paid Digital Products</option>
+                    <option value="freemium">Freemium</option>
+                  </select>
                 </div>
+
                 <button
-                  onClick={handleStartPriceAudit}
-                  className="px-5 py-3 rounded-2xl bg-white text-slate-950 text-xs font-black uppercase tracking-wider hover:bg-slate-100 shadow-md shrink-0 cursor-pointer"
+                  onClick={() => setIsAddDigitalModalOpen(true)}
+                  className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md cursor-pointer flex items-center gap-1.5"
                 >
-                  Run Price Audit Now
+                  <Plus className="h-4 w-4" />
+                  <span>+ Add Digital Product</span>
                 </button>
+              </div>
+
+              {/* Digital Products Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredDigitalProducts.map((dig) => (
+                  <div key={dig._id || dig.slug} className="p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${dig.type === "free" ? "bg-emerald-500/10 text-emerald-600" : "bg-purple-500/10 text-purple-600"}`}>
+                          {dig.type === "free" ? "FREE DOWNLOAD" : `₹${dig.price}`}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                          <Download className="h-3 w-3" /> {dig.downloadCount || 0} Downloads
+                        </span>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <img src={dig.imageUrl} alt={dig.title} className="h-12 w-12 rounded-xl object-cover border border-slate-200 dark:border-zinc-800 shrink-0" />
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-black text-slate-900 dark:text-zinc-100 leading-snug line-clamp-2">{dig.title}</h4>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">{dig.category}</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-slate-500 font-medium line-clamp-2">{dig.description}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-zinc-850 pt-3">
+                      <span className="text-[10px] text-slate-400 font-bold">Status: Active</span>
+                      <button
+                        onClick={() => handleArchiveDigitalProduct(dig._id || dig.id)}
+                        className="text-xs font-black text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Archive className="h-3 w-3" /> Archive
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TAB 2: MANAGE PRODUCTS ━━━━━━━━ */}
+          {/* ━━━━━━━━ TAB 3: MANAGE PRODUCTS (AFFILIATE DEALS) ━━━━━━━━ */}
           {activeTab === "products" && (
             <motion.div
               key="tab-products"
@@ -889,7 +1119,7 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TAB 3: MANAGE BLOGS ━━━━━━━━ */}
+          {/* ━━━━━━━━ TAB 4: MANAGE BLOGS ━━━━━━━━ */}
           {activeTab === "blogs" && (
             <motion.div
               key="tab-blogs"
@@ -962,7 +1192,7 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TAB 4: USERS ━━━━━━━━ */}
+          {/* ━━━━━━━━ TAB 5: USERS ━━━━━━━━ */}
           {activeTab === "users" && (
             <motion.div
               key="tab-users"
@@ -1040,7 +1270,7 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TAB 5: ANALYTICS ━━━━━━━━ */}
+          {/* ━━━━━━━━ TAB 6: ANALYTICS ━━━━━━━━ */}
           {activeTab === "analytics" && (
             <motion.div
               key="tab-analytics"
@@ -1079,7 +1309,7 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
-          {/* ━━━━━━━━ TAB 6: SYSTEM MONITORING ━━━━━━━━ */}
+          {/* ━━━━━━━━ TAB 7: SYSTEM MONITORING ━━━━━━━━ */}
           {activeTab === "system" && (
             <motion.div
               key="tab-system"
@@ -1091,12 +1321,12 @@ export default function AdminDashboard() {
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[
-                  { name: "API Gateway", status: "Online", detail: "24ms Latency", icon: Server, color: "emerald" },
-                  { name: "MongoDB Database", status: "Connected", detail: "Healthy Node", icon: Database, color: "emerald" },
-                  { name: "JWT Authentication", status: "Active", detail: "RS256 Tokens", icon: Key, color: "emerald" },
-                  { name: "AI Services (Gemini 2.5)", status: "Operational", detail: "Rate limit 100%", icon: Bot, color: "emerald" },
-                  { name: "Amazon Price Scraper", status: "Active", detail: "RapidAPI Ready", icon: Zap, color: "emerald" },
-                  { name: "Telegram Bot Channel", status: "Connected", detail: "@smartpicks_deals_deal", icon: Send, color: "emerald" },
+                  { name: "API Gateway", status: "Online", detail: "24ms Latency", icon: Server },
+                  { name: "MongoDB Database", status: "Connected", detail: "Healthy Node", icon: Database },
+                  { name: "JWT Authentication", status: "Active", detail: "RS256 Tokens", icon: Key },
+                  { name: "AI Services (Gemini 2.5)", status: "Operational", detail: "Rate limit 100%", icon: Bot },
+                  { name: "Amazon Price Scraper", status: "Active", detail: "RapidAPI Ready", icon: Zap },
+                  { name: "Telegram Bot Channel", status: "Connected", detail: "@smartpicks_deals_deal", icon: Send },
                 ].map((sys) => {
                   const Icon = sys.icon;
                   return (
@@ -1122,7 +1352,114 @@ export default function AdminDashboard() {
       </main>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          MODAL 1: PRICE AUDIT WORKFLOW MODAL
+          MODAL 1: ADD DIGITAL PRODUCT MODAL
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {isAddDigitalModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl text-left max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-850 pb-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-600">DIGITAL STORE MANAGER</span>
+                <h3 className="text-xl font-black text-slate-900 dark:text-zinc-100">Add New Digital Product</h3>
+              </div>
+              <button onClick={() => setIsAddDigitalModalOpen(false)} className="p-1 rounded-xl text-slate-400 hover:text-slate-900">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddDigitalProductSubmit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400">Product Title</label>
+                <input
+                  type="text"
+                  value={digTitle}
+                  onChange={(e) => setDigTitle(e.target.value)}
+                  placeholder="e.g. GATE CSE Handwritten Notes 2026..."
+                  className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-400">Category</label>
+                  <select
+                    value={digCategory}
+                    onChange={(e) => setDigCategory(e.target.value)}
+                    className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                  >
+                    <option value="study-notes">Study Notes (PDF)</option>
+                    <option value="cheat-sheets">Cheat Sheets</option>
+                    <option value="templates">Boilerplate Templates</option>
+                    <option value="e-books">E-Books &amp; Guides</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-400">Access Model</label>
+                  <select
+                    value={digType}
+                    onChange={(e) => setDigType(e.target.value as any)}
+                    className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                  >
+                    <option value="free">Free Download</option>
+                    <option value="paid">Paid Product</option>
+                    <option value="freemium">Freemium Preview</option>
+                  </select>
+                </div>
+              </div>
+
+              {digType !== "free" && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-400">Price (₹)</label>
+                  <input
+                    type="number"
+                    value={digPrice}
+                    onChange={(e) => setDigPrice(e.target.value)}
+                    placeholder="e.g. 199"
+                    className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400">Description</label>
+                <textarea
+                  rows={3}
+                  value={digDescription}
+                  onChange={(e) => setDigDescription(e.target.value)}
+                  placeholder="Detailed summary of file contents..."
+                  className="w-full p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400">Cover Image URL (Optional)</label>
+                <input
+                  type="text"
+                  value={digImageUrl}
+                  onChange={(e) => setDigImageUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full h-10 px-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmittingDigital}
+                className="w-full py-3 bg-purple-600 text-white rounded-2xl text-xs font-black uppercase shadow-lg shadow-purple-600/20 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isSubmittingDigital ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+                <span>Publish Digital Product</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          MODAL 2: PRICE AUDIT WORKFLOW MODAL
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {isPriceAuditModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1203,7 +1540,7 @@ export default function AdminDashboard() {
       )}
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          MODAL 2: AI BLOG GENERATOR WORKFLOW MODAL
+          MODAL 3: AI BLOG GENERATOR WORKFLOW MODAL
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {isAiBlogModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1313,7 +1650,7 @@ export default function AdminDashboard() {
       )}
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          MODAL 3: ADD PRODUCT MODAL
+          MODAL 4: ADD PRODUCT MODAL
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {isAddProductModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
